@@ -11,9 +11,12 @@
  *   pdfLoading  — bool, PDF still being generated
  *   onDownload  — callback to trigger download
  */
+import SocialAuditTable from './SocialAuditTable';
+
 export default function ReportPreview({
   loading,
   htmlReport,
+  reportData,
   reportLabel,
   timestamp,
   pdfBlob,
@@ -74,16 +77,31 @@ export default function ReportPreview({
         </button>
       </div>
 
-      {/* iframe */}
-      <div className="iframe-container">
-        <iframe
-          className="report-iframe"
-          srcDoc={htmlReport}
-          title={`${reportLabel} preview`}
-          sandbox="allow-same-origin"
-          loading="lazy"
-        />
-      </div>
+      {/* Main Content */}
+      {(() => {
+        const posts = reportData?.posts || reportData?.instagram_audit?.posts || reportData?.linkedin_audit?.posts || reportData?.data || [];
+        const isSocialAudit = reportLabel === 'Instagram Audit' || reportLabel === 'LinkedIn Audit';
+        
+        if (isSocialAudit && posts && posts.length > 0) {
+          return (
+            <div className="native-report-container">
+              <SocialAuditTable posts={posts} />
+            </div>
+          );
+        }
+
+        return (
+          <div className="iframe-container">
+            <iframe
+              className="report-iframe"
+              srcDoc={htmlReport}
+              title={`${reportLabel} preview`}
+              sandbox="allow-same-origin"
+              loading="lazy"
+            />
+          </div>
+        );
+      })()}
 
       {/* PDF loading note */}
       {pdfLoading && (

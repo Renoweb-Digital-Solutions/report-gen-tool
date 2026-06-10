@@ -28,6 +28,7 @@ function now() {
 
 const INITIAL_REPORT_STATE = {
   html: '',
+  data: null,
   loading: false,
   error: '',
   timestamp: '',
@@ -58,7 +59,7 @@ export default function Dashboard() {
     payload,
     pdfFilename,
   }) => {
-    setReport((prev) => ({ ...prev, loading: true, error: '', html: '' }));
+    setReport((prev) => ({ ...prev, loading: true, error: '', html: '', data: null }));
     setPdfReady((p) => ({ ...p, [tabKey]: false }));
     setPdfLoading((p) => ({ ...p, [tabKey]: false }));
     pdfBlobs.current[tabKey] = null;
@@ -68,7 +69,7 @@ export default function Dashboard() {
       const html = data.html_report || data.html || '';
       const ts   = now();
 
-      setReport({ html, loading: false, error: '', timestamp: ts });
+      setReport({ html, data, loading: false, error: '', timestamp: ts });
 
       // Kick off PDF generation
       setPdfLoading((p) => ({ ...p, [tabKey]: true }));
@@ -226,6 +227,7 @@ export default function Dashboard() {
           <ReportPreview
             loading={current.report.loading}
             htmlReport={current.report.html}
+            reportData={current.report.data}
             reportLabel={current.label}
             timestamp={current.report.timestamp}
             pdfBlob={pdfReady[current.pdfKey] ? pdfBlobs.current[current.pdfKey] : null}

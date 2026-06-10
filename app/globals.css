@@ -698,3 +698,132 @@ body {
     border-bottom: 1px solid var(--color-border);
   }
 }
+
+/* ── SOCIAL AUDIT NATIVE TABLE ── */
+.native-report-container {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  padding: 24px;
+  overflow-x: auto;
+}
+
+.audit-table-container {
+  width: 100%;
+}
+
+.audit-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+
+.audit-table th {
+  background: var(--color-surface);
+  color: var(--color-dark);
+  font-weight: 600;
+  padding: 12px 16px;
+  border-bottom: 2px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.audit-table td {
+  padding: 16px;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.5;
+}
+
+.audit-table tr:last-child td {
+  border-bottom: none;
+}
+
+.audit-table .post-cell {
+  min-width: 80px;
+}
+
+.post-index {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--color-deep-blue);
+  margin-bottom: 4px;
+}
+
+.post-link {
+  color: var(--color-bright-blue);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+}
+.post-link:hover {
+  text-decoration: underline;
+}
+
+.format-label {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.method-label {
+  font-size: 13px;
+  color: rgba(25, 25, 25, 0.6);
+}
+
+.stage-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.stage-tofu {
+  background: rgba(48, 143, 239, 0.1);
+  color: var(--color-bright-blue);
+}
+.stage-mofu {
+  background: rgba(255, 200, 87, 0.2);
+  color: #b48600;
+}
+.stage-bofu {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--color-success);
+}
+
+.engagement-stats {
+  font-size: 13px;
+  color: rgba(25, 25, 25, 0.7);
+}
+
+.audit-table .insight-cell {
+  min-width: 280px;
+  max-width: 520px;
+}
+
+.audit-table .recommendation-cell {
+  min-width: 260px;
+  max-width: 480px;
+}
+
+.insight-topic, .insight-content, .insight-visual, .insight-recommendation {
+  margin-bottom: 12px;
+}
+.insight-topic:last-child, .insight-content:last-child, .insight-visual:last-child, .insight-recommendation:last-child {
+  margin-bottom: 0;
+}
+
+.insight-topic strong, .insight-content strong, .insight-visual strong, .insight-recommendation strong {
+  display: block;
+  font-size: 13px;
+  color: var(--color-deep-blue);
+  margin-bottom: 4px;
+}
+
+.insight-content p, .insight-visual p, .insight-recommendation p {
+  margin: 0;
+  color: rgba(25, 25, 25, 0.85);
+}
