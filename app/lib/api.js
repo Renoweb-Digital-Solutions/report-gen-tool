@@ -103,6 +103,32 @@ export async function generateVisualReport(formData) {
 }
 
 /**
+ * Search Google Maps for businesses matching a query.
+ */
+export async function searchGmbBusinesses(payload) {
+  const res = await fetch(`${BASE_URL}/gmb/search`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+}
+
+/**
+ * Generate a GMB Audit Report.
+ */
+export async function generateGmbReport(payload) {
+  const res = await fetch(`${BASE_URL}/report/generate-gmb`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+}
+
+/**
  * Convert an HTML string to a PDF blob.
  * Returns a Blob of type application/pdf.
  * Do NOT use for client-side PDF generation (no WeasyPrint / html2pdf).

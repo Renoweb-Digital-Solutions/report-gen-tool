@@ -7,12 +7,14 @@ import TabNav from './components/TabNav';
 import ReportPreview from './components/ReportPreview';
 import FullReportForm from './forms/FullReportForm';
 import WebsiteReportForm from './forms/WebsiteReportForm';
+import GmbReportForm from './forms/GmbReportForm';
 import InstagramReportForm from './forms/InstagramReportForm';
 import LinkedInReportForm from './forms/LinkedInReportForm';
 import VisualBrandForm from './forms/VisualBrandForm';
 import {
   generateFullReport,
   generateWebsiteReport,
+  generateGmbReport,
   generateInstagramReport,
   generateLinkedInReport,
   generateVisualReport,
@@ -42,14 +44,15 @@ export default function Dashboard() {
   // Per-tab report state (html, loading, error, timestamp) — serialisable to sessionStorage
   const [fullReport,      setFullReport]      = useSessionState('report_full',      INITIAL_REPORT_STATE);
   const [websiteReport,   setWebsiteReport]   = useSessionState('report_website',   INITIAL_REPORT_STATE);
+  const [gmbReport,       setGmbReport]       = useSessionState('report_gmb',       INITIAL_REPORT_STATE);
   const [instagramReport, setInstagramReport] = useSessionState('report_instagram', INITIAL_REPORT_STATE);
   const [linkedinReport,  setLinkedinReport]  = useSessionState('report_linkedin',  INITIAL_REPORT_STATE);
   const [visualReport,    setVisualReport]    = useSessionState('report_visual',    INITIAL_REPORT_STATE);
 
   // PDF blobs live in refs — not serialisable, intentionally ephemeral
-  const pdfBlobs    = useRef({ full: null, website: null, instagram: null, linkedin: null, visual: null });
-  const [pdfReady,  setPdfReady]   = useState({ full: false, website: false, instagram: false, linkedin: false, visual: false });
-  const [pdfLoading, setPdfLoading] = useState({ full: false, website: false, instagram: false, linkedin: false, visual: false });
+  const pdfBlobs    = useRef({ full: null, website: null, gmb: null, instagram: null, linkedin: null, visual: null });
+  const [pdfReady,  setPdfReady]   = useState({ full: false, website: false, gmb: false, instagram: false, linkedin: false, visual: false });
+  const [pdfLoading, setPdfLoading] = useState({ full: false, website: false, gmb: false, instagram: false, linkedin: false, visual: false });
 
   // ── Generic report runner ──
   const runReport = async ({
@@ -112,6 +115,15 @@ export default function Dashboard() {
       pdfFilename: 'renoweb_website_report.pdf',
     });
 
+  const handleGmbSubmit = (payload) =>
+    runReport({
+      tabKey: 'gmb',
+      setReport: setGmbReport,
+      apiFn: generateGmbReport,
+      payload,
+      pdfFilename: 'renoweb_gmb_audit_report.pdf',
+    });
+
   const handleInstagramSubmit = (payload) =>
     runReport({
       tabKey: 'instagram',
@@ -156,6 +168,7 @@ export default function Dashboard() {
   const tabData = {
     full:      { report: fullReport,      setReport: setFullReport,      label: 'Full Report',       pdfKey: 'full',      filename: 'renoweb_full_report.pdf',       onSubmit: handleFullSubmit },
     website:   { report: websiteReport,   setReport: setWebsiteReport,   label: 'Website Anatomy',   pdfKey: 'website',   filename: 'renoweb_website_report.pdf',    onSubmit: handleWebsiteSubmit },
+    gmb:       { report: gmbReport,       setReport: setGmbReport,       label: 'GMB Audit',         pdfKey: 'gmb',       filename: 'renoweb_gmb_audit_report.pdf',  onSubmit: handleGmbSubmit },
     instagram: { report: instagramReport, setReport: setInstagramReport, label: 'Instagram Audit',   pdfKey: 'instagram', filename: 'renoweb_instagram_report.pdf',  onSubmit: handleInstagramSubmit },
     linkedin:  { report: linkedinReport,  setReport: setLinkedinReport,  label: 'LinkedIn Audit',    pdfKey: 'linkedin',  filename: 'renoweb_linkedin_report.pdf',   onSubmit: handleLinkedInSubmit },
     visual:    { report: visualReport,    setReport: setVisualReport,    label: 'Visual Brand Match',pdfKey: 'visual',    filename: 'renoweb_visual_brand_report.pdf',onSubmit: handleVisualSubmit },
@@ -193,6 +206,14 @@ export default function Dashboard() {
                 error={websiteReport.error}
                 onDismissError={() => dismissError(setWebsiteReport)}
                 onSubmit={handleWebsiteSubmit}
+              />
+            )}
+            {activeTab === 'gmb' && (
+              <GmbReportForm
+                loading={gmbReport.loading}
+                error={gmbReport.error}
+                onDismissError={() => dismissError(setGmbReport)}
+                onSubmit={handleGmbSubmit}
               />
             )}
             {activeTab === 'instagram' && (

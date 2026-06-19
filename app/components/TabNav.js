@@ -3,6 +3,7 @@
 const TABS = [
   { id: 'full',       label: 'Full Report',        icon: '📊' },
   { id: 'website',    label: 'Website Anatomy',     icon: '🌐' },
+  { id: 'gmb',        label: 'GMB Audit',           icon: '📍' },
   { id: 'instagram',  label: 'Instagram Audit',     icon: '📸' },
   { id: 'linkedin',   label: 'LinkedIn Audit',      icon: '💼' },
   { id: 'visual',     label: 'Visual Brand Match',  icon: '🎨' },
