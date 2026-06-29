@@ -3,7 +3,7 @@
  * Base URL: http://72.62.247.229:8004
  */
 
-const BASE_URL = 'http://72.62.247.229:8004';
+const BASE_URL = 'https://api.flawdits.com';
 
 /**
  * Normalise an error from a fetch response into a human-readable string.
