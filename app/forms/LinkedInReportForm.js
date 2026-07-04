@@ -3,6 +3,7 @@
 import FormField from '../components/FormField';
 import ErrorBanner from '../components/ErrorBanner';
 import { useSessionState } from '../hooks/useSessionState';
+import { Sparkles } from 'lucide-react';
 
 const POSTED_OPTIONS = [
   { value: '24h',     label: 'Last 24 hours' },
@@ -44,7 +45,7 @@ export default function LinkedInReportForm({ loading, error, onDismissError, onS
       {error && <ErrorBanner message={error} onDismiss={onDismissError} />}
 
       <div className="form-grid" style={{ marginTop: error ? 16 : 0 }}>
-        <FormField label="LinkedIn Company URL *" htmlFor="li-url">
+        <FormField label="LinkedIn Company URL" htmlFor="li-url" required tooltip="Full URL to the company page">
           <input
             id="li-url"
             className="form-input"
@@ -84,15 +85,16 @@ export default function LinkedInReportForm({ loading, error, onDismissError, onS
         </div>
 
         <button
-          id="btn-generate-linkedin"
+          id="btn-generate-li"
           type="submit"
-          className="btn-primary"
-          disabled={loading}
+          className={`btn-primary ${loading ? 'loading' : ''}`}
+          disabled={loading || !fields.linkedin_company_url.trim()}
         >
-          {loading ? (
-            <><span className="spinner" aria-hidden="true" />Generating…</>
-          ) : (
-            <><span aria-hidden="true">💼</span>Generate Report</>
+          {!loading && (
+            <>
+              <Sparkles size={18} strokeWidth={2.5} />
+              Generate Report
+            </>
           )}
         </button>
       </div>

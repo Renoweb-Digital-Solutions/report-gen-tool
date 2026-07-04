@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 import FileUploadZone from '../components/FileUploadZone';
 import ErrorBanner from '../components/ErrorBanner';
+import { Sparkles } from 'lucide-react';
 
 export default function VisualBrandForm({ loading, error, onDismissError, onSubmit }) {
   const websiteFileRef = useRef(null);
@@ -48,15 +49,16 @@ export default function VisualBrandForm({ loading, error, onDismissError, onSubm
         />
 
         <button
-          id="btn-run-visual-analysis"
+          id="btn-generate-visual"
           type="submit"
-          className="btn-primary"
+          className={`btn-primary ${loading ? 'loading' : ''}`}
           disabled={loading}
         >
-          {loading ? (
-            <><span className="spinner" aria-hidden="true" />Analysing…</>
-          ) : (
-            <><span aria-hidden="true">🎨</span>Run Analysis</>
+          {!loading && (
+            <>
+              <Sparkles size={18} strokeWidth={2.5} />
+              Generate Report
+            </>
           )}
         </button>
       </div>

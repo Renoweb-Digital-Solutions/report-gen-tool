@@ -3,6 +3,7 @@
 import FormField from '../components/FormField';
 import ErrorBanner from '../components/ErrorBanner';
 import { useSessionState } from '../hooks/useSessionState';
+import { Sparkles } from 'lucide-react';
 
 const DEFAULTS = {
   domain: '',
@@ -48,7 +49,7 @@ export default function WebsiteReportForm({ loading, error, onDismissError, onSu
       {error && <ErrorBanner message={error} onDismiss={onDismissError} />}
 
       <div className="form-grid" style={{ marginTop: error ? 16 : 0 }}>
-        <FormField label="Website Domain *" htmlFor="web-domain">
+        <FormField label="Website Domain" htmlFor="web-domain" required tooltip="The primary domain to audit">
           <input
             id="web-domain"
             className="form-input"
@@ -142,13 +143,14 @@ export default function WebsiteReportForm({ loading, error, onDismissError, onSu
         <button
           id="btn-generate-website"
           type="submit"
-          className="btn-primary"
+          className={`btn-primary ${loading ? 'loading' : ''}`}
           disabled={loading}
         >
-          {loading ? (
-            <><span className="spinner" aria-hidden="true" />Generating…</>
-          ) : (
-            <><span aria-hidden="true">🔍</span>Generate Report</>
+          {!loading && (
+            <>
+              <Sparkles size={18} strokeWidth={2.5} />
+              Generate Report
+            </>
           )}
         </button>
       </div>

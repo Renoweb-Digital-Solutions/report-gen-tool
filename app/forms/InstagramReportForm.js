@@ -3,6 +3,7 @@
 import FormField from '../components/FormField';
 import ErrorBanner from '../components/ErrorBanner';
 import { useSessionState } from '../hooks/useSessionState';
+import { Sparkles } from 'lucide-react';
 
 const DEFAULTS = {
   ig_username: '',
@@ -33,7 +34,7 @@ export default function InstagramReportForm({ loading, error, onDismissError, on
       {error && <ErrorBanner message={error} onDismiss={onDismissError} />}
 
       <div className="form-grid" style={{ marginTop: error ? 16 : 0 }}>
-        <FormField label="Instagram Username *" htmlFor="ig-username">
+        <FormField label="Instagram Username" htmlFor="ig-username" required tooltip="Brand's handle without the @ symbol">
           <input
             id="ig-username"
             className="form-input"
@@ -59,15 +60,16 @@ export default function InstagramReportForm({ loading, error, onDismissError, on
         </FormField>
 
         <button
-          id="btn-generate-instagram"
+          id="btn-generate-ig"
           type="submit"
-          className="btn-primary"
-          disabled={loading}
+          className={`btn-primary ${loading ? 'loading' : ''}`}
+          disabled={loading || !fields.ig_username.trim()}
         >
-          {loading ? (
-            <><span className="spinner" aria-hidden="true" />Generating…</>
-          ) : (
-            <><span aria-hidden="true">📸</span>Generate Report</>
+          {!loading && (
+            <>
+              <Sparkles size={18} strokeWidth={2.5} />
+              Generate Report
+            </>
           )}
         </button>
       </div>

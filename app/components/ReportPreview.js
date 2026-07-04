@@ -23,18 +23,6 @@ export default function ReportPreview({
   pdfLoading,
   onDownload,
 }) {
-  // ── Empty state ──
-  if (!loading && !htmlReport) {
-    return (
-      <div className="preview-placeholder" role="status" aria-label="No report yet">
-        <div className="placeholder-watermark" aria-hidden="true">R</div>
-        <p className="placeholder-text">
-          Generate a report to see your preview here.
-        </p>
-      </div>
-    );
-  }
-
   // ── Loading skeleton ──
   if (loading) {
     return (
@@ -47,6 +35,11 @@ export default function ReportPreview({
         </div>
       </div>
     );
+  }
+
+  // ── No report yet ──
+  if (!htmlReport) {
+    return null;
   }
 
   // ── Report ready ──

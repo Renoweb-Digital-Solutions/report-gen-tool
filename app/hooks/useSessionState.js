@@ -7,23 +7,31 @@ import { useState, useEffect } from 'react';
  * pdfBlob is intentionally NOT stored here (not serializable); keep that in regular useState/useRef.
  */
 export function useSessionState(key, defaultValue) {
-  const [state, setState] = useState(() => {
-    if (typeof window === 'undefined') return defaultValue;
-    try {
-      const stored = sessionStorage.getItem(key);
-      return stored !== null ? JSON.parse(stored) : defaultValue;
-    } catch {
-      return defaultValue;
-    }
-  });
+  const [state, setState] = useState(defaultValue);
+  const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
+    setHasMounted(true);
     try {
-      sessionStorage.setItem(key, JSON.stringify(state));
+      const stored = sessionStorage.getItem(key);
+      if (stored !== null) {
+        setState(JSON.parse(stored));
+      }
     } catch {
-      // sessionStorage can be unavailable in some contexts
+      // ignore
     }
-  }, [key, state]);
+  }, [key]);
 
-  return [state, setState];
+  useEffect(() => {
+    if (hasMounted) {
+      try {
+        sessionStorage.setItem(key, JSON.stringify(state));
+      } catch {
+        // sessionStorage can be unavailable in some contexts
+      }
+    }
+  }, [key, state, hasMounted]);
+
+  // Prevent hydration mismatch by returning defaultValue during initial render
+  return [hasMounted ? state : defaultValue, setState];
 }

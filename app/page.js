@@ -1,273 +1,238 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { useSessionState } from './hooks/useSessionState';
-import Navbar from './components/Navbar';
-import TabNav from './components/TabNav';
-import ReportPreview from './components/ReportPreview';
-import FullReportForm from './forms/FullReportForm';
-import WebsiteReportForm from './forms/WebsiteReportForm';
-import GmbReportForm from './forms/GmbReportForm';
-import InstagramReportForm from './forms/InstagramReportForm';
-import LinkedInReportForm from './forms/LinkedInReportForm';
-import VisualBrandForm from './forms/VisualBrandForm';
+import { useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 import {
-  generateFullReport,
-  generateWebsiteReport,
-  generateGmbReport,
-  generateInstagramReport,
-  generateLinkedInReport,
-  generateVisualReport,
-  convertHtmlToPdf,
-  downloadBlob,
-} from './lib/api';
+  ArrowRight,
+  BarChart3,
+  Globe,
+  MapPin,
+  Camera,
+  Briefcase,
+  Palette,
+  LayoutGrid,
+  PenLine,
+  Sparkles,
+  ChevronRight,
+} from 'lucide-react';
+import { WaitlistHero } from './components/ui/waitlist-hero';
 
-// ── Helpers ──
+// ── Feature cards data ──
+const FEATURES = [
+  {
+    icon: <BarChart3 size={24} />,
+    title: 'Full Report',
+    desc: 'Comprehensive all-in-one digital audit covering SEO, social media, and brand consistency in a single report.',
+    color: '#023dbb',
+    bg: 'rgba(2, 61, 187, 0.07)',
+  },
+  {
+    icon: <Globe size={24} />,
+    title: 'Website Anatomy',
+    desc: 'Deep-dive into site performance, keyword rankings, Core Web Vitals, and page health checks.',
+    color: '#308fef',
+    bg: 'rgba(48, 143, 239, 0.07)',
+  },
+  {
+    icon: <MapPin size={24} />,
+    title: 'GMB Audit',
+    desc: 'Analyze your Google Business Profile listing, review quality, and local search presence.',
+    color: '#4460ef',
+    bg: 'rgba(68, 96, 239, 0.07)',
+  },
+  {
+    icon: <Camera size={24} />,
+    title: 'Instagram Audit',
+    desc: 'Evaluate content performance, engagement rates, and strategic post-by-post insights.',
+    color: '#4ec8ef',
+    bg: 'rgba(78, 200, 239, 0.1)',
+  },
+  {
+    icon: <Briefcase size={24} />,
+    title: 'LinkedIn Audit',
+    desc: 'Review your company page content strategy, engagement metrics, and professional authority.',
+    color: '#023dbb',
+    bg: 'rgba(2, 61, 187, 0.07)',
+  },
+  {
+    icon: <Palette size={24} />,
+    title: 'Visual Brand Match',
+    desc: 'Check color consistency and visual identity alignment across all your web and social channels.',
+    color: '#ffc857',
+    bg: 'rgba(255, 200, 87, 0.12)',
+  },
+];
 
-function now() {
-  return new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-}
+// ── How it works steps ──
+const STEPS = [
+  {
+    icon: <LayoutGrid size={28} />,
+    title: 'Choose Your Module',
+    desc: 'Select from six specialized audit modules tailored to different aspects of your digital presence.',
+  },
+  {
+    icon: <PenLine size={28} />,
+    title: 'Enter Your Details',
+    desc: 'Fill in your website URL, social handles, and business keywords. It takes less than a minute.',
+  },
+  {
+    icon: <Sparkles size={28} />,
+    title: 'Get Your Report',
+    desc: 'Receive a comprehensive, beautifully formatted audit report you can download as PDF instantly.',
+  },
+];
 
-const INITIAL_REPORT_STATE = {
-  html: '',
-  data: null,
-  loading: false,
-  error: '',
-  timestamp: '',
-};
+// ── Landing Page ──
 
-// ── Main Dashboard ──
+export default function LandingPage() {
+  // Scroll-triggered reveal animations
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      },
+      { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
+    );
 
-export default function Dashboard() {
-  const [activeTab, setActiveTab] = useSessionState('active_tab', 'full');
-
-  // Per-tab report state (html, loading, error, timestamp) — serialisable to sessionStorage
-  const [fullReport,      setFullReport]      = useSessionState('report_full',      INITIAL_REPORT_STATE);
-  const [websiteReport,   setWebsiteReport]   = useSessionState('report_website',   INITIAL_REPORT_STATE);
-  const [gmbReport,       setGmbReport]       = useSessionState('report_gmb',       INITIAL_REPORT_STATE);
-  const [instagramReport, setInstagramReport] = useSessionState('report_instagram', INITIAL_REPORT_STATE);
-  const [linkedinReport,  setLinkedinReport]  = useSessionState('report_linkedin',  INITIAL_REPORT_STATE);
-  const [visualReport,    setVisualReport]    = useSessionState('report_visual',    INITIAL_REPORT_STATE);
-
-  // PDF blobs live in refs — not serialisable, intentionally ephemeral
-  const pdfBlobs    = useRef({ full: null, website: null, gmb: null, instagram: null, linkedin: null, visual: null });
-  const [pdfReady,  setPdfReady]   = useState({ full: false, website: false, gmb: false, instagram: false, linkedin: false, visual: false });
-  const [pdfLoading, setPdfLoading] = useState({ full: false, website: false, gmb: false, instagram: false, linkedin: false, visual: false });
-
-  // ── Generic report runner ──
-  const runReport = async ({
-    tabKey,
-    setReport,
-    apiFn,
-    payload,
-    pdfFilename,
-  }) => {
-    setReport((prev) => ({ ...prev, loading: true, error: '', html: '', data: null }));
-    setPdfReady((p) => ({ ...p, [tabKey]: false }));
-    setPdfLoading((p) => ({ ...p, [tabKey]: false }));
-    pdfBlobs.current[tabKey] = null;
-
-    try {
-      const data = await apiFn(payload);
-      const html = data.html_report || data.html || '';
-      const ts   = now();
-
-      setReport({ html, data, loading: false, error: '', timestamp: ts });
-
-      // Kick off PDF generation
-      setPdfLoading((p) => ({ ...p, [tabKey]: true }));
-      try {
-        const blob = await convertHtmlToPdf(html, pdfFilename);
-        pdfBlobs.current[tabKey] = blob;
-        setPdfReady((p) => ({ ...p, [tabKey]: true }));
-      } catch (pdfErr) {
-        // PDF failure is non-fatal — user can still read the HTML preview
-        console.warn('PDF generation failed:', pdfErr.message);
-      } finally {
-        setPdfLoading((p) => ({ ...p, [tabKey]: false }));
-      }
-    } catch (err) {
-      setReport((prev) => ({
-        ...prev,
-        loading: false,
-        error: err.message || 'Something went wrong. Please try again.',
-      }));
-    }
-  };
-
-  // ── Per-tab submit handlers ──
-
-  const handleFullSubmit = (payload) =>
-    runReport({
-      tabKey: 'full',
-      setReport: setFullReport,
-      apiFn: generateFullReport,
-      payload,
-      pdfFilename: 'renoweb_full_report.pdf',
-    });
-
-  const handleWebsiteSubmit = (payload) =>
-    runReport({
-      tabKey: 'website',
-      setReport: setWebsiteReport,
-      apiFn: generateWebsiteReport,
-      payload,
-      pdfFilename: 'renoweb_website_report.pdf',
-    });
-
-  const handleGmbSubmit = (payload) =>
-    runReport({
-      tabKey: 'gmb',
-      setReport: setGmbReport,
-      apiFn: generateGmbReport,
-      payload,
-      pdfFilename: 'renoweb_gmb_audit_report.pdf',
-    });
-
-  const handleInstagramSubmit = (payload) =>
-    runReport({
-      tabKey: 'instagram',
-      setReport: setInstagramReport,
-      apiFn: generateInstagramReport,
-      payload,
-      pdfFilename: 'renoweb_instagram_report.pdf',
-    });
-
-  const handleLinkedInSubmit = (payload) =>
-    runReport({
-      tabKey: 'linkedin',
-      setReport: setLinkedinReport,
-      apiFn: generateLinkedInReport,
-      payload,
-      pdfFilename: 'renoweb_linkedin_report.pdf',
-    });
-
-  const handleVisualSubmit = (formData) =>
-    runReport({
-      tabKey: 'visual',
-      setReport: setVisualReport,
-      apiFn: generateVisualReport,
-      payload: formData,
-      pdfFilename: 'renoweb_visual_brand_report.pdf',
-    });
-
-  // ── Download handlers ──
-
-  const handleDownload = (tabKey, filename) => {
-    const blob = pdfBlobs.current[tabKey];
-    if (blob) downloadBlob(blob, filename);
-  };
-
-  // ── Dismiss error handlers ──
-
-  const dismissError = (setReport) =>
-    setReport((prev) => ({ ...prev, error: '' }));
-
-  // ── Active tab data resolver ──
-
-  const tabData = {
-    full:      { report: fullReport,      setReport: setFullReport,      label: 'Full Report',       pdfKey: 'full',      filename: 'renoweb_full_report.pdf',       onSubmit: handleFullSubmit },
-    website:   { report: websiteReport,   setReport: setWebsiteReport,   label: 'Website Anatomy',   pdfKey: 'website',   filename: 'renoweb_website_report.pdf',    onSubmit: handleWebsiteSubmit },
-    gmb:       { report: gmbReport,       setReport: setGmbReport,       label: 'GMB Audit',         pdfKey: 'gmb',       filename: 'renoweb_gmb_audit_report.pdf',  onSubmit: handleGmbSubmit },
-    instagram: { report: instagramReport, setReport: setInstagramReport, label: 'Instagram Audit',   pdfKey: 'instagram', filename: 'renoweb_instagram_report.pdf',  onSubmit: handleInstagramSubmit },
-    linkedin:  { report: linkedinReport,  setReport: setLinkedinReport,  label: 'LinkedIn Audit',    pdfKey: 'linkedin',  filename: 'renoweb_linkedin_report.pdf',   onSubmit: handleLinkedInSubmit },
-    visual:    { report: visualReport,    setReport: setVisualReport,    label: 'Visual Brand Match',pdfKey: 'visual',    filename: 'renoweb_visual_brand_report.pdf',onSubmit: handleVisualSubmit },
-  };
-
-  const current = tabData[activeTab];
-
-  // ── Render ──
+    document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <>
-      <Navbar />
-      <TabNav activeTab={activeTab} onTabChange={setActiveTab} />
+      {/* ════════════════════════════════════════════
+          NAVIGATION
+          ════════════════════════════════════════════ */}
+      <nav className="landing-nav">
+        <div className="landing-nav-inner">
+          <Link href="/" className="landing-nav-logo">
+            <Image
+              src="/logo.png"
+              alt="Renoweb"
+              width={120}
+              height={28}
+              style={{ height: '28px', width: 'auto', objectFit: 'contain' }}
+              priority
+            />
+          </Link>
 
-      <div className="app-layout">
-        {/* ── Left: Form Panel ── */}
-        <aside className="form-panel" key={activeTab}>
-          <div
-            className="tab-content"
-            role="tabpanel"
-            id={`tabpanel-${activeTab}`}
-            aria-labelledby={`tab-${activeTab}`}
-          >
-            {activeTab === 'full' && (
-              <FullReportForm
-                loading={fullReport.loading}
-                error={fullReport.error}
-                onDismissError={() => dismissError(setFullReport)}
-                onSubmit={handleFullSubmit}
-              />
-            )}
-            {activeTab === 'website' && (
-              <WebsiteReportForm
-                loading={websiteReport.loading}
-                error={websiteReport.error}
-                onDismissError={() => dismissError(setWebsiteReport)}
-                onSubmit={handleWebsiteSubmit}
-              />
-            )}
-            {activeTab === 'gmb' && (
-              <GmbReportForm
-                loading={gmbReport.loading}
-                error={gmbReport.error}
-                onDismissError={() => dismissError(setGmbReport)}
-                onSubmit={handleGmbSubmit}
-              />
-            )}
-            {activeTab === 'instagram' && (
-              <InstagramReportForm
-                loading={instagramReport.loading}
-                error={instagramReport.error}
-                onDismissError={() => dismissError(setInstagramReport)}
-                onSubmit={handleInstagramSubmit}
-              />
-            )}
-            {activeTab === 'linkedin' && (
-              <LinkedInReportForm
-                loading={linkedinReport.loading}
-                error={linkedinReport.error}
-                onDismissError={() => dismissError(setLinkedinReport)}
-                onSubmit={handleLinkedInSubmit}
-              />
-            )}
-            {activeTab === 'visual' && (
-              <VisualBrandForm
-                loading={visualReport.loading}
-                error={visualReport.error}
-                onDismissError={() => dismissError(setVisualReport)}
-                onSubmit={handleVisualSubmit}
-              />
-            )}
+          <div className="landing-nav-links">
+            <a href="#features">Features</a>
+            <a href="#how-it-works">How it Works</a>
           </div>
-        </aside>
 
-        {/* ── Right: Preview Panel ── */}
-        <main className="preview-panel">
-          <ReportPreview
-            loading={current.report.loading}
-            htmlReport={current.report.html}
-            reportData={current.report.data}
-            reportLabel={current.label}
-            timestamp={current.report.timestamp}
-            pdfBlob={pdfReady[current.pdfKey] ? pdfBlobs.current[current.pdfKey] : null}
-            pdfLoading={pdfLoading[current.pdfKey]}
-            onDownload={() => handleDownload(current.pdfKey, current.filename)}
+          <Link href="/dashboard" className="landing-nav-cta">
+            Get Started
+            <ArrowRight size={15} strokeWidth={2.5} />
+          </Link>
+        </div>
+      </nav>
+
+      {/* ════════════════════════════════════════════
+          HERO
+          ════════════════════════════════════════════ */}
+      <WaitlistHero />
+
+      {/* ════════════════════════════════════════════
+          FEATURES
+          ════════════════════════════════════════════ */}
+      <section id="features" className="landing-features">
+        <div className="landing-container">
+          <div className="landing-section-header reveal">
+            <span className="landing-badge">Features</span>
+            <h2 className="landing-section-title">Everything You Need to Audit</h2>
+            <p className="landing-section-subtitle">
+              Six specialized modules to analyze every aspect of your digital presence
+            </p>
+          </div>
+
+          <div className="features-grid">
+            {FEATURES.map((f, i) => (
+              <div
+                className={`feature-card reveal reveal-delay-${i + 1}`}
+                key={f.title}
+              >
+                <div
+                  className="feature-icon-wrap"
+                  style={{ backgroundColor: f.bg, color: f.color }}
+                >
+                  {f.icon}
+                </div>
+                <h3>{f.title}</h3>
+                <p>{f.desc}</p>
+                <span className="feature-arrow">
+                  <ChevronRight size={16} />
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════
+          HOW IT WORKS
+          ════════════════════════════════════════════ */}
+      <section id="how-it-works" className="landing-how">
+        <div className="landing-container">
+          <div className="landing-section-header reveal">
+            <span className="landing-badge">How it Works</span>
+            <h2 className="landing-section-title">Three Simple Steps</h2>
+            <p className="landing-section-subtitle">
+              From module selection to downloadable PDF — in minutes, not hours
+            </p>
+          </div>
+
+          <div className="steps-grid">
+            {STEPS.map((s, i) => (
+              <div className={`step-card reveal reveal-delay-${i + 1}`} key={i}>
+                <div className="step-number">{i + 1}</div>
+                <div className="step-icon-wrap">{s.icon}</div>
+                <h3>{s.title}</h3>
+                <p>{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════
+          FINAL CTA
+          ════════════════════════════════════════════ */}
+      <section className="landing-final-cta reveal">
+        <div className="landing-container">
+          <h2>Ready to Audit Your Digital Presence?</h2>
+          <p>
+            Get comprehensive insights about your website, social media, and brand
+            identity in minutes.
+          </p>
+          <Link href="/dashboard" className="final-cta-btn">
+            Start Your Free Audit
+            <ArrowRight size={18} strokeWidth={2.5} />
+          </Link>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════
+          FOOTER
+          ════════════════════════════════════════════ */}
+      <footer className="landing-footer">
+        <div className="landing-container">
+          <Image
+            src="/logo.png"
+            alt="Renoweb"
+            width={100}
+            height={24}
+            style={{ height: '24px', width: 'auto', objectFit: 'contain', opacity: 0.6 }}
           />
-        </main>
-      </div>
-
-      {/* ── Session persistence note ── */}
-      <div
-        className="session-note"
-        title="Your inputs and reports persist across page refreshes but clear when this tab is closed."
-        role="note"
-        aria-label="Session persistence notice"
-      >
-        <span aria-hidden="true">🔒</span>
-        Session data clears on tab close
-      </div>
+          <p className="landing-footer-brand">Digital Presence Report Suite</p>
+          <p className="landing-footer-copy">© {new Date().getFullYear()} Renoweb. All rights reserved.</p>
+        </div>
+      </footer>
     </>
   );
 }
