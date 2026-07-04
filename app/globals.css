@@ -18,6 +18,9 @@
   
   --color-dark: var(--brand-ink);
   --color-white: #ffffff;
+  --color-deep-blue: var(--brand-deep);
+  --color-bright-blue: var(--brand-blue);
+  --color-royal-blue: var(--brand-indigo);
   
   /* Greys derived from blue ink */
   --color-surface: rgba(48, 143, 239, 0.04);
