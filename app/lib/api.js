@@ -33,11 +33,64 @@ async function extractError(res) {
 }
 
 /**
+ * Authenticated fetch wrapper
+ */
+async function authFetch(url, options = {}) {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+  const headers = new Headers(options.headers || {});
+
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  const updatedOptions = { ...options, headers };
+  const res = await fetch(url, updatedOptions);
+
+  if (res.status === 401) {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('access_token');
+      window.dispatchEvent(new Event('auth-expired'));
+    }
+  }
+  return res;
+}
+
+/**
+ * Register a new user
+ */
+export async function registerUser(payload) {
+  const res = await fetch(`${BASE_URL}/auth/create-user`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return true;
+}
+
+/**
+ * Log in to get access token
+ */
+export async function loginUser(username, password) {
+  const params = new URLSearchParams();
+  params.append('username', username);
+  params.append('password', password);
+
+  const res = await fetch(`${BASE_URL}/auth/token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: params,
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+}
+
+/**
  * Generate a Full Report.
  * Returns { html_report, ... }
  */
 export async function generateFullReport(payload) {
-  const res = await fetch(`${BASE_URL}/report/generate-full`, {
+  const res = await authFetch(`${BASE_URL}/report/generate-full`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -50,7 +103,7 @@ export async function generateFullReport(payload) {
  * Generate a Website Anatomy (SEO) Report.
  */
 export async function generateWebsiteReport(payload) {
-  const res = await fetch(`${BASE_URL}/report/generate-seo`, {
+  const res = await authFetch(`${BASE_URL}/report/generate-seo`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -63,7 +116,7 @@ export async function generateWebsiteReport(payload) {
  * Generate an Instagram Audit Report.
  */
 export async function generateInstagramReport(payload) {
-  const res = await fetch(`${BASE_URL}/report/generate-instagram`, {
+  const res = await authFetch(`${BASE_URL}/report/generate-instagram`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -76,7 +129,7 @@ export async function generateInstagramReport(payload) {
  * Generate a LinkedIn Audit Report.
  */
 export async function generateLinkedInReport(payload) {
-  const res = await fetch(`${BASE_URL}/report/generate-linkedin`, {
+  const res = await authFetch(`${BASE_URL}/report/generate-linkedin`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -90,7 +143,7 @@ export async function generateLinkedInReport(payload) {
  * payload is a FormData object (multipart/form-data).
  */
 export async function generateVisualReport(formData) {
-  const res = await fetch(
+  const res = await authFetch(
     `${BASE_URL}/report/check-website-instagram-alignment`,
     {
       method: 'POST',
@@ -106,7 +159,7 @@ export async function generateVisualReport(formData) {
  * Search Google Maps for businesses matching a query.
  */
 export async function searchGmbBusinesses(payload) {
-  const res = await fetch(`${BASE_URL}/gmb/search`, {
+  const res = await authFetch(`${BASE_URL}/gmb/search`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -119,7 +172,7 @@ export async function searchGmbBusinesses(payload) {
  * Generate a GMB Audit Report.
  */
 export async function generateGmbReport(payload) {
-  const res = await fetch(`${BASE_URL}/report/generate-gmb`, {
+  const res = await authFetch(`${BASE_URL}/report/generate-gmb`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -134,7 +187,7 @@ export async function generateGmbReport(payload) {
  * Do NOT use for client-side PDF generation (no WeasyPrint / html2pdf).
  */
 export async function convertHtmlToPdf(htmlReport, filename) {
-  const res = await fetch(`${BASE_URL}/report/html-to-pdf`, {
+  const res = await authFetch(`${BASE_URL}/report/html-to-pdf`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ html: htmlReport, filename }),

@@ -1,6 +1,7 @@
 'use client';
 
-import { BarChart, Globe, MapPin, Camera, Briefcase, Palette } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { BarChart, Globe, MapPin, Camera, Briefcase, Palette, LogOut } from 'lucide-react';
 
 const TABS = [
   { id: 'full',       label: 'Full Report',        icon: BarChart, desc: 'SEO, social & brand' },
@@ -13,7 +14,7 @@ const TABS = [
 
 export { TABS };
 
-export default function TabNav({ activeTab, onTabChange }) {
+export default function TabNav({ activeTab, onTabChange, onLogout }) {
   return (
     <nav className="sidebar-nav" role="tablist" aria-label="Report sections" aria-orientation="vertical">
       <div className="sidebar-nav-header">
@@ -42,6 +43,16 @@ export default function TabNav({ activeTab, onTabChange }) {
             </button>
           );
         })}
+      </div>
+      <div className="sidebar-nav-footer">
+        <button 
+          className="sidebar-logout-full-btn" 
+          onClick={onLogout} 
+          title="Log Out"
+        >
+          <LogOut size={18} />
+          <span>Log Out</span>
+        </button>
       </div>
     </nav>
   );

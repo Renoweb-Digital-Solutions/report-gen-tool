@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Globe, Camera, Briefcase, MapPin, Palette, BarChart3 } from 'lucide-react';
 
-export function WaitlistHero() {
+export function WaitlistHero({ onCtaClick }) {
   return (
     <section className="hero-section">
       {/* ── Rotating orbital background with perspective ── */}
@@ -59,10 +59,10 @@ export function WaitlistHero() {
         </p>
 
         <div className="hero-actions">
-          <Link href="/dashboard" className="hero-cta">
+          <a href="#" onClick={onCtaClick} className="hero-cta">
             Start Your Audit
             <ArrowRight size={18} strokeWidth={2.5} />
-          </Link>
+          </a>
           <p className="hero-trust-line">Free to use · No credit card required</p>
         </div>
       </div>

@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -17,6 +18,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { WaitlistHero } from './components/ui/waitlist-hero';
+import AuthModal from './components/AuthModal';
 
 // ── Feature cards data ──
 const FEATURES = [
@@ -86,6 +88,28 @@ const STEPS = [
 // ── Landing Page ──
 
 export default function LandingPage() {
+  const router = useRouter();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  // Check URL params for login request
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('login=true')) {
+      setShowAuthModal(true);
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
+  const handleCtaClick = (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      router.push('/dashboard');
+    } else {
+      setShowAuthModal(true);
+    }
+  };
+
   // Scroll-triggered reveal animations
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -105,6 +129,7 @@ export default function LandingPage() {
 
   return (
     <>
+      {showAuthModal && <AuthModal onSuccess={() => router.push('/dashboard')} onClose={() => setShowAuthModal(false)} />}
       {/* ════════════════════════════════════════════
           NAVIGATION
           ════════════════════════════════════════════ */}
@@ -126,17 +151,17 @@ export default function LandingPage() {
             <a href="#how-it-works">How it Works</a>
           </div>
 
-          <Link href="/dashboard" className="landing-nav-cta">
+          <a href="#" onClick={handleCtaClick} className="landing-nav-cta">
             Get Started
             <ArrowRight size={15} strokeWidth={2.5} />
-          </Link>
+          </a>
         </div>
       </nav>
 
       {/* ════════════════════════════════════════════
           HERO
           ════════════════════════════════════════════ */}
-      <WaitlistHero />
+      <WaitlistHero onCtaClick={handleCtaClick} />
 
       {/* ════════════════════════════════════════════
           FEATURES
@@ -210,10 +235,10 @@ export default function LandingPage() {
             Get comprehensive insights about your website, social media, and brand
             identity in minutes.
           </p>
-          <Link href="/dashboard" className="final-cta-btn">
+          <a href="#" onClick={handleCtaClick} className="final-cta-btn">
             Start Your Free Audit
             <ArrowRight size={18} strokeWidth={2.5} />
-          </Link>
+          </a>
         </div>
       </section>
 

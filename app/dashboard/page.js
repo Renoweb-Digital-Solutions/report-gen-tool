@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useSessionState } from '@/app/hooks/useSessionState';
 import Navbar from '@/app/components/Navbar';
 import TabNav from '@/app/components/TabNav';
@@ -12,6 +12,7 @@ import GmbReportForm from '@/app/forms/GmbReportForm';
 import InstagramReportForm from '@/app/forms/InstagramReportForm';
 import LinkedInReportForm from '@/app/forms/LinkedInReportForm';
 import VisualBrandForm from '@/app/forms/VisualBrandForm';
+import { useRouter } from 'next/navigation';
 import {
   generateFullReport,
   generateWebsiteReport,
@@ -40,6 +41,48 @@ const INITIAL_REPORT_STATE = {
 // ── Main Dashboard ──
 
 export default function Dashboard() {
+  const router = useRouter();
+  const [authChecked, setAuthChecked] = useState(false);
+  const [username, setUsername] = useState('User');
+
+  useEffect(() => {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (token) {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        const payload = JSON.parse(jsonPayload);
+        if (payload.sub) {
+          setUsername(payload.sub);
+        }
+      }
+    } catch(e) {}
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('access_token');
+    router.push('/?login=true');
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push('/?login=true');
+    } else {
+      setAuthChecked(true);
+    }
+
+    const handleAuthExpired = () => {
+      router.push('/?login=true');
+    };
+
+    window.addEventListener('auth-expired', handleAuthExpired);
+    return () => window.removeEventListener('auth-expired', handleAuthExpired);
+  }, [router]);
+
   const [activeTab, setActiveTab] = useSessionState('active_tab', 'full');
 
   // Per-tab report state (html, loading, error, timestamp) — serialisable to sessionStorage
@@ -180,7 +223,7 @@ export default function Dashboard() {
   // ── Determine layout phase ──
   // Phase 1: no report generated for current tab → sidebar + full-width form
   // Phase 2: report exists or loading → horizontal tabs + 2-column layout
-  const hasReport = current.report.html || current.report.loading;
+  const hasReport = current ? (current.report.html || current.report.loading) : false;
 
   // ── Form renderer ──
   const renderForm = () => (
@@ -242,13 +285,19 @@ export default function Dashboard() {
   );
 
   // ── Render ──
+  if (!authChecked) return null;
+
   return (
     <>
       <Navbar />
 
       <div className="dashboard-layout">
         {/* ── Left Sidebar Navigation ── */}
-        <TabNav activeTab={activeTab} onTabChange={setActiveTab} />
+        <TabNav 
+          activeTab={activeTab} 
+          onTabChange={setActiveTab} 
+          onLogout={handleLogout} 
+        />
 
         {/* ── Main Content (Form) ── */}
         <main className="main-content" key={activeTab}>
@@ -261,14 +310,14 @@ export default function Dashboard() {
         <RightPanel 
           activeTab={activeTab}
           hasReport={hasReport}
-          loading={current.report.loading}
-          htmlReport={current.report.html}
-          reportData={current.report.data}
-          reportLabel={current.label}
-          timestamp={current.report.timestamp}
-          pdfBlob={pdfReady[current.pdfKey] ? pdfBlobs.current[current.pdfKey] : null}
-          pdfLoading={pdfLoading[current.pdfKey]}
-          onDownload={() => handleDownload(current.pdfKey, current.filename)}
+          loading={current?.report?.loading || false}
+          htmlReport={current?.report?.html || null}
+          reportData={current?.report?.data || null}
+          reportLabel={current?.label || 'Profile'}
+          timestamp={current?.report?.timestamp || null}
+          pdfBlob={current && pdfReady[current.pdfKey] ? pdfBlobs.current[current.pdfKey] : null}
+          pdfLoading={current ? pdfLoading[current.pdfKey] : false}
+          onDownload={() => current && handleDownload(current.pdfKey, current.filename)}
         />
       </div>
     </>
