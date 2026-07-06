@@ -2,8 +2,8 @@
 
 import FormField from '../components/FormField';
 import ErrorBanner from '../components/ErrorBanner';
+import AnimatedSubmitButton from '../components/AnimatedSubmitButton';
 import { useSessionState } from '../hooks/useSessionState';
-import { Sparkles } from 'lucide-react';
 
 const DEFAULTS = {
   ig_username: '',
@@ -59,19 +59,11 @@ export default function InstagramReportForm({ loading, error, onDismissError, on
           />
         </FormField>
 
-        <button
-          id="btn-generate-ig"
-          type="submit"
-          className={`btn-primary ${loading ? 'loading' : ''}`}
-          disabled={loading || !fields.ig_username.trim()}
-        >
-          {!loading && (
-            <>
-              <Sparkles size={18} strokeWidth={2.5} />
-              Generate Report
-            </>
-          )}
-        </button>
+        <AnimatedSubmitButton 
+          loading={loading}
+          disabled={!fields.ig_username.trim()}
+          defaultText="Generate Report"
+        />
       </div>
     </form>
   );

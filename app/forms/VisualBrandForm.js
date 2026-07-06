@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import FileUploadZone from '../components/FileUploadZone';
 import ErrorBanner from '../components/ErrorBanner';
 import { Sparkles } from 'lucide-react';
+import AnimatedSubmitButton from '../components/AnimatedSubmitButton';
 
 export default function VisualBrandForm({ loading, error, onDismissError, onSubmit }) {
   const websiteFileRef = useRef(null);
@@ -48,19 +49,10 @@ export default function VisualBrandForm({ loading, error, onDismissError, onSubm
           onFileSelect={handleInstagramFile}
         />
 
-        <button
-          id="btn-generate-visual"
-          type="submit"
-          className={`btn-primary ${loading ? 'loading' : ''}`}
-          disabled={loading}
-        >
-          {!loading && (
-            <>
-              <Sparkles size={18} strokeWidth={2.5} />
-              Generate Report
-            </>
-          )}
-        </button>
+        <AnimatedSubmitButton 
+          loading={loading}
+          defaultText="Generate Report"
+        />
       </div>
     </form>
   );

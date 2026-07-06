@@ -5,6 +5,7 @@ import FormField from '../components/FormField';
 import ErrorBanner from '../components/ErrorBanner';
 import { useSessionState } from '../hooks/useSessionState';
 import { Globe, Camera, Briefcase, MapPin, ChevronDown, Sparkles } from 'lucide-react';
+import AnimatedSubmitButton from '../components/AnimatedSubmitButton';
 
 const POSTED_OPTIONS = [
   { value: '24h',     label: 'Last 24 hours' },
@@ -258,19 +259,10 @@ export default function FullReportForm({ loading, error, onDismissError, onSubmi
           </div>
         </div>
 
-        <button
-          id="btn-generate-full"
-          type="submit"
-          className={`btn-primary ${loading ? 'loading' : ''}`}
-          disabled={loading}
-        >
-          {!loading && (
-            <>
-              <Sparkles size={18} strokeWidth={2.5} />
-              Generate Report
-            </>
-          )}
-        </button>
+        <AnimatedSubmitButton 
+          loading={loading}
+          defaultText="Generate Report"
+        />
       </div>
     </form>
   );

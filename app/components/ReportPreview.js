@@ -12,6 +12,8 @@
  *   onDownload  — callback to trigger download
  */
 import SocialAuditTable from './SocialAuditTable';
+import ScanCardLoader from './ScanCardLoader';
+import { AnimatePresence, motion } from 'framer-motion';
 
 export default function ReportPreview({
   loading,
@@ -23,86 +25,104 @@ export default function ReportPreview({
   pdfLoading,
   onDownload,
 }) {
-  // ── Loading skeleton ──
-  if (loading) {
-    return (
-      <div aria-busy="true" aria-label="Generating report…">
-        <div className="skeleton-wrap">
-          <div className="skeleton-bar" />
-          <div className="skeleton-bar" />
-          <div className="skeleton-bar" />
-          <div className="skeleton-bar" />
-        </div>
-      </div>
-    );
-  }
+  const getModuleType = (label) => {
+    if (!label) return 'full';
+    const lower = label.toLowerCase();
+    if (lower.includes('instagram')) return 'instagram';
+    if (lower.includes('website')) return 'website';
+    if (lower.includes('gmb')) return 'gmb';
+    if (lower.includes('linkedin')) return 'linkedin';
+    if (lower.includes('visual')) return 'visual';
+    return 'full';
+  };
 
   // ── No report yet ──
-  if (!htmlReport) {
+  if (!loading && !htmlReport) {
     return null;
   }
 
-  // ── Report ready ──
   return (
-    <div>
-      {/* Header bar */}
-      <div className="report-header">
-        <div className="report-header-left">
-          <span className="report-ready-badge">
-            <span aria-hidden="true">✓</span> Report Ready
-          </span>
-          <span className="report-type-label">{reportLabel}</span>
-          {timestamp && (
-            <span className="report-timestamp">Generated at {timestamp}</span>
-          )}
-        </div>
-
-        {/* Download button */}
-        <button
-          id={`download-btn-${reportLabel?.toLowerCase().replace(/\s/g, '-')}`}
-          className="btn-download"
-          onClick={onDownload}
-          disabled={!pdfBlob}
-          aria-label={pdfBlob ? `Download ${reportLabel} PDF` : 'PDF generating…'}
+    <AnimatePresence mode="wait">
+      {loading ? (
+        <motion.div
+          key="loading"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          style={{ height: '100%' }}
+          aria-busy="true"
+          aria-label="Generating report…"
         >
-          <span aria-hidden="true">⬇</span>
-          {pdfBlob ? 'Download PDF' : 'Preparing PDF…'}
-        </button>
-      </div>
-
-      {/* Main Content */}
-      {(() => {
-        const posts = reportData?.posts || reportData?.instagram_audit?.posts || reportData?.linkedin_audit?.posts || reportData?.data || [];
-        const isSocialAudit = reportLabel === 'Instagram Audit' || reportLabel === 'LinkedIn Audit';
-        
-        if (isSocialAudit && posts && posts.length > 0) {
-          return (
-            <div className="native-report-container">
-              <SocialAuditTable posts={posts} />
+          <ScanCardLoader type={getModuleType(reportLabel)} />
+        </motion.div>
+      ) : (
+        <motion.div
+          key="report"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4 }}
+        >
+          {/* Header bar */}
+          <div className="report-header">
+            <div className="report-header-left">
+              <span className="report-ready-badge">
+                <span aria-hidden="true">✓</span> Report Ready
+              </span>
+              <span className="report-type-label">{reportLabel}</span>
+              {timestamp && (
+                <span className="report-timestamp">Generated at {timestamp}</span>
+              )}
             </div>
-          );
-        }
 
-        return (
-          <div className="iframe-container">
-            <iframe
-              className="report-iframe"
-              srcDoc={htmlReport}
-              title={`${reportLabel} preview`}
-              sandbox="allow-same-origin"
-              loading="lazy"
-            />
+            {/* Download button */}
+            <button
+              id={`download-btn-${reportLabel?.toLowerCase().replace(/\s/g, '-')}`}
+              className="btn-download"
+              onClick={onDownload}
+              disabled={!pdfBlob}
+              aria-label={pdfBlob ? `Download ${reportLabel} PDF` : 'PDF generating…'}
+            >
+              <span aria-hidden="true">⬇</span>
+              {pdfBlob ? 'Download PDF' : 'Preparing PDF…'}
+            </button>
           </div>
-        );
-      })()}
 
-      {/* PDF loading note */}
-      {pdfLoading && (
-        <div className="pdf-loading-note" aria-live="polite">
-          <span className="pdf-dot" aria-hidden="true" />
-          Generating PDF in background…
-        </div>
+          {/* Main Content */}
+          {(() => {
+            const posts = reportData?.posts || reportData?.instagram_audit?.posts || reportData?.linkedin_audit?.posts || reportData?.data || [];
+            const isSocialAudit = reportLabel === 'Instagram Audit' || reportLabel === 'LinkedIn Audit';
+            
+            if (isSocialAudit && posts && posts.length > 0) {
+              return (
+                <div className="native-report-container">
+                  <SocialAuditTable posts={posts} />
+                </div>
+              );
+            }
+
+            return (
+              <div className="iframe-container">
+                <iframe
+                  className="report-iframe"
+                  srcDoc={htmlReport}
+                  title={`${reportLabel} preview`}
+                  sandbox="allow-same-origin"
+                  loading="lazy"
+                />
+              </div>
+            );
+          })()}
+
+          {/* PDF loading note */}
+          {pdfLoading && (
+            <div className="pdf-loading-note" aria-live="polite">
+              <span className="pdf-dot" aria-hidden="true" />
+              Generating PDF in background…
+            </div>
+          )}
+        </motion.div>
       )}
-    </div>
+    </AnimatePresence>
   );
 }

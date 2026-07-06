@@ -44,6 +44,7 @@ export default function Dashboard() {
   const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
   const [username, setUsername] = useState('User');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -95,6 +96,7 @@ export default function Dashboard() {
 
   // PDF blobs live in refs — not serialisable, intentionally ephemeral
   const pdfBlobs    = useRef({ full: null, website: null, gmb: null, instagram: null, linkedin: null, visual: null });
+  const pdfFilenames = useRef({ full: '', website: '', gmb: '', instagram: '', linkedin: '', visual: '' });
   const [pdfReady,  setPdfReady]   = useState({ full: false, website: false, gmb: false, instagram: false, linkedin: false, visual: false });
   const [pdfLoading, setPdfLoading] = useState({ full: false, website: false, gmb: false, instagram: false, linkedin: false, visual: false });
 
@@ -104,12 +106,33 @@ export default function Dashboard() {
     setReport,
     apiFn,
     payload,
-    pdfFilename,
+    fallbackFilename,
   }) => {
     setReport((prev) => ({ ...prev, loading: true, error: '', html: '', data: null }));
     setPdfReady((p) => ({ ...p, [tabKey]: false }));
     setPdfLoading((p) => ({ ...p, [tabKey]: false }));
     pdfBlobs.current[tabKey] = null;
+    pdfFilenames.current[tabKey] = '';
+
+    // Generate dynamic filename
+    let brandName = '';
+    if (payload && !(payload instanceof FormData)) {
+      brandName = payload.company_name || payload.ig_username || payload.gmb_company_name;
+      if (!brandName && payload.domain) {
+        brandName = payload.domain.replace(/^https?:\/\//, '').split('/')[0];
+      } else if (!brandName && payload.linkedin_company_url) {
+        const match = payload.linkedin_company_url.match(/company\/([^/]+)/);
+        brandName = match ? match[1] : '';
+      }
+    }
+    
+    if (brandName) {
+      brandName = brandName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    }
+    
+    const finalFilename = brandName 
+      ? fallbackFilename.replace('renoweb_', `${brandName}_`) 
+      : fallbackFilename.replace('renoweb_', 'audit_');
 
     try {
       const data = await apiFn(payload);
@@ -121,8 +144,9 @@ export default function Dashboard() {
       // Kick off PDF generation
       setPdfLoading((p) => ({ ...p, [tabKey]: true }));
       try {
-        const blob = await convertHtmlToPdf(html, pdfFilename);
+        const blob = await convertHtmlToPdf(html, finalFilename);
         pdfBlobs.current[tabKey] = blob;
+        pdfFilenames.current[tabKey] = finalFilename;
         setPdfReady((p) => ({ ...p, [tabKey]: true }));
       } catch (pdfErr) {
         // PDF failure is non-fatal — user can still read the HTML preview
@@ -147,7 +171,7 @@ export default function Dashboard() {
       setReport: setFullReport,
       apiFn: generateFullReport,
       payload,
-      pdfFilename: 'renoweb_full_report.pdf',
+      fallbackFilename: 'renoweb_full_report.pdf',
     });
 
   const handleWebsiteSubmit = (payload) =>
@@ -156,7 +180,7 @@ export default function Dashboard() {
       setReport: setWebsiteReport,
       apiFn: generateWebsiteReport,
       payload,
-      pdfFilename: 'renoweb_website_report.pdf',
+      fallbackFilename: 'renoweb_website_report.pdf',
     });
 
   const handleGmbSubmit = (payload) =>
@@ -165,7 +189,7 @@ export default function Dashboard() {
       setReport: setGmbReport,
       apiFn: generateGmbReport,
       payload,
-      pdfFilename: 'renoweb_gmb_audit_report.pdf',
+      fallbackFilename: 'renoweb_gmb_audit_report.pdf',
     });
 
   const handleInstagramSubmit = (payload) =>
@@ -174,7 +198,7 @@ export default function Dashboard() {
       setReport: setInstagramReport,
       apiFn: generateInstagramReport,
       payload,
-      pdfFilename: 'renoweb_instagram_report.pdf',
+      fallbackFilename: 'renoweb_instagram_report.pdf',
     });
 
   const handleLinkedInSubmit = (payload) =>
@@ -183,7 +207,7 @@ export default function Dashboard() {
       setReport: setLinkedinReport,
       apiFn: generateLinkedInReport,
       payload,
-      pdfFilename: 'renoweb_linkedin_report.pdf',
+      fallbackFilename: 'renoweb_linkedin_report.pdf',
     });
 
   const handleVisualSubmit = (formData) =>
@@ -192,13 +216,14 @@ export default function Dashboard() {
       setReport: setVisualReport,
       apiFn: generateVisualReport,
       payload: formData,
-      pdfFilename: 'renoweb_visual_brand_report.pdf',
+      fallbackFilename: 'renoweb_visual_brand_report.pdf',
     });
 
   // ── Download handlers ──
 
-  const handleDownload = (tabKey, filename) => {
+  const handleDownload = (tabKey) => {
     const blob = pdfBlobs.current[tabKey];
+    const filename = pdfFilenames.current[tabKey] || 'audit_report.pdf';
     if (blob) downloadBlob(blob, filename);
   };
 
@@ -210,12 +235,12 @@ export default function Dashboard() {
   // ── Active tab data resolver ──
 
   const tabData = {
-    full:      { report: fullReport,      setReport: setFullReport,      label: 'Full Report',       pdfKey: 'full',      filename: 'renoweb_full_report.pdf',       onSubmit: handleFullSubmit },
-    website:   { report: websiteReport,   setReport: setWebsiteReport,   label: 'Website Anatomy',   pdfKey: 'website',   filename: 'renoweb_website_report.pdf',    onSubmit: handleWebsiteSubmit },
-    gmb:       { report: gmbReport,       setReport: setGmbReport,       label: 'GMB Audit',         pdfKey: 'gmb',       filename: 'renoweb_gmb_audit_report.pdf',  onSubmit: handleGmbSubmit },
-    instagram: { report: instagramReport, setReport: setInstagramReport, label: 'Instagram Audit',   pdfKey: 'instagram', filename: 'renoweb_instagram_report.pdf',  onSubmit: handleInstagramSubmit },
-    linkedin:  { report: linkedinReport,  setReport: setLinkedinReport,  label: 'LinkedIn Audit',    pdfKey: 'linkedin',  filename: 'renoweb_linkedin_report.pdf',   onSubmit: handleLinkedInSubmit },
-    visual:    { report: visualReport,    setReport: setVisualReport,    label: 'Visual Brand Match',pdfKey: 'visual',    filename: 'renoweb_visual_brand_report.pdf',onSubmit: handleVisualSubmit },
+    full:      { report: fullReport,      setReport: setFullReport,      label: 'Full Report',       pdfKey: 'full',      onSubmit: handleFullSubmit },
+    website:   { report: websiteReport,   setReport: setWebsiteReport,   label: 'Website Anatomy',   pdfKey: 'website',   onSubmit: handleWebsiteSubmit },
+    gmb:       { report: gmbReport,       setReport: setGmbReport,       label: 'GMB Audit',         pdfKey: 'gmb',       onSubmit: handleGmbSubmit },
+    instagram: { report: instagramReport, setReport: setInstagramReport, label: 'Instagram Audit',   pdfKey: 'instagram', onSubmit: handleInstagramSubmit },
+    linkedin:  { report: linkedinReport,  setReport: setLinkedinReport,  label: 'LinkedIn Audit',    pdfKey: 'linkedin',  onSubmit: handleLinkedInSubmit },
+    visual:    { report: visualReport,    setReport: setVisualReport,    label: 'Visual Brand Match',pdfKey: 'visual',    onSubmit: handleVisualSubmit },
   };
 
   const current = tabData[activeTab];
@@ -289,13 +314,21 @@ export default function Dashboard() {
 
   return (
     <>
-      <Navbar />
+      <Navbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
 
-      <div className="dashboard-layout">
+      <div className={`dashboard-layout ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+        {/* Overlay for mobile sidebar */}
+        {isSidebarOpen && (
+          <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)} />
+        )}
+
         {/* ── Left Sidebar Navigation ── */}
         <TabNav 
           activeTab={activeTab} 
-          onTabChange={setActiveTab} 
+          onTabChange={(id) => {
+            setActiveTab(id);
+            setIsSidebarOpen(false);
+          }} 
           onLogout={handleLogout} 
         />
 
@@ -317,7 +350,7 @@ export default function Dashboard() {
           timestamp={current?.report?.timestamp || null}
           pdfBlob={current && pdfReady[current.pdfKey] ? pdfBlobs.current[current.pdfKey] : null}
           pdfLoading={current ? pdfLoading[current.pdfKey] : false}
-          onDownload={() => current && handleDownload(current.pdfKey, current.filename)}
+          onDownload={() => current && handleDownload(current.pdfKey)}
         />
       </div>
     </>

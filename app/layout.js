@@ -19,7 +19,7 @@ const bigShoulders = Big_Shoulders({
 });
 
 export const metadata = {
-  title: "Digital Presence Report Suite | Renoweb",
+  title: "Flawdits",
   description:
     "Generate comprehensive digital presence audit reports — SEO, Instagram, LinkedIn, and visual brand match analysis — powered by Renoweb.",
 };

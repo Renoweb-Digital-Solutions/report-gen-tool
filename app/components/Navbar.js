@@ -1,11 +1,17 @@
 'use client';
 
 import Image from 'next/image';
+import { Menu } from 'lucide-react';
 
-export default function Navbar() {
+export default function Navbar({ onMenuClick }) {
   return (
     <nav className="navbar" role="navigation" aria-label="Main navigation">
-      <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }} className="navbar-left">
+        {onMenuClick && (
+          <button className="mobile-menu-btn" onClick={onMenuClick} aria-label="Toggle menu">
+            <Menu size={24} />
+          </button>
+        )}
         <Image
           src="/logo.png"
           alt="Renoweb logo"

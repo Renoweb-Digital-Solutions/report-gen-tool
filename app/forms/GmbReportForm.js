@@ -2,8 +2,8 @@
 
 import FormField from '../components/FormField';
 import ErrorBanner from '../components/ErrorBanner';
+import AnimatedSubmitButton from '../components/AnimatedSubmitButton';
 import { useSessionState } from '../hooks/useSessionState';
-import { Sparkles } from 'lucide-react';
 
 const DEFAULTS = {
   company_name: '',
@@ -76,19 +76,11 @@ export default function GmbReportForm({ loading, error, onDismissError, onSubmit
           />
         </FormField>
 
-        <button
-          id="btn-generate-gmb"
-          type="submit"
-          className={`btn-primary ${loading ? 'loading' : ''}`}
-          disabled={loading || !fields.company_name.trim() || !fields.target_url.trim() || !fields.location_query.trim()}
-        >
-          {!loading && (
-            <>
-              <Sparkles size={18} strokeWidth={2.5} />
-              Generate Report
-            </>
-          )}
-        </button>
+        <AnimatedSubmitButton 
+          loading={loading}
+          disabled={!fields.company_name.trim() || !fields.target_url.trim() || !fields.location_query.trim()}
+          defaultText="Generate Report"
+        />
       </div>
     </form>
   );

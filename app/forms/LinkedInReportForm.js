@@ -2,8 +2,8 @@
 
 import FormField from '../components/FormField';
 import ErrorBanner from '../components/ErrorBanner';
+import AnimatedSubmitButton from '../components/AnimatedSubmitButton';
 import { useSessionState } from '../hooks/useSessionState';
-import { Sparkles } from 'lucide-react';
 
 const POSTED_OPTIONS = [
   { value: '24h',     label: 'Last 24 hours' },
@@ -84,19 +84,11 @@ export default function LinkedInReportForm({ loading, error, onDismissError, onS
           </FormField>
         </div>
 
-        <button
-          id="btn-generate-li"
-          type="submit"
-          className={`btn-primary ${loading ? 'loading' : ''}`}
-          disabled={loading || !fields.linkedin_company_url.trim()}
-        >
-          {!loading && (
-            <>
-              <Sparkles size={18} strokeWidth={2.5} />
-              Generate Report
-            </>
-          )}
-        </button>
+        <AnimatedSubmitButton 
+          loading={loading}
+          disabled={!fields.linkedin_company_url.trim()}
+          defaultText="Generate Report"
+        />
       </div>
     </form>
   );

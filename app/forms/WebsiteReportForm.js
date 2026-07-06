@@ -3,7 +3,7 @@
 import FormField from '../components/FormField';
 import ErrorBanner from '../components/ErrorBanner';
 import { useSessionState } from '../hooks/useSessionState';
-import { Sparkles } from 'lucide-react';
+import AnimatedSubmitButton from '../components/AnimatedSubmitButton';
 
 const DEFAULTS = {
   domain: '',
@@ -44,19 +44,11 @@ export default function WebsiteReportForm({ loading, error, onDismissError, onSu
           />
         </FormField>
 
-        <button
-          id="btn-generate-website"
-          type="submit"
-          className={`btn-primary ${loading ? 'loading' : ''}`}
-          disabled={loading}
-        >
-          {!loading && (
-            <>
-              <Sparkles size={18} strokeWidth={2.5} />
-              Generate Report
-            </>
-          )}
-        </button>
+        <AnimatedSubmitButton 
+          loading={loading}
+          disabled={!fields.domain.trim()}
+          defaultText="Generate Report"
+        />
       </div>
     </form>
   );
