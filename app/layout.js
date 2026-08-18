@@ -1,4 +1,4 @@
-import { DM_Sans, Big_Shoulders } from "next/font/google";
+import { DM_Sans, Oswald } from "next/font/google";
 import "./globals.css";
 
 // Self-hosted via next/font — no @import needed in CSS, zero layout shift
@@ -10,11 +10,10 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
-// "Big Shoulders Display" → exported as Big_Shoulders in this Next.js version
-const bigShoulders = Big_Shoulders({
+const oswald = Oswald({
   subsets: ["latin"],
-  weight: ["400", "600", "700", "800"],
-  variable: "--font-big-shoulders",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-big-shoulders", // Keeping the CSS variable name identical to prevent breaking globals.css
   display: "swap",
 });
 
@@ -26,7 +25,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${bigShoulders.variable}`}>
+    <html lang="en" className={`${dmSans.variable} ${oswald.variable}`}>
       <body>{children}</body>
     </html>
   );
