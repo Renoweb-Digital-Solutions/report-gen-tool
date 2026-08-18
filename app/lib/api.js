@@ -1,9 +1,4 @@
-/**
- * Renoweb Report API client
- * Base URL: http://72.62.247.229:8004
- */
-
-const BASE_URL = 'https://api.flawdits.com';
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
 
 /**
  * Normalise an error from a fetch response into a human-readable string.
@@ -115,14 +110,41 @@ export async function generateWebsiteReport(payload) {
 /**
  * Generate an Instagram Audit Report.
  */
-export async function generateInstagramReport(payload) {
-  const res = await authFetch(`${BASE_URL}/report/generate-instagram`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+export function generateInstagramReport(payload) {
+  return new Promise((resolve, reject) => {
+    const wsUrl = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-instagram';
+    const ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      ws.send(JSON.stringify(payload));
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'result') {
+          ws.close();
+          resolve(data);
+        } else if (data.type === 'error') {
+          ws.close();
+          reject(new Error(data.message || 'Error from backend'));
+        }
+        // Progress messages are ignored for now as requested
+      } catch (err) {
+        console.error('WebSocket message parse error:', err);
+      }
+    };
+
+    ws.onerror = (error) => {
+      reject(new Error('WebSocket connection failed'));
+    };
+
+    ws.onclose = (event) => {
+      if (!event.wasClean) {
+        reject(new Error('WebSocket closed unexpectedly'));
+      }
+    };
   });
-  if (!res.ok) throw new Error(await extractError(res));
-  return res.json();
 }
 
 /**
