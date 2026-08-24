@@ -81,6 +81,45 @@ export async function loginUser(username, password) {
 }
 
 /**
+ * Forgot password - request OTP
+ */
+export async function forgotPasswordRequestOtp(email) {
+  const res = await fetch(`${BASE_URL}/auth/forgot-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+}
+
+/**
+ * Forgot password - verify OTP
+ */
+export async function forgotPasswordVerifyOtp(email, otp) {
+  const res = await fetch(`${BASE_URL}/auth/verify-otp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, otp }),
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+}
+
+/**
+ * Forgot password - reset password
+ */
+export async function forgotPasswordReset(email, otp, newPassword, confirmPassword) {
+  const res = await fetch(`${BASE_URL}/auth/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, otp, new_password: newPassword, confirm_password: confirmPassword }),
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+}
+
+/**
  * Generate a Full Report.
  * Returns { html_report, ... }
  */
