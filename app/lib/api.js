@@ -51,6 +51,29 @@ async function authFetch(url, options = {}) {
 }
 
 /**
+ * Authenticated fetch wrapper for Admins
+ */
+async function adminAuthFetch(url, options = {}) {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('admin_access_token') : null;
+  const headers = new Headers(options.headers || {});
+
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  const updatedOptions = { ...options, headers };
+  const res = await fetch(url, updatedOptions);
+
+  if (res.status === 401) {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('admin_access_token');
+      window.location.href = '/admin/login';
+    }
+  }
+  return res;
+}
+
+/**
  * Register a new user
  */
 export async function registerUser(payload) {
@@ -152,7 +175,8 @@ export async function generateWebsiteReport(payload) {
 export function generateInstagramReport(payload) {
   return new Promise((resolve, reject) => {
     const wsUrl = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-instagram';
-    const ws = new WebSocket(wsUrl);
+    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+    const ws = new WebSocket(token ? `${wsUrl}?token=${encodeURIComponent(token)}` : wsUrl);
 
     ws.onopen = () => {
       ws.send(JSON.stringify(payload));
@@ -269,4 +293,34 @@ export function downloadBlob(blob, filename) {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+/**
+ * Fetch all users for the admin panel
+ */
+export async function getAdminUsers() {
+  const res = await adminAuthFetch(`${BASE_URL}/admin/users`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+}
+
+/**
+ * Login specifically for admin portal
+ */
+export async function adminLogin(username, password) {
+  const params = new URLSearchParams();
+  params.append('username', username);
+  params.append('password', password);
+
+  const res = await fetch(`${BASE_URL}/auth/admin/token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: params,
+  });
+
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
 }
