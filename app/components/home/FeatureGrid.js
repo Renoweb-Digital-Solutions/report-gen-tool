@@ -1,15 +1,17 @@
 'use client';
+
+import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Globe, MapPin, Camera, Briefcase, Palette, Sparkles, Users, TrendingUp } from 'lucide-react';
+import { Globe, MapPin, Camera, Briefcase, Palette, Sparkles, Users, TrendingUp, ArrowUpRight } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
 
 const MODULES = [
-  { icon: Globe, title: 'Website Anatomy', desc: 'Technical SEO, Core Web Vitals and backlink health.', color: '#308fef' },
-  { icon: MapPin, title: 'GMB Audit', desc: 'Google Business Profile completeness and local visibility.', color: '#4460ef' },
-  { icon: Camera, title: 'Instagram Audit', desc: 'Engagement, posting consistency and content funnel.', color: '#4ec8ef' },
-  { icon: Briefcase, title: 'LinkedIn Audit', desc: 'Company page performance and thought leadership.', color: '#023dbb' },
-  { icon: Palette, title: 'Visual Brand Match', desc: 'Cross-platform brand consistency scoring.', color: '#ffc857' },
-  { icon: Sparkles, title: 'AI Visibility Audit', desc: 'Brand discoverability in ChatGPT and AI search.', color: '#9d4edd' },
+  { icon: Globe, title: 'Website Anatomy', desc: 'Technical SEO, Core Web Vitals and backlink health.', color: '#308fef', url: '/website-anatomy' },
+  { icon: MapPin, title: 'GMB Audit', desc: 'Google Business Profile completeness and local visibility.', color: '#4460ef', url: '/gmb-audit' },
+  { icon: Camera, title: 'Instagram Audit', desc: 'Engagement, posting consistency and content funnel.', color: '#4ec8ef', url: '/instagram-audit' },
+  { icon: Briefcase, title: 'LinkedIn Audit', desc: 'Company page performance and thought leadership.', color: '#023dbb', url: '/linkedin-audit' },
+  { icon: Palette, title: 'Visual Brand Match', desc: 'Cross-platform brand consistency scoring.', color: '#ffc857', url: '/visual-brand-match' },
+  { icon: Sparkles, title: 'AI Visibility Audit', desc: 'Brand discoverability in ChatGPT and AI search.', color: '#9d4edd', url: '/ai-visibility-audit' },
 ];
 
 const COMING_SOON = [
@@ -29,7 +31,7 @@ const itemVariants = {
 
 export function FeatureGrid() {
   return (
-    <div className="w-full">
+    <div id="features" className="w-full scroll-mt-24">
       <ScrollReveal>
         <motion.div 
           variants={containerVariants}
@@ -39,22 +41,33 @@ export function FeatureGrid() {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {MODULES.map((mod, idx) => (
-            <motion.div 
-              key={idx} 
-              variants={itemVariants} 
-              whileHover={{ y: -8, boxShadow: "0 25px 50px -12px rgba(2, 61, 187, 0.15)" }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              className="flex flex-col relative bg-gradient-to-br from-white to-blue-50/50 border border-brandCyan/40 rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 group overflow-hidden"
-            >
-              <motion.div 
-                className="w-12 h-12 rounded-xl flex items-center justify-center mb-6 transition-transform duration-300"
-                style={{ backgroundColor: `${mod.color}15`, color: mod.color }}
-                whileHover={{ scale: 1.15, rotate: idx % 2 === 0 ? 5 : -5 }}
-              >
-                <mod.icon size={24} />
-              </motion.div>
-              <h3 className="text-lg font-bold text-brandInk mb-3 group-hover:text-brandDeep transition-colors">{mod.title}</h3>
-              <p className="text-sm text-brandInk/70 leading-relaxed">{mod.desc}</p>
+            <motion.div key={idx} variants={itemVariants}>
+              <Link href={mod.url} className="block h-full">
+                <motion.div 
+                  whileHover={{ y: -8, boxShadow: "0 25px 50px -12px rgba(2, 61, 187, 0.18)" }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                  className="h-full flex flex-col relative bg-gradient-to-br from-white to-blue-50/50 border border-brandCyan/40 rounded-2xl p-8 shadow-sm hover:shadow-xl hover:border-brandDeep/40 transition-all duration-300 group overflow-hidden"
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <motion.div 
+                      className="w-12 h-12 rounded-xl flex items-center justify-center transition-transform duration-300"
+                      style={{ backgroundColor: `${mod.color}15`, color: mod.color }}
+                      whileHover={{ scale: 1.15, rotate: idx % 2 === 0 ? 5 : -5 }}
+                    >
+                      <mod.icon size={24} />
+                    </motion.div>
+
+                    <div className="w-8 h-8 rounded-full bg-slate-100 group-hover:bg-brandDeep group-hover:text-white text-slate-400 flex items-center justify-center transition-colors">
+                      <ArrowUpRight size={16} />
+                    </div>
+                  </div>
+
+                  <h3 className="text-lg font-bold text-brandInk mb-3 group-hover:text-brandDeep transition-colors flex items-center justify-between">
+                    <span>{mod.title}</span>
+                  </h3>
+                  <p className="text-sm text-brandInk/70 leading-relaxed">{mod.desc}</p>
+                </motion.div>
+              </Link>
             </motion.div>
           ))}
         </motion.div>

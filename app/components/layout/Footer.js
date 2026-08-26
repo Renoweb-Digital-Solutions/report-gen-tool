@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowUp, ArrowRight, ShieldCheck, Sparkles, Layers, ExternalLink } from 'lucide-react';
+import { ArrowUp, Sparkles, ShieldCheck, ExternalLink } from 'lucide-react';
 
 export function Footer() {
   const scrollToTop = () => {
@@ -22,8 +22,8 @@ export function Footer() {
         {/* Top Header Row with Logo & Tagline */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 pb-16 border-b border-white/10">
           
-          {/* Logo & Info (Col 1 to 5) */}
-          <div className="lg:col-span-5 space-y-6">
+          {/* Logo & Info (Col 1 to 4) */}
+          <div className="lg:col-span-4 space-y-6">
             <Link href="/" className="inline-flex items-center gap-3 group">
               <div className="bg-white/10 backdrop-blur-md p-2.5 rounded-2xl border border-white/15 shadow-md">
                 <Image
@@ -36,8 +36,8 @@ export function Footer() {
               </div>
             </Link>
 
-            <p className="text-sm text-white/70 leading-relaxed max-w-md">
-              Flawdits is the digital presence audit tool built by Renoweb to help agencies, freelancers, and small business owners audit SEO, social, local, and visual brand consistency in one client-ready report.
+            <p className="text-sm text-white/70 leading-relaxed max-w-sm">
+              Flawdits is the digital presence audit suite built by Renoweb to help agencies, freelancers, and marketers audit SEO, social, local, and brand consistency in one report.
             </p>
 
             <div className="flex flex-wrap items-center gap-3 text-xs font-semibold text-brandCyan">
@@ -50,8 +50,8 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Nav Columns (Col 6 to 12) */}
-          <div className="lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8">
+          {/* Categorized Navigation Columns (Col 5 to 12) */}
+          <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-8">
             
             {/* Col 1: Audit Modules */}
             <div>
@@ -60,61 +60,97 @@ export function Footer() {
               </h4>
               <ul className="space-y-2.5 text-xs text-white/70 font-medium">
                 <li>
-                  <Link href="/#features" className="hover:text-white transition-colors">Website Anatomy</Link>
+                  <Link href="/full-report" className="hover:text-white transition-colors">Full Report</Link>
                 </li>
                 <li>
-                  <Link href="/#features" className="hover:text-white transition-colors">GMB Audit</Link>
+                  <Link href="/website-anatomy" className="hover:text-white transition-colors">Website Anatomy</Link>
                 </li>
                 <li>
-                  <Link href="/#features" className="hover:text-white transition-colors">Instagram Audit</Link>
+                  <Link href="/gmb-audit" className="hover:text-white transition-colors">GMB Audit</Link>
                 </li>
                 <li>
-                  <Link href="/#features" className="hover:text-white transition-colors">LinkedIn Audit</Link>
+                  <Link href="/instagram-audit" className="hover:text-white transition-colors">Instagram Audit</Link>
                 </li>
                 <li>
-                  <Link href="/#features" className="hover:text-white transition-colors">Visual Brand Match</Link>
+                  <Link href="/linkedin-audit" className="hover:text-white transition-colors">LinkedIn Audit</Link>
                 </li>
                 <li>
-                  <Link href="/#features" className="hover:text-white transition-colors">AI Visibility Audit</Link>
+                  <Link href="/visual-brand-match" className="hover:text-white transition-colors">Visual Brand Match</Link>
+                </li>
+                <li>
+                  <Link href="/ai-visibility-audit" className="hover:text-white transition-colors">AI Visibility Audit</Link>
                 </li>
               </ul>
             </div>
 
-            {/* Col 2: Navigation */}
+            {/* Col 2: Solutions */}
             <div>
               <h4 className="text-xs font-bold uppercase tracking-widest text-brandCyan mb-4">
-                Navigation
+                Solutions
               </h4>
               <ul className="space-y-2.5 text-xs text-white/70 font-medium">
                 <li>
-                  <Link href="/" className="hover:text-white transition-colors">Home</Link>
+                  <Link href="/for-agencies" className="hover:text-white transition-colors">For Agencies</Link>
                 </li>
                 <li>
-                  <Link href="/#features" className="hover:text-white transition-colors">Features</Link>
+                  <Link href="/for-freelancers-consultants" className="hover:text-white transition-colors">For Freelancers</Link>
+                </li>
+                <li>
+                  <Link href="/free-website-audit" className="hover:text-white transition-colors">Free Website Audit</Link>
+                </li>
+                <li>
+                  <Link href="/how-it-works" className="hover:text-white transition-colors">How It Works</Link>
                 </li>
                 <li>
                   <Link href="/pricing" className="hover:text-white transition-colors">Pricing Plans</Link>
                 </li>
+              </ul>
+            </div>
+
+            {/* Col 3: Compare Platforms */}
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-widest text-brandCyan mb-4">
+                Compare
+              </h4>
+              <ul className="space-y-2.5 text-xs text-white/70 font-medium">
                 <li>
-                  <Link href="/about" className="hover:text-white transition-colors">About Flawdits</Link>
+                  <Link href="/compare/flawdits-vs-leadsgorilla" className="hover:text-white transition-colors">vs LeadsGorilla</Link>
                 </li>
                 <li>
-                  <Link href="/compare/flawdits-vs-leadsgorilla" className="hover:text-white transition-colors">Compare vs Competitors</Link>
+                  <Link href="/compare/flawdits-vs-similarweb" className="hover:text-white transition-colors">vs Similarweb</Link>
                 </li>
                 <li>
-                  <Link href="/faq" className="hover:text-white transition-colors">FAQ & Support</Link>
+                  <Link href="/compare/flawdits-vs-semrush" className="hover:text-white transition-colors">vs Semrush</Link>
+                </li>
+                <li>
+                  <Link href="/compare/flawdits-vs-merchynt" className="hover:text-white transition-colors">vs Merchynt</Link>
+                </li>
+                <li>
+                  <Link href="/compare/flawdits-vs-local-ranking" className="hover:text-white transition-colors">vs Local Ranking</Link>
+                </li>
+                <li>
+                  <Link href="/compare/flawdits-vs-gmbaudit" className="hover:text-white transition-colors">vs GMBAudit</Link>
+                </li>
+                <li>
+                  <Link href="/compare/flawdits-vs-vendasta-snapshot-report" className="hover:text-white transition-colors">vs Vendasta Snapshot</Link>
                 </li>
               </ul>
             </div>
 
-            {/* Col 3: Renoweb+ Suite */}
-            <div className="col-span-2 sm:col-span-1">
+            {/* Col 4: Company & Suite */}
+            <div>
               <h4 className="text-xs font-bold uppercase tracking-widest text-brandCyan mb-4">
-                Renoweb+ Suite
+                Company
               </h4>
               <ul className="space-y-2.5 text-xs text-white/70 font-medium">
-                <li className="flex items-center gap-1.5 font-bold text-white">
-                  <span>Flawdits</span>
+                <li>
+                  <Link href="/about" className="hover:text-white transition-colors">About Flawdits</Link>
+                </li>
+                <li>
+                  <Link href="/faq" className="hover:text-white transition-colors">FAQ & Support</Link>
+                </li>
+                <li className="pt-2 font-bold text-white flex items-center gap-1.5">
+                  <span>Renoweb+ Suite</span>
                   <span className="text-[10px] bg-brandDeep px-1.5 py-0.5 rounded text-brandCyan">Active</span>
                 </li>
                 <li>
@@ -129,7 +165,7 @@ export function Footer() {
                 </li>
                 <li className="pt-2">
                   <a
-                    href="https://www.renowebhq.com"
+                    href="https://renoweb.in"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-brandAmber font-semibold hover:underline"
