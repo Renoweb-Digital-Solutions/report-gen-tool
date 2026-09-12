@@ -91,7 +91,7 @@ export default function ReportPreview({
           {/* Main Content */}
           {(() => {
             const posts = reportData?.posts || reportData?.instagram_audit?.posts || reportData?.linkedin_audit?.posts || reportData?.data || [];
-            const isSocialAudit = reportLabel === 'Instagram Audit' || reportLabel === 'LinkedIn Audit';
+            const isSocialAudit = reportLabel === 'Instagram Audit' || reportLabel === 'LinkedIn Audit' || reportLabel === 'LinkedIn Personal';
             
             if (isSocialAudit && posts && posts.length > 0) {
               return (
@@ -107,7 +107,7 @@ export default function ReportPreview({
                   className="report-iframe"
                   srcDoc={htmlReport}
                   title={`${reportLabel} preview`}
-                  sandbox="allow-same-origin"
+                  sandbox="allow-same-origin allow-scripts"
                   loading="lazy"
                 />
               </div>

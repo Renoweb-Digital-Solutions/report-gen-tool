@@ -224,6 +224,76 @@ export async function generateLinkedInReport(payload) {
 }
 
 /**
+ * Generate a LinkedIn Personal/Company Audit Report via the 2-step WebSocket flow.
+ *
+ * Step 1: POST /report/generate-linkedin-personal → { job_id }
+ * Step 2: WS  /ws/report/generate-linkedin?job_id=<id>&token=<jwt> → progress + result
+ */
+export function generateLinkedInPersonalReport(payload) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Step 1: Create the job via REST
+      const res = await authFetch(`${BASE_URL}/report/generate-linkedin-personal`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(await extractError(res));
+      const { job_id } = await res.json();
+
+      // Step 2: Connect to the WebSocket for streaming results
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+      const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-linkedin';
+      const wsUrl = `${wsBase}?job_id=${encodeURIComponent(job_id)}&token=${encodeURIComponent(token || '')}`;
+      const ws = new WebSocket(wsUrl);
+
+      // Keep-alive ping every 30s to prevent idle timeouts
+      let pingInterval = null;
+
+      ws.onopen = () => {
+        pingInterval = setInterval(() => {
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'ping' }));
+          }
+        }, 30000);
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'result') {
+            clearInterval(pingInterval);
+            ws.close();
+            resolve(data);
+          } else if (data.type === 'error') {
+            clearInterval(pingInterval);
+            ws.close();
+            reject(new Error(data.message || 'Error from backend'));
+          }
+          // Progress messages are silently consumed
+        } catch (err) {
+          console.error('WebSocket message parse error:', err);
+        }
+      };
+
+      ws.onerror = () => {
+        clearInterval(pingInterval);
+        reject(new Error('WebSocket connection failed'));
+      };
+
+      ws.onclose = (event) => {
+        clearInterval(pingInterval);
+        if (!event.wasClean) {
+          reject(new Error('WebSocket closed unexpectedly'));
+        }
+      };
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+/**
  * Generate a Visual Brand Match Report.
  * payload is a FormData object (multipart/form-data).
  */

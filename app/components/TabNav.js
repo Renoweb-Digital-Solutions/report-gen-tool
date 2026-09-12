@@ -1,15 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { BarChart, Globe, MapPin, Camera, Briefcase, Palette, LogOut } from 'lucide-react';
+import { BarChart, Globe, MapPin, Camera, Briefcase, UserCircle, Palette, LogOut } from 'lucide-react';
 
 const TABS = [
-  { id: 'full',       label: 'Full Report',        icon: BarChart, desc: 'SEO, social & brand' },
-  { id: 'website',    label: 'Website Anatomy',     icon: Globe,    desc: 'Performance & health' },
-  { id: 'gmb',        label: 'GMB Audit',           icon: MapPin,   desc: 'Google Business Profile' },
-  { id: 'instagram',  label: 'Instagram Audit',     icon: Camera,   desc: 'Post & engagement analysis' },
-  { id: 'linkedin',   label: 'LinkedIn Audit',      icon: Briefcase,desc: 'Company page review' },
-  { id: 'visual',     label: 'Visual Brand Match',  icon: Palette,  desc: 'Color & identity check' },
+  { id: 'full',       label: 'Full Report',        icon: BarChart,   desc: 'SEO, social & brand' },
+  { id: 'website',    label: 'Website Anatomy',     icon: Globe,      desc: 'Performance & health' },
+  { id: 'gmb',        label: 'GMB Audit',           icon: MapPin,     desc: 'Google Business Profile' },
+  { id: 'instagram',  label: 'Instagram Audit',     icon: Camera,     desc: 'Post & engagement analysis' },
+  { id: 'linkedin',   label: 'LinkedIn Audit',      icon: Briefcase,  desc: 'Company page review' },
+  { id: 'linkedin_personal', label: 'LinkedIn Personal', icon: UserCircle, desc: 'Profile & personal posts' },
+  { id: 'visual',     label: 'Visual Brand Match',  icon: Palette,    desc: 'Color & identity check' },
 ];
 
 export { TABS };

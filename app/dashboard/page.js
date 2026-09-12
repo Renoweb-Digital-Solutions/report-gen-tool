@@ -11,6 +11,7 @@ import WebsiteReportForm from '@/app/forms/WebsiteReportForm';
 import GmbReportForm from '@/app/forms/GmbReportForm';
 import InstagramReportForm from '@/app/forms/InstagramReportForm';
 import LinkedInReportForm from '@/app/forms/LinkedInReportForm';
+import LinkedInPersonalForm from '@/app/forms/LinkedInPersonalForm';
 import VisualBrandForm from '@/app/forms/VisualBrandForm';
 import { useRouter } from 'next/navigation';
 import {
@@ -19,6 +20,7 @@ import {
   generateGmbReport,
   generateInstagramReport,
   generateLinkedInReport,
+  generateLinkedInPersonalReport,
   generateVisualReport,
   convertHtmlToPdf,
   downloadBlob,
@@ -102,13 +104,14 @@ export default function Dashboard() {
   const [gmbReport,       setGmbReport]       = useSessionState('report_gmb',       INITIAL_REPORT_STATE);
   const [instagramReport, setInstagramReport] = useSessionState('report_instagram', INITIAL_REPORT_STATE);
   const [linkedinReport,  setLinkedinReport]  = useSessionState('report_linkedin',  INITIAL_REPORT_STATE);
+  const [linkedinPersonalReport, setLinkedinPersonalReport] = useSessionState('report_linkedin_personal', INITIAL_REPORT_STATE);
   const [visualReport,    setVisualReport]    = useSessionState('report_visual',    INITIAL_REPORT_STATE);
 
   // PDF blobs live in refs — not serialisable, intentionally ephemeral
-  const pdfBlobs    = useRef({ full: null, website: null, gmb: null, instagram: null, linkedin: null, visual: null });
-  const pdfFilenames = useRef({ full: '', website: '', gmb: '', instagram: '', linkedin: '', visual: '' });
-  const [pdfReady,  setPdfReady]   = useState({ full: false, website: false, gmb: false, instagram: false, linkedin: false, visual: false });
-  const [pdfLoading, setPdfLoading] = useState({ full: false, website: false, gmb: false, instagram: false, linkedin: false, visual: false });
+  const pdfBlobs    = useRef({ full: null, website: null, gmb: null, instagram: null, linkedin: null, linkedin_personal: null, visual: null });
+  const pdfFilenames = useRef({ full: '', website: '', gmb: '', instagram: '', linkedin: '', linkedin_personal: '', visual: '' });
+  const [pdfReady,  setPdfReady]   = useState({ full: false, website: false, gmb: false, instagram: false, linkedin: false, linkedin_personal: false, visual: false });
+  const [pdfLoading, setPdfLoading] = useState({ full: false, website: false, gmb: false, instagram: false, linkedin: false, linkedin_personal: false, visual: false });
 
   // ── Generic report runner ──
   const runReport = async ({
@@ -132,6 +135,9 @@ export default function Dashboard() {
         brandName = payload.domain.replace(/^https?:\/\//, '').split('/')[0];
       } else if (!brandName && payload.linkedin_company_url) {
         const match = payload.linkedin_company_url.match(/company\/([^/]+)/);
+        brandName = match ? match[1] : '';
+      } else if (!brandName && payload.linkedin_url) {
+        const match = payload.linkedin_url.match(/(?:company|in)\/([^/]+)/);
         brandName = match ? match[1] : '';
       }
     }
@@ -220,6 +226,15 @@ export default function Dashboard() {
       fallbackFilename: 'renoweb_linkedin_report.pdf',
     });
 
+  const handleLinkedInPersonalSubmit = (payload) =>
+    runReport({
+      tabKey: 'linkedin_personal',
+      setReport: setLinkedinPersonalReport,
+      apiFn: generateLinkedInPersonalReport,
+      payload,
+      fallbackFilename: 'renoweb_linkedin_personal_report.pdf',
+    });
+
   const handleVisualSubmit = (formData) =>
     runReport({
       tabKey: 'visual',
@@ -250,6 +265,7 @@ export default function Dashboard() {
     gmb:       { report: gmbReport,       setReport: setGmbReport,       label: 'GMB Audit',         pdfKey: 'gmb',       onSubmit: handleGmbSubmit },
     instagram: { report: instagramReport, setReport: setInstagramReport, label: 'Instagram Audit',   pdfKey: 'instagram', onSubmit: handleInstagramSubmit },
     linkedin:  { report: linkedinReport,  setReport: setLinkedinReport,  label: 'LinkedIn Audit',    pdfKey: 'linkedin',  onSubmit: handleLinkedInSubmit },
+    linkedin_personal: { report: linkedinPersonalReport, setReport: setLinkedinPersonalReport, label: 'LinkedIn Personal', pdfKey: 'linkedin_personal', onSubmit: handleLinkedInPersonalSubmit },
     visual:    { report: visualReport,    setReport: setVisualReport,    label: 'Visual Brand Match',pdfKey: 'visual',    onSubmit: handleVisualSubmit },
   };
 
@@ -306,6 +322,14 @@ export default function Dashboard() {
           error={linkedinReport.error}
           onDismissError={() => dismissError(setLinkedinReport)}
           onSubmit={handleLinkedInSubmit}
+        />
+      )}
+      {activeTab === 'linkedin_personal' && (
+        <LinkedInPersonalForm
+          loading={linkedinPersonalReport.loading}
+          error={linkedinPersonalReport.error}
+          onDismissError={() => dismissError(setLinkedinPersonalReport)}
+          onSubmit={handleLinkedInPersonalSubmit}
         />
       )}
       {activeTab === 'visual' && (
