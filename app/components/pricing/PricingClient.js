@@ -103,22 +103,7 @@ export default function PricingClient() {
     }
   ];
 
-  const ROADMAP = [
-    {
-      id: 'audience',
-      icon: Users,
-      title: 'Audience Intelligence',
-      subheading: "Understand who's actually engaging with a brand, not just how it scores. Audience demographics and behavior insights, planned once usage data from current clients confirms demand.",
-      color: '#10b981'
-    },
-    {
-      id: 'financial',
-      icon: TrendingUp,
-      title: 'Financial Intelligence',
-      subheading: "See the financial signals behind a brand's digital presence, not just the presence itself. Financial health and revenue-signal insights, under evaluation for a future release.",
-      color: '#f59e0b'
-    }
-  ];
+
 
   const PRICING_FAQS = [
     {
@@ -260,72 +245,7 @@ export default function PricingClient() {
         </div>
       </section>
 
-      {/* ROADMAP / MORE INTELLIGENCE COMING SOON */}
-      <section className="py-20 bg-white border-y border-brandDeep/10">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-12 max-w-2xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-brandDeep mb-4">More Intelligence, Coming Soon</h2>
-            <p className="text-base text-brandInk/60">
-              Flawdits is expanding beyond competitive intelligence. Here&apos;s what&apos;s next on the roadmap.
-            </p>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {ROADMAP.map((item) => {
-              const Icon = item.icon;
-              const isHovered = hoveredCard === item.id;
-              
-              return (
-                <motion.div
-                  key={item.id}
-                  className="relative bg-gradient-to-br from-white to-slate-50 rounded-3xl p-8 border border-brandCyan/40 shadow-sm overflow-hidden group cursor-default"
-                  onMouseEnter={() => setHoveredCard(item.id)}
-                  onMouseLeave={() => setHoveredCard(null)}
-                  onClick={() => setHoveredCard(hoveredCard === item.id ? null : item.id)}
-                  whileHover={{ y: -4 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {/* Content (Visible underneath) */}
-                  <div className={`transition-all duration-300 ${isHovered ? 'opacity-30 blur-[1px]' : 'opacity-100'}`}>
-                    <div className="flex justify-between items-start mb-6">
-                      <div 
-                        className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm"
-                        style={{ backgroundColor: `${item.color}15`, color: item.color }}
-                      >
-                        <Icon size={24} />
-                      </div>
-
-                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-brandInk/5 text-brandInk/60 border border-brandInk/10">
-                        Roadmap
-                      </span>
-                    </div>
-
-                    <h3 className="text-xl font-bold text-brandInk mb-3">{item.title}</h3>
-                    <p className="text-sm text-brandInk/70 leading-relaxed">{item.subheading}</p>
-                  </div>
-
-                  {/* Centered Coming Soon Overlay on Hover / Tap */}
-                  {isHovered && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      className="absolute inset-0 bg-brandDark/80 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-20"
-                    >
-                      <span className="px-4 py-2 rounded-full bg-brandAmber text-brandDark font-extrabold text-sm shadow-lg mb-2">
-                        Coming Soon
-                      </span>
-                      <p className="text-xs text-white/70 font-medium max-w-xs">
-                        Module currently in evaluation & development
-                      </p>
-                    </motion.div>
-                  )}
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
 
       {/* CONTENT BLOCKS GRID */}
       <section className="py-24 bg-gradient-to-br from-blue-50/30 to-indigo-50/20">

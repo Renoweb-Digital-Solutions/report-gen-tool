@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, Check, Sparkles, Layers, ShieldCheck, HelpCircle, ChevronDown, CheckCircle2, Globe, MapPin, Camera, Briefcase, Palette, Info, Gauge } from 'lucide-react';
+import { ArrowRight, Check, Sparkles, Layers, ShieldCheck, HelpCircle, ChevronDown, CheckCircle2, Globe, MapPin, Camera, Briefcase, Palette, Info, Gauge, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Script from 'next/script';
 
@@ -46,11 +46,13 @@ export default function FeatureClient({ initialSlug = 'full-report' }) {
     { slug: 'gmb-audit', name: 'GMB Audit', icon: MapPin, color: '#4ec8ef' },
     { slug: 'instagram-audit', name: 'Instagram Audit', icon: Camera, color: '#ffc857' },
     { slug: 'linkedin-audit', name: 'LinkedIn Audit', icon: Briefcase, color: '#023dbb' },
+    { slug: 'linkedin-personal-audit', name: 'LinkedIn Personal', icon: User, color: '#308fef' },
     { slug: 'visual-brand-match', name: 'Visual Brand Match', icon: Palette, color: '#9d4edd' },
     { slug: 'ai-visibility-audit', name: 'AI Visibility Audit', icon: Sparkles, color: '#10b981' },
   ];
 
-  const currentModule = modules.find(m => m.slug === activeSlug) || modules[0];
+  const currentModule = modules.find(m => m.slug === activeSlug);
+  const isModule = !!currentModule;
 
   const schema = {
     "@context": "https://schema.org",
@@ -70,64 +72,65 @@ export default function FeatureClient({ initialSlug = 'full-report' }) {
       {showAuthModal && <AuthModal onSuccess={() => router.push('/dashboard')} onClose={() => setShowAuthModal(false)} />}
       <Script id="feature-faq-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
 
-      {/* TOP FLOATING GLASS MODULE SELECTOR BAR */}
-      <div className="sticky top-20 z-30 bg-white/90 backdrop-blur-md border-b border-brandDeep/10 py-3 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-3">
-          
-          {/* Label (Desktop Only) */}
-          <div className="hidden sm:flex items-center gap-2 text-xs font-bold text-brandInk/60 uppercase tracking-widest shrink-0">
-            <Gauge size={16} className="text-brandBlue" /> Select Module:
-          </div>
+      {isModule && (
+        <div className="sticky top-20 z-30 bg-white/90 backdrop-blur-md border-b border-brandDeep/10 py-3 shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-3">
+            
+            {/* Label (Desktop Only) */}
+            <div className="hidden sm:flex items-center gap-2 text-xs font-bold text-brandInk/60 uppercase tracking-widest shrink-0">
+              <Gauge size={16} className="text-brandBlue" /> Select Module:
+            </div>
 
-          {/* 2026 Mobile Select Picker (< md) */}
-          <div className="md:hidden w-full relative">
-            <div className="flex items-center gap-2 w-full bg-slate-100 p-2 rounded-2xl border border-brandDeep/10">
-              <currentModule.icon size={16} className="text-brandBlue shrink-0 ml-1" />
-              <select
-                value={activeSlug}
-                onChange={(e) => handleTabChange(e.target.value)}
-                className="w-full bg-transparent text-xs font-bold text-brandDeep focus:outline-none appearance-none pr-6 cursor-pointer"
-              >
-                {modules.map((mod) => (
-                  <option key={mod.slug} value={mod.slug}>
-                    Module: {mod.name}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown size={14} className="text-brandInk/50 pointer-events-none absolute right-3" />
+            {/* 2026 Mobile Select Picker (< md) */}
+            <div className="md:hidden w-full relative">
+              <div className="flex items-center gap-2 w-full bg-slate-100 p-2 rounded-2xl border border-brandDeep/10">
+                <currentModule.icon size={16} className="text-brandBlue shrink-0 ml-1" />
+                <select
+                  value={activeSlug}
+                  onChange={(e) => handleTabChange(e.target.value)}
+                  className="w-full bg-transparent text-xs font-bold text-brandDeep focus:outline-none appearance-none pr-6 cursor-pointer"
+                >
+                  {modules.map((mod) => (
+                    <option key={mod.slug} value={mod.slug}>
+                      Module: {mod.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown size={14} className="text-brandInk/50 pointer-events-none absolute right-3" />
+              </div>
+            </div>
+
+            {/* Desktop Horizontal Tabs (>= md) */}
+            <div className="hidden md:flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
+              {modules.map((mod) => {
+                const isActive = activeSlug === mod.slug;
+                const Icon = mod.icon;
+                return (
+                  <button
+                    key={mod.slug}
+                    onClick={() => handleTabChange(mod.slug)}
+                    className={`relative px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap flex items-center gap-2 ${
+                      isActive
+                        ? 'text-white shadow-md'
+                        : 'text-brandInk/70 hover:text-brandDeep bg-slate-100 hover:bg-slate-200/80 border border-brandDeep/5'
+                    }`}
+                  >
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeFeatureTab"
+                        className="absolute inset-0 bg-gradient-to-r from-brandDeep to-brandIndigo rounded-full"
+                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                      />
+                    )}
+                    <Icon size={14} className={`relative z-10 ${isActive ? 'text-brandCyan' : 'text-brandInk/60'}`} />
+                    <span className="relative z-10">{mod.name}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
-
-          {/* Desktop Horizontal Tabs (>= md) */}
-          <div className="hidden md:flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
-            {modules.map((mod) => {
-              const isActive = activeSlug === mod.slug;
-              const Icon = mod.icon;
-              return (
-                <button
-                  key={mod.slug}
-                  onClick={() => handleTabChange(mod.slug)}
-                  className={`relative px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap flex items-center gap-2 ${
-                    isActive
-                      ? 'text-white shadow-md'
-                      : 'text-brandInk/70 hover:text-brandDeep bg-slate-100 hover:bg-slate-200/80 border border-brandDeep/5'
-                  }`}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeFeatureTab"
-                      className="absolute inset-0 bg-gradient-to-r from-brandDeep to-brandIndigo rounded-full"
-                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                    />
-                  )}
-                  <Icon size={14} className={`relative z-10 ${isActive ? 'text-brandCyan' : 'text-brandInk/60'}`} />
-                  <span className="relative z-10">{mod.name}</span>
-                </button>
-              );
-            })}
-          </div>
         </div>
-      </div>
+      )}
 
       <AnimatePresence mode="wait">
         <motion.div
@@ -169,39 +172,41 @@ export default function FeatureClient({ initialSlug = 'full-report' }) {
               </div>
 
               {/* MOCKUP / UI SCREENSHOT PANEL */}
-              <div className="max-w-5xl mx-auto bg-gradient-to-br from-brandDark via-[#0b1329] to-brandDeep p-6 sm:p-10 rounded-3xl shadow-2xl border-4 border-brandCyan/40 text-left relative overflow-hidden">
-                <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-full bg-red-400" />
-                    <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                    <div className="w-3 h-3 rounded-full bg-green-400" />
-                    <span className="text-xs font-mono text-white/50 ml-2">flawdits.com/app/report-{activeSlug}</span>
+              {isModule && (
+                <div className="max-w-5xl mx-auto bg-gradient-to-br from-brandDark via-[#0b1329] to-brandDeep p-6 sm:p-10 rounded-3xl shadow-2xl border-4 border-brandCyan/40 text-left relative overflow-hidden">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-3 h-3 rounded-full bg-red-400" />
+                      <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                      <div className="w-3 h-3 rounded-full bg-green-400" />
+                      <span className="text-xs font-mono text-white/50 ml-2">flawdits.com/app/report-{activeSlug}</span>
+                    </div>
+                    <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                      Live Audit engine
+                    </span>
                   </div>
-                  <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                    Live Audit engine
-                  </span>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10">
+                      <div className="text-xs text-white/50 uppercase font-bold mb-1">Overall Health</div>
+                      <div className="text-4xl font-extrabold text-emerald-400 mb-2">92 / 100</div>
+                      <div className="text-xs text-white/70 font-medium">Grade A+ • Client Ready PDF</div>
+                    </div>
+
+                    <div className="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10">
+                      <div className="text-xs text-white/50 uppercase font-bold mb-1">Audit Coverage</div>
+                      <div className="text-2xl font-extrabold text-brandCyan mb-2">6 Active Modules</div>
+                      <div className="text-xs text-white/70 font-medium">SEO • GMB • Social • AI • Brand</div>
+                    </div>
+
+                    <div className="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10">
+                      <div className="text-xs text-white/50 uppercase font-bold mb-1">Export Speed</div>
+                      <div className="text-2xl font-extrabold text-brandAmber mb-2">60 Seconds</div>
+                      <div className="text-xs text-white/70 font-medium">Automated PDF Generator</div>
+                    </div>
+                  </div>
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10">
-                    <div className="text-xs text-white/50 uppercase font-bold mb-1">Overall Health</div>
-                    <div className="text-4xl font-extrabold text-emerald-400 mb-2">92 / 100</div>
-                    <div className="text-xs text-white/70 font-medium">Grade A+ • Client Ready PDF</div>
-                  </div>
-
-                  <div className="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10">
-                    <div className="text-xs text-white/50 uppercase font-bold mb-1">Audit Coverage</div>
-                    <div className="text-2xl font-extrabold text-brandCyan mb-2">6 Active Modules</div>
-                    <div className="text-xs text-white/70 font-medium">SEO • GMB • Social • AI • Brand</div>
-                  </div>
-
-                  <div className="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10">
-                    <div className="text-xs text-white/50 uppercase font-bold mb-1">Export Speed</div>
-                    <div className="text-2xl font-extrabold text-brandAmber mb-2">60 Seconds</div>
-                    <div className="text-xs text-white/70 font-medium">Automated PDF Generator</div>
-                  </div>
-                </div>
-              </div>
+              )}
 
             </div>
           </section>
@@ -246,7 +251,27 @@ export default function FeatureClient({ initialSlug = 'full-report' }) {
             </section>
           )}
 
-          {/* FAQ ACCORDION */}
+          {/* AUDIENCE GRID ("WHO SHOULD USE") */}
+          {data.audienceGrid && (
+            <section className="py-20 bg-white border-y border-brandDeep/10">
+              <div className="max-w-7xl mx-auto px-6">
+                <ScrollReveal className="text-center mb-16 max-w-3xl mx-auto">
+                  <h2 className="text-3xl sm:text-4xl font-extrabold text-brandDeep mb-4">{data.audienceGrid.h2}</h2>
+                  <p className="text-base text-brandInk/60">{data.audienceGrid.subtitle}</p>
+                </ScrollReveal>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                  {data.audienceGrid.items.map((item, idx) => (
+                    <ScrollReveal key={idx} delay={idx * 0.1} className="relative bg-gradient-to-br from-slate-50 to-blue-50/40 p-8 sm:p-10 rounded-3xl border border-brandDeep/10 shadow-sm hover:shadow-md transition-all group">
+                      <div className="text-4xl mb-5">{item.emoji}</div>
+                      <h3 className="text-xl font-extrabold text-brandDeep mb-3">{item.title}</h3>
+                      <p className="text-sm text-brandInk/70 leading-relaxed">{item.body}</p>
+                    </ScrollReveal>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
           <section className="py-20 bg-white border-t border-brandDeep/10">
             <div className="max-w-7xl mx-auto px-6">
               <div className="text-center mb-16">

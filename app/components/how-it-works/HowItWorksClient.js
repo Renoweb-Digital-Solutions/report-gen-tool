@@ -40,6 +40,10 @@ export default function HowItWorksClient() {
     {
       q: 'How long does an audit report take to generate?',
       a: 'Most single-module reports return in under a minute; the Full Report, covering every module, typically takes a little longer.'
+    },
+    {
+      q: 'Does the audit logic change over time?',
+      a: 'Yes, the Flawdits team ships continuously through its own CI/CD pipeline, so checks and scoring are refined on an ongoing basis rather than held for infrequent big releases.'
     }
   ];
 
@@ -70,7 +74,7 @@ export default function HowItWorksClient() {
       number: '02',
       title: 'Enter Website and Social Handles',
       subtitle: 'Provide the domain, handle, or Google Maps listing you want to analyze.',
-      body: 'You enter website and social handles relevant to the module: a domain, an Instagram username, a LinkedIn company URL, or a Google Maps listing. Optional fields like target audience, hashtags or company size sharpen the analysis further.',
+      body: 'You enter website and social handles relevant to the module: a domain, an Instagram username, a LinkedIn company URL, a LinkedIn personal profile URL or a Google Maps listing. Optional fields like target audience, hashtags, or company size sharpen the analysis further.',
       icon: SlidersHorizontal,
       color: '#4460ef',
       badge: 'Step 2'

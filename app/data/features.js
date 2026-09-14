@@ -26,7 +26,7 @@ export const FEATURES = {
       },
       {
         h2: 'A Digital Presence Score Report Clients Actually Understand',
-        body: "Every Full Report opens with a digital presence score report summary — a top-line website health score, authority score audit and AI visibility score, so non-technical stakeholders get the headline before the details. It's the same format used in Flawdits' own downloadable PDF audit report examples: clear grades first, evidence and recommendations after."
+        body: "Every Full Report opens with a digital presence score report summary: a top-line website health score, authority score audit, Instagram audit, LinkedIn Page audit, LinkedIn personal profile audit, and AI visibility score, so non-technical stakeholders get the headline before the details. It's the same format used in Flawdits' own downloadable PDF audit report examples: clear grades first, evidence and recommendations after."
       },
       {
         h2: 'An Executive Summary Built for Agency Client Audit Reports',
@@ -281,7 +281,7 @@ export const FEATURES = {
     eyebrow: 'B2B Brand & Content Strategy',
     seo: {
       url: 'https://flawdits.com/linkedin-audit',
-      metaTitle: 'LinkedIn Audit Tool: Company Page & Content Strategy Review | Flawdits',
+      metaTitle: 'LinkedIn Company Page Audit Tool: Content Strategy Review | Flawdits',
       metaDescription: 'Audit LinkedIn company pages for posting consistency, engagement, media mix and TOFU/MOFU/BOFU content balance in a client-ready report.',
       primaryKeyword: 'LinkedIn company page audit tool',
     },
@@ -301,12 +301,12 @@ export const FEATURES = {
         body: 'The LinkedIn content strategy audit breaks posts down by format — image, video, carousel/document — and flags when a page is under-using carousels and documents, a format that typically performs well for B2B education content.'
       },
       {
-        h2: 'A LinkedIn Engagement Audit Report Built on Real Consistency Data',
-        body: 'The LinkedIn engagement audit report tracks posting gap in days and posts-per-week, and calls out when there\'s no consistent cadence at all — a common finding for company pages that post in bursts rather than on a schedule.'
+        h2: 'A LinkedIn Company Engagement Audit Report Built on Real Consistency Data',
+        body: "The LinkedIn engagement audit report tracks posting gap in days and posts-per-week, and calls out when there's no consistent cadence at all, a common finding for company pages that post in bursts rather than on a schedule."
       }
     ],
     featureGrid: {
-      h2: 'What the LinkedIn Audit Covers',
+      h2: 'What the LinkedIn Company Audit Covers',
       items: [
         { title: 'Posting Consistency Checker', desc: 'Average gap and posts-per-week.' },
         { title: 'Thought Leadership Audit', desc: 'Proof-led vs. promotional content ratio.' },
@@ -478,6 +478,229 @@ export const FEATURES = {
       {
         q: 'What tool tracks brand mentions across AI-powered search engines?',
         a: "Flawdits' AI Visibility Audit is purpose-built to track and score this, alongside the traditional SEO metrics most other tools stop at."
+      }
+    ]
+  },
+  'linkedin-personal-audit': {
+    slug: 'linkedin-personal-audit',
+    title: 'LinkedIn Personal Audit',
+    eyebrow: 'Personal Profile & Content Strategy Review',
+    seo: {
+      url: 'https://flawdits.com/linkedin-personal-audit',
+      metaTitle: 'LinkedIn Personal Audit Tool | Flawdits',
+      metaDescription: 'Benchmark a founder\'s or executive\'s real LinkedIn performance.',
+      primaryKeyword: 'LinkedIn personal audit',
+    },
+    hero: {
+      h1: 'LinkedIn Personal Audit: Personal Profile & Content Strategy Review',
+      subtitle: "The LinkedIn Personal Audit inside Flawdits reviews how an individual's LinkedIn presence actually performs: posting cadence, engagement, format mix, and how balanced the content funnel is across awareness, consideration, and proof. Point it at a personal profile URL or a company page, and it works either way.",
+      badge: "Benchmark a founder's or executive's real LinkedIn performance",
+      ctaText: 'Run a LinkedIn Personal Audit →',
+    },
+    contentBlocks: [
+      {
+        h2: 'A Personal Brand Audit Tool for Founders and Executives',
+        body: "As a personal brand audit tool, the module reviews the same posting-consistency and engagement signals as the company page audit, but scoped to one person's activity, useful for founder-led marketing, executive thought leadership, and personal-brand consulting engagements."
+      },
+      {
+        h2: 'A Content Strategy Audit Built for Individual Profiles',
+        body: "The URL field also accepts a company page for one-off checks, but the analysis is tuned for an individual's posting behavior — this is the dedicated module for a founder's or executive's personal activity. For a company page's own breakdown, run the separate LinkedIn Company Page Audit instead."
+      },
+      {
+        h2: 'A LinkedIn Engagement Audit Built on Real Posting Data',
+        body: "Choose how many recent posts to analyze and the time range to look back over, and the audit reports posting gap, posts-per-week, and the TOFU/MOFU/BOFU split of what's actually being published."
+      }
+    ],
+    featureGrid: {
+      h2: 'What the LinkedIn Personal Audit Covers',
+      items: [
+        { title: 'Posting Consistency Checker', desc: 'Average gap and posts-per-week for the profile.' },
+        { title: 'Personal Content Funnel Analysis', desc: 'TOFU/MOFU/BOFU post classification.' },
+        { title: 'Engagement Breakdown', desc: 'Reactions, comments, and reposts per post.' },
+        { title: 'Content Intelligence', desc: 'Format mix and topic patterns across analyzed posts.' },
+        { title: 'Adjustable Scope', desc: 'Configurable posts-to-analyze count and time range.' }
+      ]
+    },
+    ctaBand: {
+      headline: "See how a founder's or executive's LinkedIn activity actually breaks down",
+      btnText: 'Audit My LinkedIn Profile →'
+    },
+    faqs: [
+      {
+        q: "What's the difference between LinkedIn Company Page Audit and LinkedIn Personal Audit?",
+        a: "LinkedIn Company Page Audit reviews a company page. LinkedIn Personal Audit reviews an individual's personal profile, with the same posting-consistency, engagement, and funnel-mix analysis, scoped to one person."
+      },
+      {
+        q: "Can I use the Personal Audit on a company page instead?",
+        a: "The field also accepts a company page URL for a quick check, but the analysis is built around individual posting behavior. For a full company page breakdown, use the separate LinkedIn Company Page Audit."
+      },
+      {
+        q: "How many posts does the audit look at?",
+        a: "You set the number of posts to analyze and the time range (for example, the last 3 months) before generating the report, so the audit matches how active the profile actually is."
+      },
+      {
+        q: "Who is the LinkedIn Personal Audit built for?",
+        a: "Founders and executives building a personal brand, LinkedIn ghostwriters, personal-branding consultants, and agencies running founder-led marketing on behalf of clients."
+      }
+    ]
+  },
+  'what-is-flawdits': {
+    slug: 'what-is-flawdits',
+    title: 'What Is Flawdits?',
+    eyebrow: 'Digital Presence Audit Platform',
+    seo: {
+      url: 'https://flawdits.com/what-is-flawdits',
+      metaTitle: 'What Is Flawdits? | Digital Presence Audit Platform',
+      metaDescription: 'Flawdits is a digital presence audit platform that combines website, Google Business Profile, Instagram, LinkedIn, visual brand consistency, and AI search visibility.',
+      primaryKeyword: 'what is flawdits',
+    },
+    hero: {
+      h1: 'What Is Flawdits?',
+      subtitle: "Flawdits is a digital presence audit platform that combines multiple audit areas- website, Google Business Profile, Instagram, LinkedIn, visual brand consistency, and AI search visibility- into a single, structured, client-ready report.\n\nInstead of checking each channel separately and manually pulling the findings together, you point Flawdits at a website, a social handle, or a Google Business Profile, and it returns a graded report covering the areas that matter.",
+      badge: "Digital Presence Audit Platform",
+      ctaText: 'View a Sample Report →',
+    },
+    contentBlocks: [
+      {
+        h2: 'The Problem Flawdits Solves',
+        body: "Understanding a brand's full digital presence usually means checking a website audit tool, a Google Business Profile dashboard, Instagram post analysis, LinkedIn analysis, and a brand style guide separately, then manually pulling the findings into a spreadsheet or document before anyone can act on them.\n\nFlawdits replaces that manual process with one platform: one login, one export, one professional deliverable, instead of five different tools and a spreadsheet."
+      },
+      {
+        h2: 'What Flawdits Actually Does',
+        body: "Flawdits runs a structured audit across the areas of a brand's presence it currently covers, and returns a graded, evidence-backed report for each one. The seven current audit modules are:\n\n• Website Anatomy: Technical SEO, Core Web Vitals, and backlink health.\n• GMB Audit: Google Business Profile completeness and local visibility.\n• Instagram Audit: Engagement, posting consistency, and content funnel.\n• LinkedIn Audit: Company page performance and thought leadership.\n• LinkedIn Personal Audit: Personal profile posts, engagement, and TOFU/MOFU/BOFU funnel mix.\n• Visual Brand Match: Cross-platform brand consistency scoring.\n• AI Visibility Audit: Brand discoverability in ChatGPT and AI search.\n\nRun any module individually, or run the Full Report to combine all six into one document."
+      },
+      {
+        h2: 'How the Audit Workflow Works',
+        body: "The workflow is the same three steps regardless of which module you run:\n\n1. Choose your audit module (Full Report for everything at once, or an individual module)\n2. Enter the relevant website or social handle\n3. Hit: Generate\n\nFlawdits scans, scores, and formats the results into a downloadable report, client-ready, with grades up front and evidence underneath. Behind that workflow, the Flawdits team ships continuously through its own CI/CD pipeline, so the underlying checks keep getting refined."
+      },
+      {
+        h2: 'What Kinds of Presence Flawdits Helps Analyze',
+        body: "Across its current modules, Flawdits helps analyze: a website's technical SEO health, a Google Business Profile's completeness and local visibility, Instagram engagement and content mix, LinkedIn company page performance, a person's LinkedIn presence, cross-platform visual brand consistency, and a brand's discoverability in AI-powered search."
+      },
+      {
+        h2: 'Who Flawdits Is Built For',
+        body: "Flawdits is built for agencies auditing prospects and clients, freelance consultants who need a client-ready deliverable without building one from scratch, and business owners who want a structured picture of their own digital presence before hiring anyone."
+      },
+      {
+        h2: 'What You Get From the Analysis',
+        body: "Each audit returns graded scores (for example, a website health grade or an AI visibility score), specific findings ranked by severity or priority, and a downloadable PDF report. Reports can carry Flawdits' own branding or, on the Agency plan, your own logo and colors."
+      },
+      {
+        h2: 'Why a Structured Audit Report Is Useful',
+        body: "A general AI assistant can answer questions if you ask it to, but it doesn't know what a healthy engagement rate or a complete Google Business Profile looks like for your specific situation unless it's told, and it has no built-in access to Instagram, LinkedIn, or Google Business Profile data. Flawdits runs the same structured audit framework across those surfaces every time, so the result is a directed, comparable report rather than a one-off answer to a single question."
+      }
+    ],
+    ctaBand: {
+      headline: 'See what a Flawdits report actually looks like.',
+      btnText: 'View a Sample Report →'
+    },
+    faqs: [
+      {
+        q: "What is Flawdits in one sentence?",
+        a: "Flawdits is a digital presence audit platform that turns website, local, social, brand, and AI-visibility data into one structured, client-ready report."
+      },
+      {
+        q: "What does “audit” mean in Flawdits' context?",
+        a: "It means running a structured, repeatable check against a defined set of criteria, for example, technical SEO health or Google Business Profile completeness, and returning a graded, evidenced result."
+      },
+      {
+        q: "Do I need technical knowledge to use it?",
+        a: "No. You enter a website or social handle, and Flawdits generates the report; the grades and priority findings are written to be understood by a non-technical reader."
+      },
+      {
+        q: "What do I actually receive after running an audit?",
+        a: "A downloadable, graded PDF report for the module (or modules) you ran, with specific findings and, where applicable, priority recommendations."
+      },
+      {
+        q: "Is Flawdits actively maintained?",
+        a: "Yes, the internal team ships updates through a CI/CD pipeline on an ongoing basis, so the tool is constantly being improved rather than updated only at occasional milestones."
+      }
+    ]
+  },
+  'why-flawdits': {
+    slug: 'why-flawdits',
+    title: 'Why Flawdits?',
+    eyebrow: 'Time & Consistency',
+    seo: {
+      url: 'https://flawdits.com/why-flawdits',
+      metaTitle: 'Why Flawdits? | Benefits and Use Cases',
+      metaDescription: 'Instead of manually collecting information from separate platforms, you run one structured audit and get a comparable, client-ready result every time.',
+      primaryKeyword: 'why flawdits',
+    },
+    hero: {
+      h1: 'Why Flawdits?',
+      subtitle: "The practical reason to use Flawdits is time and consistency: instead of manually collecting information from separate platforms, maintaining a spreadsheet, or paying for several single-purpose tools, you run one structured audit and get a comparable, client-ready result every time.",
+      badge: "Stop manually auditing",
+      ctaText: 'Try a Free Audit →',
+    },
+    contentBlocks: [
+      {
+        h2: 'Why Not Manually Audit Everything?',
+        body: "Manually auditing a brand's presence means logging into a website analyzer, a Google Business Profile dashboard, Instagram insights, and LinkedIn analytics separately, then reconciling the findings by hand, often in a spreadsheet that's out of date by the next review. Flawdits runs the same structured checks across those areas in one pass and returns one document instead of several disconnected ones."
+      },
+      {
+        h2: 'Why Use One Structured Audit Platform?',
+        body: "A single platform means a consistent scoring approach across every module, one place to re-run the same audit later to check progress, and one export instead of reconciling formats from several different tools. Because the Flawdits team ships continuously through its own CI/CD pipeline, that scoring approach keeps getting refined rather than sitting static between releases."
+      },
+      {
+        h2: 'Why a Professional Audit Report Is Useful',
+        body: "A graded, evidence-backed report is easier for a client or stakeholder to act on than a raw data dump: it states what's wrong, how severe it is, and what to do about it, in a format that doesn't require the reader to interpret the underlying data themselves."
+      },
+      {
+        h2: 'Why Branded, Client-Ready Analysis Is Useful',
+        body: "For agencies and consultants specifically, a report that carries their own branding (available on the Agency plan) reinforces who did the work when it's shared with a client or prospect, rather than presenting as a generic third-party tool output."
+      }
+    ],
+    audienceGrid: {
+      h2: 'Who Should Use Flawdits',
+      subtitle: 'Flawdits is built for four overlapping groups. Each uses it slightly differently.',
+      items: [
+        {
+          title: 'Solopreneurs',
+          emoji: '🚀',
+          body: "Solo operators don't have an internal team to check a website, a Google Business Profile, and social accounts separately. Flawdits gives a solopreneur a structured, single-login way to see how their own digital presence is actually performing, without hiring anyone or manually piecing it together."
+        },
+        {
+          title: 'Founders',
+          emoji: '💡',
+          body: "Founders often need a clear, structured picture of their brand across channels for their own decision-making, or to brief a marketing hire or agency. Flawdits replaces manually gathering that picture from separate sources with one graded report founders can read themselves or hand to whoever they bring in next."
+        },
+        {
+          title: 'Agencies',
+          emoji: '🏢',
+          body: "Agencies use Flawdits across the client lifecycle: auditing a prospect before a pitch, baselining a new client at onboarding, and re-running the same audit later to show progress. Because reports are white-label on the Agency plan, findings can be turned into professional, branded deliverables identifying gaps and opportunities without building a report template from scratch."
+        },
+        {
+          title: 'Service Providers & Consultants',
+          emoji: '🎯',
+          body: "This covers independent consultants, marketing service providers, SEO professionals, social media professionals, and brand consultants who analyze clients. Flawdits gives them the same structured audit and client-ready PDF an agency uses, without a design team: the report is genuinely client-ready on the first export, and doubles as evidence in a pitch and as a template for recurring progress updates once a client signs."
+        }
+      ]
+    },
+    ctaBand: {
+      headline: 'Stop manually auditing',
+      btnText: 'Try a Free Audit →'
+    },
+    faqs: [
+      {
+        q: "Why use Flawdits instead of checking each platform manually?",
+        a: "Flawdits runs the same structured audit across website, local, social, brand, and AI-visibility data in one pass, instead of requiring separate logins and manual reconciliation."
+      },
+      {
+        q: "How can solopreneurs benefit from Flawdits?",
+        a: "A solopreneur gets a structured view of their own digital presence without hiring anyone or building a tracking spreadsheet."
+      },
+      {
+        q: "How can founders benefit from Flawdits?",
+        a: "Founders get a clear, structured picture of their brand across channels for their own use, or to brief a hire or agency, without manually assembling it first."
+      },
+      {
+        q: "How can agencies benefit from Flawdits?",
+        a: "Agencies use Flawdits for prospect analysis, client audits, onboarding baselines, and white-label reporting that identifies gaps and opportunities."
+      },
+      {
+        q: "How can consultants and service providers benefit from Flawdits?",
+        a: "Independent consultants and service providers get the same structured audit and client-ready PDF an agency uses, without building a report template themselves."
       }
     ]
   }

@@ -6,17 +6,20 @@ import { Globe, MapPin, Camera, Briefcase, Palette, Sparkles, Users, TrendingUp,
 import { ScrollReveal } from './ScrollReveal';
 
 const MODULES = [
-  { icon: Globe, title: 'Website Anatomy', desc: 'Technical SEO, Core Web Vitals and backlink health.', color: '#308fef', url: '/website-anatomy' },
+  { icon: Globe, title: 'Website Anatomy', desc: 'Technical SEO, Core Web Vitals, and backlink health.', color: '#308fef', url: '/website-anatomy' },
   { icon: MapPin, title: 'GMB Audit', desc: 'Google Business Profile completeness and local visibility.', color: '#4460ef', url: '/gmb-audit' },
-  { icon: Camera, title: 'Instagram Audit', desc: 'Engagement, posting consistency and content funnel.', color: '#4ec8ef', url: '/instagram-audit' },
-  { icon: Briefcase, title: 'LinkedIn Audit', desc: 'Company page performance and thought leadership.', color: '#023dbb', url: '/linkedin-audit' },
+  { icon: Camera, title: 'Instagram Audit', desc: 'Engagement, posting consistency, and content funnel.', color: '#4ec8ef', url: '/instagram-audit' },
+  { icon: Briefcase, title: 'LinkedIn Company Page Audit', desc: 'Company page performance and thought leadership.', color: '#023dbb', url: '/linkedin-company-audit' },
+  { icon: Users, title: 'LinkedIn Personal Profile Audit', desc: 'Personal profile posts, engagement, and TOFU/MOFU/BOFU funnel mix.', color: '#10b981', url: '/linkedin-personal-audit' },
   { icon: Palette, title: 'Visual Brand Match', desc: 'Cross-platform brand consistency scoring.', color: '#ffc857', url: '/visual-brand-match' },
   { icon: Sparkles, title: 'AI Visibility Audit', desc: 'Brand discoverability in ChatGPT and AI search.', color: '#9d4edd', url: '/ai-visibility-audit' },
 ];
 
 const COMING_SOON = [
-  { icon: Users, title: 'Audience Intelligence', desc: 'Understand who\'s actually engaging with a brand, not just how it scores.', color: '#10b981' },
-  { icon: TrendingUp, title: 'Financial Intelligence', desc: 'See the financial signals behind a brand\'s digital presence.', color: '#f59e0b' },
+  { icon: Users, title: 'Audience Intelligence', items: ['ICP Audit', 'Sentiment Analysis'], color: '#10b981' },
+  { icon: TrendingUp, title: 'Financial Intelligence', items: ['Brand Financial Audit'], color: '#f59e0b' },
+  { icon: Globe, title: 'Digital Intelligence', items: ['Ads Audit', 'YouTube Audit'], color: '#4460ef' },
+  { icon: Sparkles, title: 'Security Intelligence', items: ['Cybersecurity Audit'], color: '#ef4444' }
 ];
 
 const containerVariants = {
@@ -128,7 +131,17 @@ export function FeatureGrid() {
                   </div>
                 </div>
                 <h4 className="text-lg font-bold text-brandInk mb-2">{mod.title}</h4>
-                <p className="text-sm text-brandInk/60 leading-relaxed">{mod.desc}</p>
+                {mod.desc && <p className="text-sm text-brandInk/60 leading-relaxed">{mod.desc}</p>}
+                {mod.items && (
+                  <ul className="space-y-1.5 mt-2">
+                    {mod.items.map((item, i) => (
+                      <li key={i} className="flex items-center gap-2 text-sm text-brandInk/70 font-medium">
+                        <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: mod.color }} />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </motion.div>
           ))}

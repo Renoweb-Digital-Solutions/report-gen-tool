@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, Users, TrendingUp, Sparkles, Layers, ShieldCheck, Target, Award } from 'lucide-react';
+import { ArrowRight, Users, TrendingUp, Sparkles, Layers, ShieldCheck, Target, Award, Globe } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 import AuthModal from '../AuthModal';
@@ -34,15 +34,29 @@ export default function AboutClient() {
       id: 'audience',
       icon: Users,
       title: 'Audience Intelligence',
-      subheading: "Understand who's actually engaging with a brand, not just how it scores. Audience demographics and behavior insights, planned once usage data from current clients confirms demand.",
+      items: ['ICP Audit', 'Sentiment Analysis'],
       color: '#10b981'
     },
     {
       id: 'financial',
       icon: TrendingUp,
       title: 'Financial Intelligence',
-      subheading: "See the financial signals behind a brand's digital presence, not just the presence itself. Financial health and revenue-signal insights, under evaluation for a future release.",
+      items: ['Brand Financial Audit'],
       color: '#f59e0b'
+    },
+    {
+      id: 'digital',
+      icon: Globe,
+      title: 'Digital Intelligence',
+      items: ['Ads Audit', 'YouTube Audit'],
+      color: '#4460ef'
+    },
+    {
+      id: 'security',
+      icon: Sparkles,
+      title: 'Security Intelligence',
+      items: ['Cybersecurity Audit'],
+      color: '#ef4444'
     }
   ];
 
@@ -119,12 +133,12 @@ export default function AboutClient() {
                 <div className="w-12 h-12 rounded-2xl bg-brandDeep/10 text-brandDeep flex items-center justify-center mb-6">
                   <Layers size={24} />
                 </div>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-brandDeep mb-4">The Renoweb+ Suite</h2>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-brandDeep mb-4">The Renoweb Plus</h2>
                 <p className="text-base text-brandInk/70 leading-relaxed mb-4">
-                  Flawdits is part of the Renoweb+ suite, built by Renoweb — a digital solutions agency that runs SEO, social and brand audits for real clients every day.
+                  Flawdits is part of Renoweb Plus, a suite of easy-to-use, do-it-yourself marketing tools built for solo founders and small, bootstrapped startup teams- the wave of founders who need every marketing function at once (SEO, social, AI visibility and more) but can only budget a fraction of what hiring separate specialists would cost. Every tool in Renoweb Plus is built to have an easy learning curve, not a steep one.
                 </p>
                 <p className="text-sm text-brandInk/60 leading-relaxed">
-                  Flawdits ships alongside two sibling products: <strong>SimpLeads</strong> for lead generation and <strong>Snooptel</strong> for content research — using one connected system, not a single-purpose tool. The product grew directly out of Renoweb&apos;s own internal need, not a generic market gap analysis.
+                  It currently hosts three products, each already past MVP with real users: SimpLeads for lead generation, qualification, and scoring; Flawdits for multi-platform digital presence analysis; and Snooptel for content research. Over time, these may combine into one connected product ecosystem, or continue to run as standalone tools; each already works on its own today.
                 </p>
               </div>
 
@@ -199,7 +213,16 @@ export default function AboutClient() {
                       </div>
 
                       <h3 className="text-xl font-bold text-brandInk mb-3">{item.title}</h3>
-                      <p className="text-sm text-brandInk/70 leading-relaxed">{item.subheading}</p>
+                      {item.items && (
+                        <ul className="space-y-2 mt-2">
+                          {item.items.map((listItem, i) => (
+                            <li key={i} className="flex items-center gap-2 text-sm text-brandInk/70 font-medium">
+                              <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: item.color }} />
+                              {listItem}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
 
                     {/* Centered Coming Soon Overlay on Hover / Tap */}
@@ -233,10 +256,10 @@ export default function AboutClient() {
               </div>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-brandDeep mb-4">Why We Built Flawdits</h2>
               <p className="text-base text-brandInk/70 leading-relaxed mb-4">
-                Why we built Flawdits comes down to a gap we kept hitting internally at Renoweb: no single affordable tool covered website, social and local visibility together.
+                Why we built Flawdits comes down to a gap we kept hearing on client calls, not just seeing internally: across 200+ sales conversations, we kept meeting solo founders and bootstrapped startup teams who needed every marketing service at once but could only budget a fraction of what separate SEO, social, and audit tools cost individually.
               </p>
               <p className="text-sm text-brandInk/60 leading-relaxed">
-                This is the Renoweb agency background behind the digital presence report suite story: a tool built to solve our own workflow first, then made available to everyone else running the same audits.
+                Flawdits is Renoweb Plus's answer to the visibility-and-analysis piece of that gap: one affordable tool covering website, social, local, and AI-search presence audit together, built to be usable without buying separate tools.
               </p>
             </ScrollReveal>
 
@@ -247,8 +270,11 @@ export default function AboutClient() {
                   <Users size={24} />
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-brandDeep mb-4">Built by Operators, Not Just Developers</h2>
-                <p className="text-base text-brandInk/70 leading-relaxed">
-                  Flawdits is built by an 18-person team spanning SEO, performance marketing, creative, design, video, web and software development, DevOps, business development and compliance — the same team that has run hands-on growth engagements for 300+ businesses across 120+ industries. That operator experience feeds directly into what Flawdits audits and how it grades what it finds.
+                <p className="text-base text-brandInk/70 leading-relaxed mb-4">
+                  Flawdits is built by an 18-person team spanning SEO, performance marketing, creative, design, video, web and software development, DevOps, business development, and compliance, the same team that has run hands-on growth engagements for 300+ businesses across 120+ industries. That operator experience feeds directly into what Flawdits audits and how it grades what it finds.
+                </p>
+                <p className="text-sm text-brandInk/60 leading-relaxed">
+                  The team ships through its own CI/CD pipeline, so the tool itself is constantly being updated; new checks, fixes, and improvements roll out on an ongoing basis rather than in occasional big releases.
                 </p>
               </div>
 
@@ -277,7 +303,7 @@ export default function AboutClient() {
         <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
           <ScrollReveal className="max-w-3xl mx-auto">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6 leading-tight">
-              See the platform Renoweb built for its own client work
+              See the platform Renoweb Plus built for budget-capped founders
             </h2>
             
             <p className="text-base sm:text-lg text-white/70 mb-8 max-w-xl mx-auto">

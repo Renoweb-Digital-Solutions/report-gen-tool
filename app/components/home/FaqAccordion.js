@@ -7,7 +7,7 @@ import Script from 'next/script';
 const FAQS = [
   {
     q: "Is Flawdits a free digital audit tool?",
-    a: "Yes you can generate a free digital audit tool report with no credit card required, and upgrade when you need higher usage limits or white label branding."
+    a: "Yes, you can generate a free digital audit report with no credit card required, and upgrade when you need higher usage limits or white-label branding."
   },
   {
     q: "Can agencies white label the reports?",

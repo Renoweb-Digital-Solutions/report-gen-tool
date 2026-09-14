@@ -65,11 +65,14 @@ export default function LandingPage() {
               <TextReveal 
                 as="h1" 
                 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-brandDeep tracking-tight mb-6" 
-                text="The Digital Presence Audit Tool for SEO, Social & Brand" 
+                text="Your Complete Digital Presence Audit Tool" 
               />
               
+              <p className="text-base sm:text-lg text-brandInk/70 max-w-2xl mx-auto mb-4 leading-relaxed font-bold">
+                A Website and Social Media Audit Tool in One Dashboard
+              </p>
               <p className="text-base sm:text-lg text-brandInk/70 max-w-2xl mx-auto mb-8 leading-relaxed">
-                Flawdits is the digital presence audit tool built for anyone who needs a clear, client-ready picture of how a brand actually shows up online. Point Flawdits at a website, an Instagram handle, a LinkedIn company page or a Google Business Profile and get a graded report in minutes.
+                As a combined website and social media audit tool, Flawdits covers technical SEO health, Google Business Profile completeness, and content performance across Instagram, LinkedIn company pages, and LinkedIn personal profiles so you're not toggling between separate platforms to answer one simple question: is this brand's digital presence actually working?
               </p>
               
               <MagneticButton onClick={handleCtaClick} className="px-8 py-4 bg-gradient-to-r from-brandDeep to-brandIndigo text-white rounded-full text-base font-bold shadow-glow-blue hover:shadow-xl transition-all flex items-center gap-3">
@@ -144,9 +147,9 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { q: "We used to burn half a day pulling data from five different tools before a pitch. Now it's one export.", author: "Agency Owner" },
-              { q: "The graded format is what clients actually read; they skip straight to the score, then the fix list.", author: "Freelance SEO Consultant" },
-              { q: "It caught a security header issue our own dev team had missed for months.", author: "Marketing Manager" }
+              { q: "We used to burn half a day pulling data from five different tools before a pitch. Now it's one export.", author: "Francis Brewer", role: "Agency Owner" },
+              { q: "The graded format is what clients actually read; they skip straight to the score, then the fix list.", author: "Jeffrey Kranz", role: "Freelance SEO Consultant" },
+              { q: "It caught a security header issue our own dev team had missed for months.", author: "Mohit Paul", role: "Marketing Manager" }
             ].map((t, i) => (
               <ScrollReveal key={i} delay={i * 0.1} className="bg-gradient-to-br from-white to-blue-50/30 p-8 rounded-2xl border border-brandBlue/20 shadow-sm hover:shadow-md transition-all">
                 <div className="flex gap-1 text-brandAmber mb-6">
@@ -156,8 +159,8 @@ export default function LandingPage() {
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brandDeep to-brandCyan opacity-30" />
                   <div>
-                    <div className="text-xs font-bold text-brandInk">[Client Name]</div>
-                    <div className="text-xs text-brandInk/50">{t.author}</div>
+                    <div className="text-xs font-bold text-brandInk">{t.author}</div>
+                    <div className="text-xs text-brandInk/50">{t.role}</div>
                   </div>
                 </div>
               </ScrollReveal>
@@ -171,10 +174,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center pb-16 border-b border-white/10">
             <ScrollReveal>
-              <div className="text-brandCyan text-xs font-bold uppercase tracking-widest mb-4">Part of the Renoweb+ Suite</div>
+              <div className="text-brandCyan text-xs font-bold uppercase tracking-widest mb-4">Part of the Renoweb Plus</div>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-4">Built by Renoweb</h2>
               <p className="text-base text-white/70 leading-relaxed mb-6">
-                Flawdits is built and maintained by Renoweb, a digital solutions agency, and ships alongside two sibling products in the Renoweb+ suite: SimpLeads and Snooptel.
+                Flawdits is part of Renoweb Plus, a suite of easy-to-use, DIY marketing tools built for solo founders and bootstrapped startup teams who need every marketing function but can only budget a fraction of what hiring separate specialists would cost. It ships alongside two sibling products in the suite: SimpLeads for lead generation and Snooptel for content research one connected system built by the same team, not three unrelated tools.
               </p>
               <a href="https://www.renowebhq.com" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-white font-semibold hover:text-brandCyan transition-colors">
                 Visit renowebhq.com <ArrowRight size={16} />

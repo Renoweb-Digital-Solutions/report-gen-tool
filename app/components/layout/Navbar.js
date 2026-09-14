@@ -30,30 +30,37 @@ export function Navbar() {
   };
 
   const featureItems = [
-    { name: 'Full Report', desc: 'Flagship 6-channel digital report', href: '/full-report', icon: Layers, color: '#308fef' },
     { name: 'Website Anatomy', desc: 'Technical SEO & Core Web Vitals', href: '/website-anatomy', icon: Globe, color: '#4460ef' },
     { name: 'GMB Audit', desc: 'Local search & GBP completeness', href: '/gmb-audit', icon: MapPin, color: '#4ec8ef' },
     { name: 'Instagram Audit', desc: 'Engagement & content funnel', href: '/instagram-audit', icon: Camera, color: '#ffc857' },
-    { name: 'LinkedIn Audit', desc: 'Company page & B2B strategy', href: '/linkedin-audit', icon: Briefcase, color: '#023dbb' },
+    { name: 'LinkedIn Company Page Audit', desc: 'Company page & B2B strategy', href: '/linkedin-company-audit', icon: Briefcase, color: '#023dbb' },
     { name: 'Visual Brand Match', desc: 'Cross-platform brand consistency', href: '/visual-brand-match', icon: Palette, color: '#9d4edd' },
     { name: 'AI Visibility Audit', desc: 'ChatGPT & AI search discoverability', href: '/ai-visibility-audit', icon: Sparkles, color: '#10b981' },
+    { name: 'LinkedIn Personal Profile Audit', desc: 'Profile & personal posts', href: '/linkedin-personal-audit', icon: User, color: '#308fef' }
   ];
 
-  const solutionItems = [
-    { name: 'For Agencies', href: '/for-agencies', icon: Building2 },
-    { name: 'For Freelancers', href: '/for-freelancers-consultants', icon: User },
-    { name: 'Free Website Audit', href: '/free-website-audit', icon: Zap },
-    { name: 'How It Works', href: '/how-it-works', icon: Layers },
+  const productItems = [
+    { name: 'What is Flawdits', desc: 'The Digital Presence Audit Tool', href: '/what-is-flawdits', icon: Layers, color: '#308fef' },
+    { name: 'Why Flawdits', desc: 'Benefits and use cases', href: '/why-flawdits', icon: Zap, color: '#ffc857' },
+    { name: 'About', desc: 'Our mission and team', href: '/about', icon: Building2, color: '#4460ef' },
+    { name: 'How it works', desc: 'See the process in action', href: '/how-it-works', icon: ArrowRightLeft, color: '#10b981' },
   ];
 
-  const featureRoutes = featureItems.map(item => item.href);
-  const isFeatureActive = featureRoutes.some(route => pathname?.startsWith(route));
+  const resourceItems = [
+    { name: 'Blogs', desc: 'Latest articles and insights', href: '/blogs', icon: Globe, color: '#308fef' },
+    { name: 'Press and media', desc: 'News and press releases', href: '/press', icon: Camera, color: '#9d4edd' },
+    { name: 'FAQs', desc: 'Frequently asked questions', href: '/faq', icon: HelpCircle, color: '#ffc857' },
+    { name: 'Technical Documentation', desc: 'Guides and API docs', href: '/docs', icon: Layers, color: '#4460ef' },
+    { name: 'Contact Us', desc: 'Get in touch with support', href: '/contact', icon: MapPin, color: '#10b981' },
+  ];
+
+  const [openDropdown, setOpenDropdown] = useState(null); // 'features', 'product', 'resources'
 
   // Close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsFeaturesOpen(false);
+        setOpenDropdown(null);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -68,6 +75,76 @@ export function Navbar() {
       document.body.style.overflow = 'unset';
     }
   }, [isMobileMenuOpen]);
+
+  const NavDropdown = ({ title, items, id }) => {
+    const isOpen = openDropdown === id;
+    const isItemActive = items.some(route => pathname?.startsWith(route.href));
+    return (
+      <div 
+        className="relative"
+        onMouseEnter={() => setOpenDropdown(id)}
+        onMouseLeave={() => setOpenDropdown(null)}
+      >
+        <button
+          onClick={() => setOpenDropdown(isOpen ? null : id)}
+          className={`flex items-center gap-1.5 py-2 transition-colors ${
+            isItemActive || isOpen ? 'text-brandDeep font-bold border-b-2 border-brandDeep pb-1' : 'hover:text-brandDeep'
+          }`}
+        >
+          <span>{title}</span>
+          <ChevronDown size={14} className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        </button>
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, scale: 0.98 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="absolute top-full -left-8 w-80 pt-3 z-50"
+            >
+              <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-4 border border-white/60 shadow-2xl shadow-brandDeep/15">
+                <div className="space-y-1">
+                {items.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setOpenDropdown(null)}
+                      className={`flex items-center gap-3 p-2.5 rounded-2xl transition-all group ${
+                        isActive
+                          ? 'bg-blue-50/80 text-brandDeep border border-brandCyan/30'
+                          : 'hover:bg-slate-100/80 text-brandInk hover:text-brandDeep'
+                      }`}
+                    >
+                      <div 
+                        className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110"
+                        style={{ backgroundColor: `${item.color}15`, color: item.color }}
+                      >
+                        <Icon size={18} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-bold truncate group-hover:text-brandDeep">
+                          {item.name}
+                        </div>
+                        <div className="text-[11px] text-brandInk/50 truncate font-normal">
+                          {item.desc}
+                        </div>
+                      </div>
+                      <ArrowRight size={14} className="text-brandInk/30 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0" />
+                    </Link>
+                  );
+                })}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  };
 
   return (
     <>
@@ -100,110 +177,22 @@ export function Navbar() {
               Home
             </Link>
 
-            {/* Features Dropdown Trigger */}
-            <div 
-              ref={dropdownRef}
-              className="relative"
-              onMouseEnter={() => setIsFeaturesOpen(true)}
-              onMouseLeave={() => setIsFeaturesOpen(false)}
-            >
-              <button
-                onClick={() => setIsFeaturesOpen(!isFeaturesOpen)}
-                className={`flex items-center gap-1.5 py-2 transition-colors ${
-                  isFeatureActive || isFeaturesOpen ? 'text-brandDeep font-bold border-b-2 border-brandDeep pb-1' : 'hover:text-brandDeep'
+            {/* Features Dropdown */}
+            <div ref={dropdownRef} className="flex items-center gap-8 text-sm font-semibold text-brandInk/70">
+              <NavDropdown title="Features" items={featureItems} id="features" />
+              <NavDropdown title="Product" items={productItems} id="product" />
+              
+              <Link
+                href="/pricing"
+                className={`transition-colors ${
+                  pathname === '/pricing' ? 'text-brandDeep font-bold border-b-2 border-brandDeep pb-1' : 'hover:text-brandDeep'
                 }`}
               >
-                <span>Features</span>
-                <ChevronDown size={14} className={`transition-transform duration-200 ${isFeaturesOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {/* Dropdown Menu Panel */}
-              <AnimatePresence>
-                {isFeaturesOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="absolute top-full -left-20 w-96 bg-white/95 backdrop-blur-xl rounded-3xl p-4 border border-white/60 shadow-2xl shadow-brandDeep/15 z-50 mt-2"
-                  >
-                    <div className="px-3 py-2 border-b border-brandInk/5 mb-2 flex items-center justify-between">
-                      <span className="text-[11px] font-bold uppercase tracking-widest text-brandDeep/60">
-                        Audit Modules & Features
-                      </span>
-                      <span className="text-[10px] bg-brandCyan/20 text-brandDeep font-extrabold px-2 py-0.5 rounded-full">
-                        7 Modules
-                      </span>
-                    </div>
-
-                    <div className="space-y-1">
-                      {featureItems.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = pathname === item.href;
-                        return (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            onClick={() => setIsFeaturesOpen(false)}
-                            className={`flex items-center gap-3 p-2.5 rounded-2xl transition-all group ${
-                              isActive
-                                ? 'bg-blue-50/80 text-brandDeep border border-brandCyan/30'
-                                : 'hover:bg-slate-100/80 text-brandInk hover:text-brandDeep'
-                            }`}
-                          >
-                            <div 
-                              className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110"
-                              style={{ backgroundColor: `${item.color}15`, color: item.color }}
-                            >
-                              <Icon size={18} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="text-xs font-bold truncate group-hover:text-brandDeep">
-                                {item.name}
-                              </div>
-                              <div className="text-[11px] text-brandInk/50 truncate font-normal">
-                                {item.desc}
-                              </div>
-                            </div>
-                            <ArrowRight size={14} className="text-brandInk/30 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0" />
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                Pricing
+              </Link>
+              
+              <NavDropdown title="Resources" items={resourceItems} id="resources" />
             </div>
-
-            {/* Pricing */}
-            <Link
-              href="/pricing"
-              className={`transition-colors ${
-                pathname === '/pricing' ? 'text-brandDeep font-bold border-b-2 border-brandDeep pb-1' : 'hover:text-brandDeep'
-              }`}
-            >
-              Pricing
-            </Link>
-
-            {/* About */}
-            <Link
-              href="/about"
-              className={`transition-colors ${
-                pathname === '/about' ? 'text-brandDeep font-bold border-b-2 border-brandDeep pb-1' : 'hover:text-brandDeep'
-              }`}
-            >
-              About
-            </Link>
-
-            {/* FAQ */}
-            <Link
-              href="/faq"
-              className={`transition-colors ${
-                pathname === '/faq' ? 'text-brandDeep font-bold border-b-2 border-brandDeep pb-1' : 'hover:text-brandDeep'
-              }`}
-            >
-              FAQ
-            </Link>
           </div>
 
           {/* Right Header Buttons: CTA + Mobile Hamburger Toggle */}
@@ -272,10 +261,10 @@ export function Navbar() {
                 </Link>
               </div>
 
-              {/* Categorized Features Accordion / Grid */}
+              {/* Features Accordion / Grid */}
               <div>
                 <div className="text-xs font-extrabold uppercase tracking-widest text-brandCyan mb-3">
-                  Audit Modules & Features
+                  Features
                 </div>
                 <div className="grid grid-cols-1 gap-2.5">
                   {featureItems.map((item) => {
@@ -304,13 +293,13 @@ export function Navbar() {
                 </div>
               </div>
 
-              {/* Solutions & Compare Quick Links */}
+              {/* Product */}
               <div>
                 <div className="text-xs font-extrabold uppercase tracking-widest text-brandAmber mb-3">
-                  Solutions & Comparisons
+                  Product
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  {solutionItems.map((sol) => (
+                  {productItems.map((sol) => (
                     <Link
                       key={sol.href}
                       href={sol.href}
@@ -321,14 +310,26 @@ export function Navbar() {
                       <span className="truncate">{sol.name}</span>
                     </Link>
                   ))}
-                  <Link
-                    href="/compare/flawdits-vs-leadsgorilla"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-3 rounded-2xl bg-white/10 border border-white/15 text-xs font-bold text-white hover:bg-white/20 flex items-center gap-2 col-span-2"
-                  >
-                    <ArrowRightLeft size={14} className="text-brandCyan shrink-0" />
-                    <span>Compare vs Competitors</span>
-                  </Link>
+                </div>
+              </div>
+
+              {/* Resources */}
+              <div>
+                <div className="text-xs font-extrabold uppercase tracking-widest text-brandCyan mb-3">
+                  Resources
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {resourceItems.map((sol) => (
+                    <Link
+                      key={sol.href}
+                      href={sol.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="p-3 rounded-2xl bg-white/10 border border-white/15 text-xs font-bold text-white hover:bg-white/20 flex items-center gap-2"
+                    >
+                      <sol.icon size={14} className="text-brandCyan shrink-0" />
+                      <span className="truncate">{sol.name}</span>
+                    </Link>
+                  ))}
                 </div>
               </div>
 

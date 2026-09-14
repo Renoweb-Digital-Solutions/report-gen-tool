@@ -18,10 +18,10 @@ export function Footer() {
       <div className="absolute top-0 left-0 w-80 h-80 bg-brandIndigo/10 blur-3xl rounded-full pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
-        
+
         {/* Top Header Row with Logo & Tagline */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 pb-16 border-b border-white/10">
-          
+
           {/* Logo & Info (Col 1 to 4) */}
           <div className="lg:col-span-4 space-y-6">
             <Link href="/" className="inline-flex items-center gap-3 group">
@@ -52,7 +52,7 @@ export function Footer() {
 
           {/* Categorized Navigation Columns (Col 5 to 12) */}
           <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-8">
-            
+
             {/* Col 1: Audit Modules */}
             <div>
               <h4 className="text-xs font-bold uppercase tracking-widest text-brandCyan mb-4">
@@ -73,6 +73,9 @@ export function Footer() {
                 </li>
                 <li>
                   <Link href="/linkedin-audit" className="hover:text-white transition-colors">LinkedIn Audit</Link>
+                </li>
+                <li>
+                  <Link href="/linkedin-personal-audit" className="hover:text-white transition-colors">LinkedIn Personal Audit</Link>
                 </li>
                 <li>
                   <Link href="/visual-brand-match" className="hover:text-white transition-colors">Visual Brand Match</Link>
@@ -144,6 +147,12 @@ export function Footer() {
               </h4>
               <ul className="space-y-2.5 text-xs text-white/70 font-medium">
                 <li>
+                  <Link href="/what-is-flawdits" className="hover:text-white transition-colors">What is Flawdits</Link>
+                </li>
+                <li>
+                  <Link href="/why-flawdits" className="hover:text-white transition-colors">Why Flawdits</Link>
+                </li>
+                <li>
                   <Link href="/about" className="hover:text-white transition-colors">About Flawdits</Link>
                 </li>
                 <li>
@@ -165,7 +174,7 @@ export function Footer() {
                 </li>
                 <li className="pt-2">
                   <a
-                    href="https://renoweb.in"
+                    href="https://renowebhq.com"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-brandAmber font-semibold hover:underline"
