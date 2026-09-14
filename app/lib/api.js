@@ -157,6 +157,43 @@ export async function generateFullReport(payload) {
 }
 
 /**
+ * Get current user profile details
+ */
+export async function getUserProfile() {
+  const res = await authFetch(`${BASE_URL}/auth/me`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+}
+
+/**
+ * Create a new support ticket
+ */
+export async function createTicket(payload) {
+  const res = await authFetch(`${BASE_URL}/auth/tickets`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+}
+
+/**
+ * Get tickets submitted by the current user
+ */
+export async function getUserTickets() {
+  const res = await authFetch(`${BASE_URL}/auth/tickets/me`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+}
+
+/**
  * Generate a Website Anatomy (SEO) Report.
  */
 export async function generateWebsiteReport(payload) {
@@ -378,6 +415,18 @@ export async function getAdminUsers() {
 }
 
 /**
+ * Fetch all support tickets for the admin panel
+ */
+export async function getAdminTickets() {
+  const res = await adminAuthFetch(`${BASE_URL}/auth/admin/tickets`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+}
+
+/**
  * Login specifically for admin portal
  */
 export async function adminLogin(username, password) {
@@ -391,6 +440,35 @@ export async function adminLogin(username, password) {
     body: params,
   });
 
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+}
+
+/**
+ * Send analytics event
+ */
+export async function sendAnalyticsEvent(payload) {
+  try {
+    const res = await fetch(`${BASE_URL}/analytics/event`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    return res.ok;
+  } catch (err) {
+    console.error("Analytics error", err);
+    return false;
+  }
+}
+
+/**
+ * Get analytics summary for admin
+ */
+export async function getAnalyticsSummary() {
+  const res = await adminAuthFetch(`${BASE_URL}/analytics/summary`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
   if (!res.ok) throw new Error(await extractError(res));
   return res.json();
 }

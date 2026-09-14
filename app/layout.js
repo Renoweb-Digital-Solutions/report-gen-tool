@@ -1,5 +1,7 @@
 import { DM_Sans, Oswald } from "next/font/google";
 import "./globals.css";
+import { AnalyticsProvider } from "./components/AnalyticsProvider";
+import CookieBanner from "./components/CookieBanner";
 
 // Self-hosted via next/font — no @import needed in CSS, zero layout shift
 const dmSans = DM_Sans({
@@ -26,7 +28,12 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${dmSans.variable} ${oswald.variable}`}>
-      <body>{children}</body>
+      <body>
+        <AnalyticsProvider>
+          {children}
+          <CookieBanner />
+        </AnalyticsProvider>
+      </body>
     </html>
   );
 }

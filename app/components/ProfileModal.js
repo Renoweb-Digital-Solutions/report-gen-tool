@@ -54,7 +54,18 @@ export default function ProfileModal({ onClose }) {
           <p>Authenticated User</p>
         </div>
 
-        <div className="profile-actions">
+        <div className="profile-actions" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <button 
+            className="profile-logout-btn" 
+            style={{ background: '#e0e7ff', color: '#4338ca', borderColor: '#c7d2fe' }}
+            onClick={() => {
+              onClose();
+              router.push('/dashboard/profile');
+            }}
+          >
+            <UserIcon size={18} />
+            <span>View Profile & Tickets</span>
+          </button>
           <button className="profile-logout-btn" onClick={handleLogout}>
             <LogOut size={18} />
             <span>Log out</span>

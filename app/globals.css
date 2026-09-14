@@ -2925,6 +2925,29 @@ body {
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.sidebar-profile-full-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  background: rgba(48, 143, 239, 0.1);
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  color: #308fef;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.sidebar-profile-full-btn:hover {
+  background: rgba(48, 143, 239, 0.15);
+  border-color: rgba(48, 143, 239, 0.3);
+  transform: translateY(-1px);
+}
+
 .sidebar-logout-full-btn {
   display: flex;
   align-items: center;

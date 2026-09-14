@@ -13,6 +13,8 @@ import InstagramReportForm from '@/app/forms/InstagramReportForm';
 import LinkedInReportForm from '@/app/forms/LinkedInReportForm';
 import LinkedInPersonalForm from '@/app/forms/LinkedInPersonalForm';
 import VisualBrandForm from '@/app/forms/VisualBrandForm';
+import SupportModal from '@/app/components/SupportModal';
+import { HelpCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
   generateFullReport,
@@ -47,6 +49,7 @@ export default function Dashboard() {
   const [authChecked, setAuthChecked] = useState(false);
   const [username, setUsername] = useState('User');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem('access_token');
@@ -386,6 +389,20 @@ export default function Dashboard() {
           pdfLoading={current ? pdfLoading[current.pdfKey] : false}
           onDownload={() => current && handleDownload(current.pdfKey)}
         />
+
+        {/* ── Support Floating Button & Modal ── */}
+        <button 
+          onClick={() => setIsSupportOpen(true)}
+          className="fixed bottom-8 right-8 z-[100] p-4 bg-gradient-to-r from-blue-700 to-blue-600 text-white rounded-full shadow-2xl hover:shadow-[0_20px_40px_rgba(37,99,235,0.3)] transition-all hover:-translate-y-1 flex items-center justify-center group"
+          title="Help & Support"
+        >
+          <HelpCircle size={24} />
+          <span className="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 ease-in-out font-bold group-hover:pl-2 group-hover:pr-1">
+            Support
+          </span>
+        </button>
+
+        {isSupportOpen && <SupportModal onClose={() => setIsSupportOpen(false)} />}
       </div>
     </>
   );

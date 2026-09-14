@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { BarChart, Globe, MapPin, Camera, Briefcase, UserCircle, Palette, LogOut } from 'lucide-react';
 
 const TABS = [
@@ -46,6 +47,15 @@ export default function TabNav({ activeTab, onTabChange, onLogout }) {
         })}
       </div>
       <div className="sidebar-nav-footer">
+        <Link 
+          href="/dashboard/profile"
+          className="sidebar-profile-full-btn" 
+          style={{ marginBottom: '8px', textDecoration: 'none' }}
+          title="Profile"
+        >
+          <UserCircle size={18} />
+          <span>Profile</span>
+        </Link>
         <button 
           className="sidebar-logout-full-btn" 
           onClick={onLogout} 

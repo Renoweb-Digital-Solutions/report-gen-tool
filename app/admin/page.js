@@ -2,31 +2,44 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ShieldAlert, Users, FileText, Activity, ShieldCheck, LogOut } from 'lucide-react';
-import { getAdminUsers } from '@/app/lib/api';
+import { ShieldAlert, Users, FileText, Activity, ShieldCheck, LogOut, MessageSquare, Clock, CheckCircle2, RefreshCw, BarChart3 } from 'lucide-react';
+import { getAdminUsers, getAdminTickets, getAnalyticsSummary } from '@/app/lib/api';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 
 export default function AdminPanel() {
   const [users, setUsers] = useState([]);
+  const [tickets, setTickets] = useState([]);
+  const [analytics, setAnalytics] = useState(null);
+  const [activeTab, setActiveTab] = useState('users');
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+
+  const fetchData = async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
+    try {
+      const [usersData, ticketsData, analyticsData] = await Promise.all([
+        getAdminUsers(),
+        getAdminTickets(),
+        getAnalyticsSummary().catch(() => null)
+      ]);
+      setUsers(usersData?.users || []);
+      setTickets(ticketsData?.tickets || []);
+      setAnalytics(analyticsData || null);
+      setError(null);
+    } catch (err) {
+      setError(err.message || 'Access Denied');
+    } finally {
+      setLoading(false);
+      if (isRefresh) setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('admin_access_token');
     if (!token) {
       window.location.href = '/admin/login';
       return;
-    }
-
-    async function fetchData() {
-      try {
-        const data = await getAdminUsers();
-        setUsers(data.users || []);
-        setError(null);
-      } catch (err) {
-        setError(err.message || 'Access Denied');
-      } finally {
-        setLoading(false);
-      }
     }
     fetchData();
   }, []);
@@ -124,52 +137,186 @@ export default function AdminPanel() {
           </motion.div>
         </div>
 
-        {/* Table */}
+        {/* Table Section */}
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
           style={{ background: 'var(--color-white)', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-card)', border: '1px solid var(--color-border)', overflow: 'hidden' }}>
           
-          <div style={{ padding: '24px', borderBottom: '1px solid var(--color-border)', background: 'rgba(244,247,255,0.3)' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-dark)', margin: 0 }}>User Accounts</h2>
+          <div style={{ padding: '0', borderBottom: '1px solid var(--color-border)', background: 'rgba(244,247,255,0.3)', display: 'flex', alignItems: 'center' }}>
+            <button 
+              onClick={() => setActiveTab('users')}
+              style={{ padding: '20px', minWidth: '150px', background: activeTab === 'users' ? '#ffffff' : 'transparent', border: 'none', borderBottom: activeTab === 'users' ? '3px solid var(--brand-blue)' : '3px solid transparent', fontSize: '16px', fontWeight: 700, color: activeTab === 'users' ? 'var(--brand-deep)' : 'rgba(25,25,25,0.5)', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+            >
+              <Users size={18} /> User Accounts
+            </button>
+            <button 
+              onClick={() => setActiveTab('tickets')}
+              style={{ padding: '20px', minWidth: '150px', background: activeTab === 'tickets' ? '#ffffff' : 'transparent', border: 'none', borderBottom: activeTab === 'tickets' ? '3px solid var(--brand-blue)' : '3px solid transparent', fontSize: '16px', fontWeight: 700, color: activeTab === 'tickets' ? 'var(--brand-deep)' : 'rgba(25,25,25,0.5)', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+            >
+              <MessageSquare size={18} /> Support Tickets
+              {tickets.filter(t => t.status === 'Open').length > 0 && (
+                <span style={{ background: 'var(--color-error)', color: 'white', fontSize: '11px', padding: '2px 8px', borderRadius: '10px' }}>
+                  {tickets.filter(t => t.status === 'Open').length} New
+                </span>
+              )}
+            </button>
+            <button 
+              onClick={() => setActiveTab('analytics')}
+              style={{ padding: '20px', minWidth: '150px', background: activeTab === 'analytics' ? '#ffffff' : 'transparent', border: 'none', borderBottom: activeTab === 'analytics' ? '3px solid var(--brand-blue)' : '3px solid transparent', fontSize: '16px', fontWeight: 700, color: activeTab === 'analytics' ? 'var(--brand-deep)' : 'rgba(25,25,25,0.5)', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+            >
+              <BarChart3 size={18} /> Analytics
+            </button>
+
+
+            <button
+              onClick={() => fetchData(true)}
+              disabled={refreshing}
+              style={{ marginLeft: 'auto', marginRight: '20px', padding: '8px 12px', background: refreshing ? 'rgba(25,25,25,0.05)' : 'white', border: '1px solid var(--color-border)', borderRadius: '6px', cursor: refreshing ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--brand-deep)', fontSize: '13px', fontWeight: 600, transition: 'all 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
+            >
+              <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
+              {refreshing ? 'Refreshing...' : 'Refresh'}
+            </button>
           </div>
           
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}>
-                  <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Username</th>
-                  <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Email</th>
-                  <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Role</th>
-                  <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Reports</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user, idx) => (
-                  <tr key={idx} style={{ borderBottom: '1px solid rgba(2,61,187,0.04)', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(48,143,239,0.02)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
-                    <td style={{ padding: '16px 24px', fontWeight: 500, color: 'var(--color-dark)' }}>{user.username}</td>
-                    <td style={{ padding: '16px 24px', fontSize: '14px', color: 'rgba(25,25,25,0.7)' }}>{user.email}</td>
-                    <td style={{ padding: '16px 24px' }}>
-                      <span style={{ 
-                        padding: '4px 12px', fontSize: '11px', fontWeight: 700, borderRadius: '20px', textTransform: 'uppercase',
-                        background: user.role === 'admin' ? 'rgba(2,61,187,0.08)' : 'rgba(25,25,25,0.05)',
-                        color: user.role === 'admin' ? 'var(--brand-deep)' : 'rgba(25,25,25,0.6)'
-                      }}>
-                        {user.role || 'user'}
-                      </span>
-                    </td>
-                    <td style={{ padding: '16px 24px', textAlign: 'center' }}>
-                      <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: '32px', height: '32px', padding: '0 10px', borderRadius: '8px', background: 'rgba(16,185,129,0.1)', color: 'var(--color-success)', fontWeight: 700, fontSize: '14px', border: '1px solid rgba(16,185,129,0.2)' }}>
-                        {user.report_count || 0}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {users.length === 0 && (
-                  <tr>
-                    <td colSpan="4" style={{ padding: '48px 24px', textAlign: 'center', color: 'rgba(25,25,25,0.4)', fontWeight: 500 }}>No users found.</td>
-                  </tr>
+            {activeTab === 'analytics' ? (
+              <div style={{ padding: '24px' }}>
+                <h4 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--brand-deep)', marginBottom: '24px' }}>Traffic Overview (Last 30 Days)</h4>
+                
+                {analytics && analytics.chart_data && analytics.chart_data.length > 0 ? (
+                  <div style={{ height: '300px', width: '100%' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={analytics.chart_data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+                        <XAxis dataKey="name" stroke="rgba(25,25,25,0.5)" fontSize={12} tickLine={false} axisLine={false} />
+                        <YAxis stroke="rgba(25,25,25,0.5)" fontSize={12} tickLine={false} axisLine={false} />
+                        <RechartsTooltip 
+                          contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: 'var(--shadow-card)', fontWeight: 600 }}
+                          itemStyle={{ color: 'var(--brand-blue)' }}
+                        />
+                        <Line type="monotone" dataKey="views" name="Page Views" stroke="var(--brand-blue)" strokeWidth={3} dot={{ r: 4, fill: 'var(--brand-blue)', strokeWidth: 2, stroke: 'white' }} activeDot={{ r: 6 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div style={{ padding: '40px', textAlign: 'center', color: 'rgba(25,25,25,0.5)' }}>
+                    No analytics data available yet.
+                  </div>
                 )}
-              </tbody>
-            </table>
+                
+                {analytics && analytics.top_events && analytics.top_events.length > 0 && (
+                  <div style={{ marginTop: '40px' }}>
+                    <h4 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--brand-deep)', marginBottom: '24px' }}>Top Events</h4>
+                    <div style={{ height: '250px', width: '100%' }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={analytics.top_events} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#eee" horizontal={true} vertical={false} />
+                          <XAxis type="number" stroke="rgba(25,25,25,0.5)" fontSize={12} tickLine={false} axisLine={false} />
+                          <YAxis dataKey="name" type="category" stroke="rgba(25,25,25,0.8)" fontSize={12} tickLine={false} axisLine={false} fontWeight={600} />
+                          <RechartsTooltip 
+                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: 'var(--shadow-card)', fontWeight: 600 }}
+                            cursor={{ fill: 'rgba(48,143,239,0.05)' }}
+                          />
+                          <Bar dataKey="value" name="Count" fill="var(--brand-blue)" radius={[0, 4, 4, 0]} barSize={24} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : activeTab === 'users' ? (
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}>
+                    <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Username</th>
+                    <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Email</th>
+                    <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Role</th>
+                    <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Reports</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user, idx) => (
+                    <tr key={idx} style={{ borderBottom: '1px solid rgba(2,61,187,0.04)', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(48,143,239,0.02)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
+                      <td style={{ padding: '16px 24px', fontWeight: 500, color: 'var(--color-dark)' }}>{user.username}</td>
+                      <td style={{ padding: '16px 24px', fontSize: '14px', color: 'rgba(25,25,25,0.7)' }}>{user.email}</td>
+                      <td style={{ padding: '16px 24px' }}>
+                        <span style={{ 
+                          padding: '4px 12px', fontSize: '11px', fontWeight: 700, borderRadius: '20px', textTransform: 'uppercase',
+                          background: user.role === 'admin' ? 'rgba(2,61,187,0.08)' : 'rgba(25,25,25,0.05)',
+                          color: user.role === 'admin' ? 'var(--brand-deep)' : 'rgba(25,25,25,0.6)'
+                        }}>
+                          {user.role || 'user'}
+                        </span>
+                      </td>
+                      <td style={{ padding: '16px 24px', textAlign: 'center' }}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: '32px', height: '32px', padding: '0 10px', borderRadius: '8px', background: 'rgba(16,185,129,0.1)', color: 'var(--color-success)', fontWeight: 700, fontSize: '14px', border: '1px solid rgba(16,185,129,0.2)' }}>
+                          {user.report_count || 0}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {users.length === 0 && (
+                    <tr>
+                      <td colSpan="4" style={{ padding: '48px 24px', textAlign: 'center', color: 'rgba(25,25,25,0.4)', fontWeight: 500 }}>No users found.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}>
+                    <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>User</th>
+                    <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Ticket Details</th>
+                    <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</th>
+                    <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tickets.map((ticket, idx) => (
+                    <tr key={ticket._id || idx} style={{ borderBottom: '1px solid rgba(2,61,187,0.04)', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(48,143,239,0.02)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
+                      <td style={{ padding: '16px 24px', verticalAlign: 'top' }}>
+                        <div style={{ fontWeight: 600, color: 'var(--color-dark)' }}>{ticket.username}</div>
+                        <div style={{ fontSize: '12px', color: 'rgba(25,25,25,0.5)', marginTop: '2px' }}>{ticket.email}</div>
+                      </td>
+                      <td style={{ padding: '16px 24px', maxWidth: '400px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                          <span style={{ 
+                            padding: '2px 8px', fontSize: '10px', fontWeight: 700, borderRadius: '4px', textTransform: 'uppercase',
+                            background: ticket.type === 'Error' ? 'rgba(239,68,68,0.1)' : 'rgba(48,143,239,0.1)',
+                            color: ticket.type === 'Error' ? 'var(--color-error)' : 'var(--brand-blue)'
+                          }}>
+                            {ticket.type}
+                          </span>
+                          <span style={{ fontWeight: 700, color: 'var(--color-dark)' }}>{ticket.title}</span>
+                        </div>
+                        <div style={{ fontSize: '14px', color: 'rgba(25,25,25,0.7)', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
+                          {ticket.description}
+                        </div>
+                      </td>
+                      <td style={{ padding: '16px 24px', verticalAlign: 'top' }}>
+                        {ticket.status === 'Open' ? (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', fontSize: '12px', fontWeight: 700, borderRadius: '20px', background: 'rgba(245,158,11,0.1)', color: '#d97706' }}>
+                            <Clock size={14} /> Open
+                          </span>
+                        ) : (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', fontSize: '12px', fontWeight: 700, borderRadius: '20px', background: 'rgba(16,185,129,0.1)', color: 'var(--color-success)' }}>
+                            <CheckCircle2 size={14} /> Closed
+                          </span>
+                        )}
+                      </td>
+                      <td style={{ padding: '16px 24px', verticalAlign: 'top', textAlign: 'right', fontSize: '13px', color: 'rgba(25,25,25,0.5)', fontWeight: 500 }}>
+                        {new Date(ticket.created_at).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                  {tickets.length === 0 && (
+                    <tr>
+                      <td colSpan="4" style={{ padding: '48px 24px', textAlign: 'center', color: 'rgba(25,25,25,0.4)', fontWeight: 500 }}>No support tickets found.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
         </motion.div>
       </div>
