@@ -194,6 +194,23 @@ export async function getUserTickets() {
 }
 
 /**
+ * Match user query against FAQs using Groq semantic scoring.
+ * Public endpoint — no auth required.
+ */
+export async function matchFaqs(query, faqs) {
+  const res = await fetch(`${BASE_URL}/auth/support/faq-match`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query, faqs }),
+  });
+  if (!res.ok) {
+    if (res.status === 429) return { matches: [] }; // Rate limited, return empty
+    throw new Error(await extractError(res));
+  }
+  return res.json();
+}
+
+/**
  * Generate a Website Anatomy (SEO) Report.
  */
 export async function generateWebsiteReport(payload) {
