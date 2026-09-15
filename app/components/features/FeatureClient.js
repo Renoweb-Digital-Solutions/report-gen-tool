@@ -12,7 +12,9 @@ import { FEATURES } from '../../data/features';
 import AuthModal from '../AuthModal';
 import { MagneticButton } from '../ui/MagneticButton';
 import { TextReveal } from '../home/TextReveal';
+import { CtaBanner } from '../ui/CtaBanner';
 import { ScrollReveal } from '../home/ScrollReveal';
+import TabbedContentBlocks from './TabbedContentBlocks';
 
 export default function FeatureClient({ initialSlug = 'full-report' }) {
   const router = useRouter();
@@ -211,21 +213,8 @@ export default function FeatureClient({ initialSlug = 'full-report' }) {
             </div>
           </section>
 
-          {/* CONTENT BLOCKS GRID */}
-          <section className="py-20 bg-white border-y border-brandDeep/10">
-            <div className="max-w-7xl mx-auto px-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-stretch max-w-6xl mx-auto">
-                {data.contentBlocks.map((block, idx) => (
-                  <ScrollReveal key={idx} delay={idx * 0.1} className="bg-gradient-to-br from-slate-50 to-blue-50/40 p-8 sm:p-10 rounded-3xl border border-brandDeep/10 shadow-sm flex flex-col justify-between">
-                    <div>
-                      <h2 className="text-2xl font-extrabold text-brandDeep mb-4">{block.h2}</h2>
-                      <p className="text-sm sm:text-base text-brandInk/70 leading-relaxed">{block.body}</p>
-                    </div>
-                  </ScrollReveal>
-                ))}
-              </div>
-            </div>
-          </section>
+          {/* CONTENT BLOCKS TABS (CLICKUP STYLE) */}
+          <TabbedContentBlocks blocks={data.contentBlocks} />
 
           {/* FEATURE GRID ITEMS ("WHAT [MODULE] COVERS") */}
           {data.featureGrid && (
@@ -316,24 +305,11 @@ export default function FeatureClient({ initialSlug = 'full-report' }) {
           </section>
 
           {/* CTA BAND */}
-          <section className="py-20 bg-gradient-to-br from-brandDark to-brandDeep text-white relative overflow-hidden">
-            <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
-              <ScrollReveal className="max-w-3xl mx-auto">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6 leading-tight">
-                  {data.ctaBand.headline}
-                </h2>
-                
-                <p className="text-base sm:text-lg text-white/70 mb-8 max-w-xl mx-auto">
-                  Run a complete digital presence report covering SEO, social, local, and visual brand consistency in minutes.
-                </p>
-
-                <MagneticButton onClick={handleCtaClick} className="px-8 py-4 bg-gradient-to-r from-brandAmber to-amber-400 text-brandDark rounded-full text-base font-bold shadow-glow-amber hover:shadow-2xl transition-all inline-flex items-center gap-3">
-                  <span>{data.ctaBand.btnText}</span>
-                  <ArrowRight size={18} />
-                </MagneticButton>
-              </ScrollReveal>
-            </div>
-          </section>
+          <CtaBanner 
+            title={data.ctaBand.headline}
+            subtitle="Run a complete digital presence report covering SEO, social, local, and visual brand consistency in minutes." 
+            buttonText={data.ctaBand.btnText}
+          />
         </motion.div>
       </AnimatePresence>
     </div>

@@ -12,6 +12,7 @@ import { SOLUTIONS } from '../../data/solutions';
 import AuthModal from '../AuthModal';
 import { MagneticButton } from '../ui/MagneticButton';
 import { TextReveal } from '../home/TextReveal';
+import { CtaBanner } from '../ui/CtaBanner';
 import { ScrollReveal } from '../home/ScrollReveal';
 
 export default function SolutionClient({ initialSlug = 'for-agencies' }) {
@@ -311,24 +312,11 @@ export default function SolutionClient({ initialSlug = 'for-agencies' }) {
           </section>
 
           {/* CTA BAND */}
-          <section className="py-20 bg-gradient-to-br from-brandDark to-brandDeep text-white relative overflow-hidden">
-            <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
-              <ScrollReveal className="max-w-3xl mx-auto">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6 leading-tight">
-                  {data.ctaBand.headline}
-                </h2>
-                
-                <p className="text-base sm:text-lg text-white/70 mb-8 max-w-xl mx-auto">
-                  Run a complete digital presence report covering SEO, social, local, and visual brand consistency in minutes.
-                </p>
-
-                <MagneticButton onClick={handleCtaClick} className="px-8 py-4 bg-gradient-to-r from-brandAmber to-amber-400 text-brandDark rounded-full text-base font-bold shadow-glow-amber hover:shadow-2xl transition-all inline-flex items-center gap-3">
-                  <span>{data.ctaBand.btnText}</span>
-                  <ArrowRight size={18} />
-                </MagneticButton>
-              </ScrollReveal>
-            </div>
-          </section>
+          <CtaBanner 
+            title={data.ctaBand.headline}
+            subtitle="Run a complete digital presence report covering SEO, social, local, and visual brand consistency in minutes." 
+            buttonText={data.ctaBand.btnText}
+          />
         </motion.div>
       </AnimatePresence>
     </div>

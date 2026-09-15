@@ -12,6 +12,7 @@ import AuthModal from '../AuthModal';
 import { MagneticButton } from '../ui/MagneticButton';
 import { TextReveal } from '../home/TextReveal';
 import { ScrollReveal } from '../home/ScrollReveal';
+import { CtaBanner } from '../ui/CtaBanner';
 import { Navbar } from '../layout/Navbar';
 import { Footer } from '../layout/Footer';
 
@@ -246,42 +247,69 @@ export default function PricingClient() {
       </section>
 
 
-
       {/* CONTENT BLOCKS GRID */}
-      <section className="py-24 bg-gradient-to-br from-blue-50/30 to-indigo-50/20">
+      <section className="py-32 bg-gradient-to-b from-white via-slate-50 to-white">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-stretch">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch">
             
-            {/* Block 1 */}
-            <ScrollReveal className="bg-white p-8 sm:p-10 rounded-3xl border border-brandDeep/10 shadow-sm">
-              <h2 className="text-2xl font-extrabold text-brandDeep mb-4">Audit Report Generator Plans, Side by Side</h2>
-              <p className="text-sm text-brandInk/70 leading-relaxed">
-                These audit report generator plans scale with usage: a Free tier for testing the format, a Pro tier for solo consultants and steady report needs, an Advanced tier for higher-volume users, and a Custom tier for agencies and enterprises needing unlimited reporting and white label branding.
-              </p>
+            {/* Block 1 (Wide Bento Card) */}
+            <ScrollReveal className="lg:col-span-2 bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col lg:flex-row hover:shadow-xl hover:border-brandCyan/30 transition-all duration-500 group">
+              <div className="p-8 sm:p-10 lg:w-1/2 flex flex-col justify-center">
+                <h2 className="text-2xl lg:text-3xl font-extrabold text-brandDeep mb-4 leading-tight group-hover:text-brandCyan transition-colors">Audit Report Generator Plans, Side by Side</h2>
+                <p className="text-sm sm:text-base text-brandInk/70 leading-relaxed">
+                  These audit report generator plans scale with usage: a Free tier for testing the format, a Pro tier for solo consultants and steady report needs, an Advanced tier for higher-volume users, and a Custom tier for agencies and enterprises needing unlimited reporting and white label branding.
+                </p>
+              </div>
+              <div className="mt-auto lg:mt-0 lg:w-1/2 p-8 pt-0 lg:pt-8 lg:pl-0 flex items-center">
+                <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border border-slate-100 shadow-sm bg-slate-50 group-hover:shadow-md transition-shadow">
+                  <Image src="/pricing_plans_infographic.png" alt="Pricing Plans Infographic" fill className="object-cover object-top" />
+                </div>
+              </div>
             </ScrollReveal>
 
-            {/* Block 2 */}
-            <ScrollReveal delay={0.1} className="bg-white p-8 sm:p-10 rounded-3xl border border-brandDeep/10 shadow-sm">
-              <h2 className="text-2xl font-extrabold text-brandDeep mb-4">White Label Audit Tool Pricing for Agencies</h2>
-              <p className="text-sm text-brandInk/70 leading-relaxed">
-                White label audit tool pricing sits on the Agency plan, where reports carry your logo and brand colors instead of Flawdits&apos; — the same reports your prospects and clients will actually see, just branded as yours.
-              </p>
+            {/* Block 2 (Tall Bento Card) */}
+            <ScrollReveal delay={0.1} className="lg:col-span-1 bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full hover:shadow-xl hover:border-brandCyan/30 transition-all duration-500 group">
+              <div className="p-8 sm:p-10 pb-6">
+                <h2 className="text-2xl font-extrabold text-brandDeep mb-4 leading-tight group-hover:text-brandCyan transition-colors">White Label Pricing for Agencies</h2>
+                <p className="text-sm sm:text-base text-brandInk/70 leading-relaxed">
+                  White label pricing sits on the Agency plan, where reports carry your logo and colors instead of Flawdits.
+                </p>
+              </div>
+              <div className="mt-auto px-8 pb-8 pt-2">
+                <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border border-slate-100 shadow-sm bg-slate-50 group-hover:shadow-md transition-shadow">
+                  <Image src="/white_label_infographic.png" alt="White Label Branding Options" fill className="object-cover object-top" />
+                </div>
+              </div>
             </ScrollReveal>
 
-            {/* Block 3 */}
-            <ScrollReveal delay={0.2} className="bg-white p-8 sm:p-10 rounded-3xl border border-brandDeep/10 shadow-sm">
-              <h2 className="text-2xl font-extrabold text-brandDeep mb-4">Free Digital Audit Plan and Pay-Per-Report Options</h2>
-              <p className="text-sm text-brandInk/70 leading-relaxed">
-                The free digital audit plan covers a limited number of monthly reports at no cost — enough to evaluate the format before committing. For teams with irregular usage, pay-per-report vs. subscription pricing means you&apos;re not paying for a monthly plan you&apos;ll only use twice a quarter.
-              </p>
+            {/* Block 3 (Tall Bento Card) */}
+            <ScrollReveal delay={0.2} className="lg:col-span-1 bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full hover:shadow-xl hover:border-brandCyan/30 transition-all duration-500 group">
+              <div className="p-8 sm:p-10 pb-6">
+                <h2 className="text-2xl font-extrabold text-brandDeep mb-4 leading-tight group-hover:text-brandCyan transition-colors">Free Plan & Pay-Per-Report</h2>
+                <p className="text-sm sm:text-base text-brandInk/70 leading-relaxed">
+                  For teams with irregular usage, pay-per-report vs. subscription pricing means you're not paying for a monthly plan you'll only use twice a quarter.
+                </p>
+              </div>
+              <div className="mt-auto px-8 pb-8 pt-2">
+                <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border border-slate-100 shadow-sm bg-slate-50 group-hover:shadow-md transition-shadow">
+                  <Image src="/pay_per_report_infographic.png" alt="Pay Per Report Dashboard" fill className="object-cover object-top" />
+                </div>
+              </div>
             </ScrollReveal>
 
-            {/* Block 4 */}
-            <ScrollReveal delay={0.3} className="bg-white p-8 sm:p-10 rounded-3xl border border-brandDeep/10 shadow-sm">
-              <h2 className="text-2xl font-extrabold text-brandDeep mb-4">Why Flawdits Costs What It Costs</h2>
-              <p className="text-sm text-brandInk/70 leading-relaxed">
-                Covering website, SEO, social and local visibility with separate point tools plus the expertise to know what the numbers actually mean adds up fast, whether that&apos;s stacked subscriptions or an agency&apos;s markup on top. Flawdits is priced for founders funding their own growth: one platform doing the job, several tools and a consultant would otherwise be needed for.
-              </p>
+            {/* Block 4 (Wide Bento Card Reversed) */}
+            <ScrollReveal delay={0.3} className="lg:col-span-2 bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col lg:flex-row-reverse hover:shadow-xl hover:border-brandCyan/30 transition-all duration-500 group">
+              <div className="p-8 sm:p-10 lg:w-1/2 flex flex-col justify-center">
+                <h2 className="text-2xl lg:text-3xl font-extrabold text-brandDeep mb-4 leading-tight group-hover:text-brandCyan transition-colors">Why Flawdits Costs What It Costs</h2>
+                <p className="text-sm sm:text-base text-brandInk/70 leading-relaxed">
+                  Covering website, SEO, social and local visibility with separate point tools plus expertise adds up fast. Flawdits is priced for founders funding their own growth: one platform doing the job.
+                </p>
+              </div>
+              <div className="mt-auto lg:mt-0 lg:w-1/2 p-8 pt-0 lg:pt-8 lg:pr-0 flex items-center">
+                <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border border-slate-100 shadow-sm bg-slate-50 group-hover:shadow-md transition-shadow">
+                  <Image src="/cost_value_infographic.png" alt="Consolidated Platform Infographic" fill className="object-cover object-top" />
+                </div>
+              </div>
             </ScrollReveal>
 
           </div>
@@ -333,24 +361,11 @@ export default function PricingClient() {
       </section>
 
       {/* CTA BAND */}
-      <section className="py-20 bg-gradient-to-br from-brandDark to-brandDeep text-white relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
-          <ScrollReveal className="max-w-3xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6 leading-tight">
-              Start free, upgrade only when you need to
-            </h2>
-            
-            <p className="text-base sm:text-lg text-white/70 mb-8 max-w-xl mx-auto">
-              No credit card required to run your first report. Choose a plan when your daily report needs grow.
-            </p>
-
-            <MagneticButton onClick={handleCtaClick} className="px-8 py-4 bg-gradient-to-r from-brandAmber to-amber-400 text-brandDark rounded-full text-base font-bold shadow-glow-amber hover:shadow-2xl transition-all inline-flex items-center gap-3">
-              <span>See Full Pricing Details</span>
-              <ArrowRight size={18} />
-            </MagneticButton>
-          </ScrollReveal>
-        </div>
-      </section>
+      <CtaBanner 
+        title="Start free, upgrade only when you need to" 
+        subtitle="No credit card required to run your first report. Choose a plan when your daily report needs grow." 
+        buttonText="See Full Pricing Details" 
+      />
 
       <Footer />
     </div>

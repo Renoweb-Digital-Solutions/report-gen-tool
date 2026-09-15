@@ -11,6 +11,7 @@ import Script from 'next/script';
 import AuthModal from '../AuthModal';
 import { MagneticButton } from '../ui/MagneticButton';
 import { TextReveal } from '../home/TextReveal';
+import { CtaBanner } from '../ui/CtaBanner';
 import { ScrollReveal } from '../home/ScrollReveal';
 
 export default function HowItWorksClient() {
@@ -172,34 +173,33 @@ export default function HowItWorksClient() {
 
       {/* DETAILED 3-STEP PROCESS SECTION */}
       <section className="py-20 bg-white border-y border-brandDeep/10">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-[90rem] mx-auto px-6 lg:px-10">
           <div className="text-center mb-16 max-w-2xl mx-auto">
             <h2 className="text-3xl font-extrabold text-brandDeep mb-3">The 3-Step Audit Process</h2>
             <p className="text-sm text-brandInk/60">From domain entry to a client-ready deliverable in under 60 seconds.</p>
           </div>
 
-          <div className="space-y-12 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-200 border-b border-slate-200 pb-16">
             {steps.map((step, idx) => {
-              const Icon = step.icon;
+              const placeholderImages = ['/why_built_16x9.png', '/dashboard.png', '/operators_16x9.png'];
+              
               return (
-                <ScrollReveal key={idx} delay={idx * 0.1} className="bg-gradient-to-br from-slate-50 via-white to-blue-50/40 p-8 sm:p-10 rounded-3xl border border-brandDeep/10 shadow-sm relative overflow-hidden">
-                  <div className="flex flex-col md:flex-row items-start gap-8">
-                    
-                    {/* Left Step Number Badge */}
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brandDeep to-brandIndigo text-white flex items-center justify-center font-extrabold text-2xl shrink-0 shadow-lg shadow-brandDeep/20">
-                      {step.number}
+                <ScrollReveal key={idx} delay={idx * 0.1} className="flex flex-col bg-white px-4 sm:px-8 md:px-6 lg:px-12 py-10 md:py-0 md:pt-4">
+                  {/* Top Image */}
+                  <div className="w-full aspect-[4/3] sm:aspect-video md:aspect-[4/3] xl:aspect-video rounded-xl overflow-hidden shadow-sm border border-slate-100 bg-slate-50 mb-8 mx-auto relative group">
+                    <Image src={placeholderImages[idx]} alt={step.title} fill className="object-cover object-left-top group-hover:scale-105 transition-transform duration-700" />
+                  </div>
+                  
+                  {/* Text Content */}
+                  <div className="flex flex-col flex-1 text-center items-center">
+                    <div className="flex items-center justify-center gap-2 mb-3">
+                      <span className="text-2xl font-black text-slate-300">{step.number}.</span>
+                      <h3 className="text-lg lg:text-xl font-extrabold text-brandDeep leading-tight">{step.title}</h3>
                     </div>
-
-                    {/* Content */}
-                    <div className="flex-1">
-                      <span className="inline-block px-3 py-1 mb-3 rounded-full bg-brandDeep/10 text-brandDeep text-xs font-bold uppercase tracking-wider">
-                        {step.badge}
-                      </span>
-                      <h3 className="text-2xl font-extrabold text-brandDeep mb-2">{step.title}</h3>
-                      <p className="text-base font-semibold text-brandInk/80 mb-4">{step.subtitle}</p>
-                      <p className="text-sm sm:text-base text-brandInk/70 leading-relaxed">{step.body}</p>
-                    </div>
-
+                    <p className="text-sm font-bold text-brandInk/80 mb-3">{step.subtitle}</p>
+                    <p className="text-sm text-brandInk/60 leading-relaxed max-w-sm">
+                      {step.body}
+                    </p>
                   </div>
                 </ScrollReveal>
               );
@@ -253,28 +253,12 @@ export default function HowItWorksClient() {
       </section>
 
       {/* CTA BAND */}
-      <section className="py-20 bg-gradient-to-br from-brandDark to-brandDeep text-white relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
-          <ScrollReveal className="max-w-3xl mx-auto">
-            <span className="inline-block px-4 py-1.5 mb-6 rounded-full bg-white/10 text-brandAmber text-xs font-bold uppercase tracking-widest backdrop-blur-md">
-              No Credit Card Required
-            </span>
-
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6 leading-tight">
-              Three steps, one client-ready report
-            </h2>
-            
-            <p className="text-base sm:text-lg text-white/70 mb-8 max-w-xl mx-auto">
-              Run a complete digital presence report covering SEO, social, local, and visual brand consistency in minutes.
-            </p>
-
-            <MagneticButton onClick={handleCtaClick} className="px-8 py-4 bg-gradient-to-r from-brandAmber to-amber-400 text-brandDark rounded-full text-base font-bold shadow-glow-amber hover:shadow-2xl transition-all inline-flex items-center gap-3">
-              <span>Generate My First Report →</span>
-              <ArrowRight size={18} />
-            </MagneticButton>
-          </ScrollReveal>
-        </div>
-      </section>
+      <CtaBanner 
+        badge="No Credit Card Required"
+        title="Three steps, one client-ready report" 
+        subtitle="Run a complete digital presence report covering SEO, social, local, and visual brand consistency in minutes." 
+        buttonText="Generate My First Report →" 
+      />
     </div>
   );
 }

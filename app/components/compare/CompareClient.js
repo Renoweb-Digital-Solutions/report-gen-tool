@@ -12,6 +12,7 @@ import { COMPARISONS } from '../../data/comparisons';
 import AuthModal from '../AuthModal';
 import { MagneticButton } from '../ui/MagneticButton';
 import { TextReveal } from '../home/TextReveal';
+import { CtaBanner } from '../ui/CtaBanner';
 import { ScrollReveal } from '../home/ScrollReveal';
 
 export default function CompareClient({ initialSlug = 'flawdits-vs-leadsgorilla' }) {
@@ -447,32 +448,13 @@ export default function CompareClient({ initialSlug = 'flawdits-vs-leadsgorilla'
           </section>
 
           {/* CTA BAND */}
-          <section className="py-20 bg-gradient-to-br from-brandDark to-brandDeep text-white relative overflow-hidden">
-            <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
-              <ScrollReveal className="max-w-3xl mx-auto">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-6 leading-tight">
-                  {data.cta.h2}
-                </h2>
-                
-                <p className="text-base sm:text-lg text-white/70 mb-8 max-w-xl mx-auto">
-                  Run a complete digital presence report covering SEO, social, local, and visual brand consistency in minutes.
-                </p>
-
-                <div className="flex flex-wrap justify-center items-center gap-4">
-                  <MagneticButton onClick={handleCtaClick} className="px-8 py-4 bg-gradient-to-r from-brandAmber to-amber-400 text-brandDark rounded-full text-base font-bold shadow-glow-amber hover:shadow-2xl transition-all flex items-center gap-3">
-                    <span>{data.cta.primaryBtn}</span>
-                  </MagneticButton>
-
-                  <Link
-                    href="/pricing"
-                    className="px-6 py-4 bg-white/10 hover:bg-white/20 text-white rounded-full text-base font-bold backdrop-blur-md transition-all"
-                  >
-                    {data.cta.secondaryBtn}
-                  </Link>
-                </div>
-              </ScrollReveal>
-            </div>
-          </section>
+          <CtaBanner 
+            title={data.cta.h2}
+            subtitle="Run a complete digital presence report covering SEO, social, local, and visual brand consistency in minutes." 
+            buttonText={data.cta.primaryBtn}
+            secondaryButtonText={data.cta.secondaryBtn}
+            secondaryButtonHref="/pricing"
+          />
         </motion.div>
       </AnimatePresence>
     </div>

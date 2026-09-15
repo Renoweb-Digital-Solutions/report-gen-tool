@@ -1,18 +1,19 @@
 'use client';
 
+import { useRef } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { Globe, MapPin, Camera, Briefcase, Palette, Sparkles, Users, TrendingUp, ArrowUpRight } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
 
 const MODULES = [
-  { icon: Globe, title: 'Website Anatomy', desc: 'Technical SEO, Core Web Vitals, and backlink health.', color: '#308fef', url: '/website-anatomy' },
-  { icon: MapPin, title: 'GMB Audit', desc: 'Google Business Profile completeness and local visibility.', color: '#4460ef', url: '/gmb-audit' },
-  { icon: Camera, title: 'Instagram Audit', desc: 'Engagement, posting consistency, and content funnel.', color: '#4ec8ef', url: '/instagram-audit' },
-  { icon: Briefcase, title: 'LinkedIn Company Page Audit', desc: 'Company page performance and thought leadership.', color: '#023dbb', url: '/linkedin-company-audit' },
-  { icon: Users, title: 'LinkedIn Personal Profile Audit', desc: 'Personal profile posts, engagement, and TOFU/MOFU/BOFU funnel mix.', color: '#10b981', url: '/linkedin-personal-audit' },
-  { icon: Palette, title: 'Visual Brand Match', desc: 'Cross-platform brand consistency scoring.', color: '#ffc857', url: '/visual-brand-match' },
-  { icon: Sparkles, title: 'AI Visibility Audit', desc: 'Brand discoverability in ChatGPT and AI search.', color: '#9d4edd', url: '/ai-visibility-audit' },
+  { icon: Globe, title: 'Website Anatomy', desc: 'Technical SEO, Core Web Vitals, and backlink health.', color: '#308fef', url: '/website-anatomy', span: 'md:col-span-2 lg:col-span-2' },
+  { icon: MapPin, title: 'GMB Audit', desc: 'Google Business Profile completeness and local visibility.', color: '#4460ef', url: '/gmb-audit', span: 'col-span-1' },
+  { icon: Camera, title: 'Instagram Audit', desc: 'Engagement, posting consistency, and content funnel.', color: '#4ec8ef', url: '/instagram-audit', span: 'col-span-1' },
+  { icon: Briefcase, title: 'LinkedIn Company', desc: 'Company page performance and thought leadership.', color: '#023dbb', url: '/linkedin-company-audit', span: 'md:col-span-2 lg:col-span-1' },
+  { icon: Users, title: 'LinkedIn Personal', desc: 'Personal profile posts, engagement, and TOFU/MOFU/BOFU funnel mix.', color: '#10b981', url: '/linkedin-personal-audit', span: 'col-span-1' },
+  { icon: Palette, title: 'Visual Brand Match', desc: 'Cross-platform brand consistency scoring.', color: '#ffc857', url: '/visual-brand-match', span: 'col-span-1' },
+  { icon: Sparkles, title: 'AI Visibility Audit', desc: 'Brand discoverability in ChatGPT and AI search.', color: '#9d4edd', url: '/ai-visibility-audit', span: 'md:col-span-2 lg:col-span-2' },
 ];
 
 const COMING_SOON = [
@@ -33,120 +34,128 @@ const itemVariants = {
 };
 
 export function FeatureGrid() {
+  const containerRef = useRef(null);
+  
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start 80%", "start 20%"]
+  });
+
+  // Animate width from 90% (compact pill) to 100% (full width)
+  const width = useTransform(scrollYProgress, [0, 1], ["90%", "100%"]);
+  // Animate border radius from rounded to square
+  const borderRadius = useTransform(scrollYProgress, [0, 1], ["40px", "0px"]);
+
   return (
-    <div id="features" className="w-full scroll-mt-24">
-      <ScrollReveal>
-        <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-10%" }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-          {MODULES.map((mod, idx) => (
-            <motion.div key={idx} variants={itemVariants}>
-              <Link href={mod.url} className="block h-full">
-                <motion.div 
-                  whileHover={{ y: -8, boxShadow: "0 25px 50px -12px rgba(2, 61, 187, 0.18)" }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
-                  className="h-full flex flex-col relative bg-gradient-to-br from-white to-blue-50/50 border border-brandCyan/40 rounded-2xl p-8 shadow-sm hover:shadow-xl hover:border-brandDeep/40 transition-all duration-300 group overflow-hidden"
-                >
-                  <div className="flex items-center justify-between mb-6">
-                    <motion.div 
-                      className="w-12 h-12 rounded-xl flex items-center justify-center transition-transform duration-300"
-                      style={{ backgroundColor: `${mod.color}15`, color: mod.color }}
-                      whileHover={{ scale: 1.15, rotate: idx % 2 === 0 ? 5 : -5 }}
-                    >
-                      <mod.icon size={24} />
-                    </motion.div>
+    <div ref={containerRef} className="w-full flex flex-col items-center justify-center bg-white py-12 md:py-20">
+      <motion.section 
+        style={{ width, borderRadius }}
+        className="bg-[#050914] relative border-t border-white/5 py-32 overflow-hidden shadow-2xl"
+      >
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-brandCyan/50 to-transparent opacity-50" />
+        <div className="max-w-7xl mx-auto px-6">
+          <div id="features" className="w-full scroll-mt-24">
+            <ScrollReveal className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4">Nothing comes close to Flawdits</h2>
+              <p className="text-lg text-white/50 font-medium max-w-2xl mx-auto">One platform. Every audit module you need.</p>
+            </ScrollReveal>
 
-                    <div className="w-8 h-8 rounded-full bg-slate-100 group-hover:bg-brandDeep group-hover:text-white text-slate-400 flex items-center justify-center transition-colors">
-                      <ArrowUpRight size={16} />
-                    </div>
-                  </div>
+            <ScrollReveal>
+              <motion.div 
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, margin: "-10%" }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+              >
+                {MODULES.map((mod, idx) => (
+                  <motion.div key={idx} variants={itemVariants} className={mod.span}>
+                    <Link href={mod.url} className="block h-full outline-none">
+                      <div className="glass-dark bento-box rounded-3xl p-8 h-full flex flex-col relative overflow-hidden group">
+                        {/* Subtle inner hover glow */}
+                        <div 
+                          className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none"
+                          style={{ background: `radial-gradient(circle at 80% 20%, ${mod.color} 0%, transparent 60%)` }}
+                        />
 
-                  <h3 className="text-lg font-bold text-brandInk mb-3 group-hover:text-brandDeep transition-colors flex items-center justify-between">
-                    <span>{mod.title}</span>
-                  </h3>
-                  <p className="text-sm text-brandInk/70 leading-relaxed">{mod.desc}</p>
-                </motion.div>
-              </Link>
-            </motion.div>
-          ))}
-        </motion.div>
-      </ScrollReveal>
+                        <div className="flex items-center justify-between mb-8 relative z-10">
+                          <div className="flex items-center gap-3">
+                            <div 
+                              className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/5 border border-white/10"
+                              style={{ color: mod.color }}
+                            >
+                              <mod.icon size={20} />
+                            </div>
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-white/40">
+                              Module
+                            </div>
+                          </div>
+                          
+                          <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 text-white/40 flex items-center justify-center group-hover:bg-white group-hover:text-[#050914] transition-all">
+                            <ArrowUpRight size={16} />
+                          </div>
+                        </div>
 
-      <ScrollReveal delay={0.2} className="mt-20">
-        <div className="text-center mb-12">
-          <h3 className="text-2xl font-bold text-brandInk mb-4">More Intelligence, Coming Soon</h3>
-          <p className="text-base text-brandInk/60 max-w-2xl mx-auto">Flawdits is expanding beyond competitive intelligence. Here's what's next on the roadmap.</p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          {COMING_SOON.map((mod, idx) => (
-            <motion.div 
-              key={idx} 
-              whileHover={{ scale: 1.02 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              className="relative bg-white/60 backdrop-blur-sm rounded-2xl p-8 overflow-hidden border border-brandAmber/30 shadow-sm group"
-            >
-              {/* Animated Dashed Border */}
-              <svg className="absolute inset-0 w-full h-full pointer-events-none rounded-2xl z-0">
-                <rect 
-                  x="2" y="2" 
-                  width="calc(100% - 4px)" height="calc(100% - 4px)" 
-                  rx="14" ry="14"
-                  fill="none" 
-                  stroke={`${mod.color}40`} 
-                  strokeWidth="2" 
-                  strokeDasharray="8 8"
-                  style={{ animation: 'dash 20s linear infinite' }}
-                />
-              </svg>
-              
-              <style dangerouslySetInnerHTML={{__html: `
-                @keyframes dash {
-                  to { stroke-dashoffset: 1000; }
-                }
-                .pulse-dot {
-                  animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-                }
-                @keyframes pulse-dot {
-                  0%, 100% { opacity: 1; transform: scale(1); }
-                  50% { opacity: 0.5; transform: scale(0.8); }
-                }
-              `}} />
+                        <div className="mt-auto relative z-10">
+                          <h3 className="text-xl font-bold text-white tracking-tight mb-3">
+                            {mod.title}
+                          </h3>
+                          <p className="text-sm text-white/50 leading-relaxed font-medium">
+                            {mod.desc}
+                          </p>
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </ScrollReveal>
 
-              <div className="relative z-10">
-                <div className="flex justify-between items-start mb-6">
-                  <div 
-                    className="w-12 h-12 rounded-xl flex items-center justify-center"
-                    style={{ backgroundColor: `${mod.color}15`, color: mod.color }}
-                  >
-                    <mod.icon size={24} />
-                  </div>
-                  <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-brandInk/5 text-brandInk/60 text-xs font-semibold">
-                    <div className="pulse-dot w-2 h-2 rounded-full" style={{ backgroundColor: mod.color }} />
-                    Building...
-                  </div>
-                </div>
-                <h4 className="text-lg font-bold text-brandInk mb-2">{mod.title}</h4>
-                {mod.desc && <p className="text-sm text-brandInk/60 leading-relaxed">{mod.desc}</p>}
-                {mod.items && (
-                  <ul className="space-y-1.5 mt-2">
-                    {mod.items.map((item, i) => (
-                      <li key={i} className="flex items-center gap-2 text-sm text-brandInk/70 font-medium">
-                        <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: mod.color }} />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                )}
+            <ScrollReveal delay={0.2} className="mt-32">
+              <div className="text-center mb-12">
+                <h3 className="text-3xl font-extrabold text-white tracking-tight mb-4">More Intelligence, Coming Soon</h3>
+                <p className="text-base text-white/50 font-medium max-w-2xl mx-auto">Flawdits is expanding beyond competitive intelligence. Here's what's next on the roadmap.</p>
               </div>
-            </motion.div>
-          ))}
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
+                {COMING_SOON.map((mod, idx) => (
+                  <motion.div 
+                    key={idx} 
+                    whileHover={{ y: -4 }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="glass-dark rounded-[2rem] p-6 relative group overflow-hidden"
+                  >
+                    <div className="relative z-10">
+                      <div className="flex justify-between items-start mb-6">
+                        <div 
+                          className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/5 border border-white/10"
+                          style={{ color: mod.color }}
+                        >
+                          <mod.icon size={20} />
+                        </div>
+                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/50 text-[10px] font-bold uppercase tracking-wider">
+                          Building
+                        </div>
+                      </div>
+                      <h4 className="text-base font-bold text-white tracking-tight mb-3">{mod.title}</h4>
+                      {mod.items && (
+                        <ul className="space-y-2">
+                          {mod.items.map((item, i) => (
+                            <li key={i} className="flex items-center gap-2 text-xs text-white/40 font-medium">
+                              <div className="w-1.5 h-1.5 rounded-full opacity-50" style={{ backgroundColor: mod.color }} />
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </ScrollReveal>
+          </div>
         </div>
-      </ScrollReveal>
+      </motion.section>
     </div>
   );
 }
