@@ -150,8 +150,15 @@ export function Navbar() {
     <>
       {showAuthModal && <AuthModal onSuccess={() => router.push('/dashboard')} onClose={() => setShowAuthModal(false)} />}
 
-      <nav className="fixed top-0 left-0 right-0 h-20 bg-white/95 backdrop-blur-md border-b border-brandDeep/10 z-[1000] transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
+      <header className="fixed top-0 left-0 right-0 z-[1000] flex flex-col">
+        {/* Beta Banner */}
+        <div className="h-8 bg-gradient-to-r from-brandDeep via-brandIndigo to-brandDark text-white text-[11px] sm:text-xs font-bold flex items-center justify-center gap-2 shadow-sm px-4">
+          <Sparkles size={14} className="text-brandCyan animate-pulse shrink-0" />
+          <span className="truncate">Some features are experimental and AI-generated content may occasionally make mistakes.</span>
+        </div>
+
+        <nav className="w-full h-20 bg-white/95 backdrop-blur-md border-b border-brandDeep/10 transition-all duration-300">
+          <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
           
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
@@ -216,6 +223,7 @@ export function Navbar() {
 
         </div>
       </nav>
+    </header>
 
       {/* 2026 FULL-SCREEN MOBILE HIGH-CONTRAST COMMAND DRAWER */}
       <AnimatePresence>
@@ -225,7 +233,7 @@ export function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className="fixed inset-0 top-20 bg-[#070c18] text-white z-[999] overflow-y-auto p-6 md:hidden flex flex-col justify-between border-t border-white/10 shadow-2xl"
+            className="fixed inset-0 top-28 bg-[#070c18] text-white z-[999] overflow-y-auto p-6 md:hidden flex flex-col justify-between border-t border-white/10 shadow-2xl"
           >
             <div className="space-y-6">
               
