@@ -13,6 +13,7 @@ import InstagramReportForm from '@/app/forms/InstagramReportForm';
 import LinkedInReportForm from '@/app/forms/LinkedInReportForm';
 import LinkedInPersonalForm from '@/app/forms/LinkedInPersonalForm';
 import VisualBrandForm from '@/app/forms/VisualBrandForm';
+import AdsAuditForm from '@/app/forms/AdsAuditForm';
 import SupportModal from '@/app/components/SupportModal';
 import { HelpCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -24,6 +25,8 @@ import {
   generateLinkedInReport,
   generateLinkedInPersonalReport,
   generateVisualReport,
+  generateGoogleAdsReport,
+  generateMetaAdsReport,
   convertHtmlToPdf,
   downloadBlob,
 } from '@/app/lib/api';
@@ -109,12 +112,14 @@ export default function Dashboard() {
   const [linkedinReport,  setLinkedinReport]  = useSessionState('report_linkedin',  INITIAL_REPORT_STATE);
   const [linkedinPersonalReport, setLinkedinPersonalReport] = useSessionState('report_linkedin_personal', INITIAL_REPORT_STATE);
   const [visualReport,    setVisualReport]    = useSessionState('report_visual',    INITIAL_REPORT_STATE);
+  const [adsReport,       setAdsReport]       = useSessionState('report_ads',       INITIAL_REPORT_STATE);
+  const [adsProgress,     setAdsProgress]     = useState('');
 
   // PDF blobs live in refs — not serialisable, intentionally ephemeral
-  const pdfBlobs    = useRef({ full: null, website: null, gmb: null, instagram: null, linkedin: null, linkedin_personal: null, visual: null });
-  const pdfFilenames = useRef({ full: '', website: '', gmb: '', instagram: '', linkedin: '', linkedin_personal: '', visual: '' });
-  const [pdfReady,  setPdfReady]   = useState({ full: false, website: false, gmb: false, instagram: false, linkedin: false, linkedin_personal: false, visual: false });
-  const [pdfLoading, setPdfLoading] = useState({ full: false, website: false, gmb: false, instagram: false, linkedin: false, linkedin_personal: false, visual: false });
+  const pdfBlobs    = useRef({ full: null, website: null, gmb: null, instagram: null, linkedin: null, linkedin_personal: null, visual: null, ads: null });
+  const pdfFilenames = useRef({ full: '', website: '', gmb: '', instagram: '', linkedin: '', linkedin_personal: '', visual: '', ads: '' });
+  const [pdfReady,  setPdfReady]   = useState({ full: false, website: false, gmb: false, instagram: false, linkedin: false, linkedin_personal: false, visual: false, ads: false });
+  const [pdfLoading, setPdfLoading] = useState({ full: false, website: false, gmb: false, instagram: false, linkedin: false, linkedin_personal: false, visual: false, ads: false });
 
   // ── Generic report runner ──
   const runReport = async ({
@@ -247,6 +252,53 @@ export default function Dashboard() {
       fallbackFilename: 'renoweb_visual_brand_report.pdf',
     });
 
+  const handleAdsSubmit = async (platform, payload) => {
+    const tabKey = 'ads';
+    setAdsReport((prev) => ({ ...prev, loading: true, error: '', html: '', data: null }));
+    setAdsProgress('Starting audit...');
+    setPdfReady((p) => ({ ...p, [tabKey]: false }));
+    setPdfLoading((p) => ({ ...p, [tabKey]: false }));
+    pdfBlobs.current[tabKey] = null;
+    pdfFilenames.current[tabKey] = '';
+
+    const fallbackFilename = `renoweb_${platform}_ads_report.pdf`;
+    const apiFn = platform === 'google' ? generateGoogleAdsReport : generateMetaAdsReport;
+    
+    let brandName = payload.domain_or_advertiser || payload.page_url_or_keyword || '';
+    if (brandName) brandName = brandName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const finalFilename = brandName 
+      ? fallbackFilename.replace(`renoweb_${platform}`, `${brandName}_${platform}`) 
+      : fallbackFilename.replace(`renoweb_${platform}`, `audit_${platform}`);
+
+    try {
+      const data = await apiFn(payload, (msg) => setAdsProgress(msg));
+      const html = data.html_report || data.html || '';
+      const ts = now();
+
+      setAdsReport({ html, data, loading: false, error: '', timestamp: ts });
+      setAdsProgress('');
+
+      setPdfLoading((p) => ({ ...p, [tabKey]: true }));
+      try {
+        const blob = await convertHtmlToPdf(html, finalFilename);
+        pdfBlobs.current[tabKey] = blob;
+        pdfFilenames.current[tabKey] = finalFilename;
+        setPdfReady((p) => ({ ...p, [tabKey]: true }));
+      } catch (pdfErr) {
+        console.warn('PDF generation failed:', pdfErr.message);
+      } finally {
+        setPdfLoading((p) => ({ ...p, [tabKey]: false }));
+      }
+    } catch (err) {
+      setAdsReport((prev) => ({
+        ...prev,
+        loading: false,
+        error: err.message || 'Something went wrong. Please try again.',
+      }));
+      setAdsProgress('');
+    }
+  };
+
   // ── Download handlers ──
 
   const handleDownload = (tabKey) => {
@@ -270,6 +322,7 @@ export default function Dashboard() {
     linkedin:  { report: linkedinReport,  setReport: setLinkedinReport,  label: 'LinkedIn Audit',    pdfKey: 'linkedin',  onSubmit: handleLinkedInSubmit },
     linkedin_personal: { report: linkedinPersonalReport, setReport: setLinkedinPersonalReport, label: 'LinkedIn Personal', pdfKey: 'linkedin_personal', onSubmit: handleLinkedInPersonalSubmit },
     visual:    { report: visualReport,    setReport: setVisualReport,    label: 'Visual Brand Match',pdfKey: 'visual',    onSubmit: handleVisualSubmit },
+    ads:       { report: adsReport,       setReport: setAdsReport,       label: 'Ads Audit',         pdfKey: 'ads',       onSubmit: handleAdsSubmit },
   };
 
   const current = tabData[activeTab];
@@ -341,6 +394,15 @@ export default function Dashboard() {
           error={visualReport.error}
           onDismissError={() => dismissError(setVisualReport)}
           onSubmit={handleVisualSubmit}
+        />
+      )}
+      {activeTab === 'ads' && (
+        <AdsAuditForm
+          loading={adsReport.loading}
+          error={adsReport.error}
+          progress={adsProgress}
+          onDismissError={() => dismissError(setAdsReport)}
+          onSubmit={handleAdsSubmit}
         />
       )}
     </div>

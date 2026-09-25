@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { BarChart, Globe, MapPin, Camera, Briefcase, UserCircle, Palette, LogOut } from 'lucide-react';
+import { BarChart, Globe, MapPin, Camera, Briefcase, UserCircle, Palette, LogOut, Megaphone } from 'lucide-react';
 
 const TABS = [
   { id: 'full',       label: 'Full Report',        icon: BarChart,   desc: 'SEO, social & brand' },
@@ -12,6 +12,7 @@ const TABS = [
   { id: 'linkedin',   label: 'LinkedIn Audit',      icon: Briefcase,  desc: 'Company page review' },
   { id: 'linkedin_personal', label: 'LinkedIn Personal', icon: UserCircle, desc: 'Profile & personal posts' },
   { id: 'visual',     label: 'Visual Brand Match',  icon: Palette,    desc: 'Color & identity check' },
+  { id: 'ads',        label: 'Ads Audit',           icon: Megaphone,  desc: 'Google & Meta Ads check' },
 ];
 
 export { TABS };

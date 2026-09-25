@@ -489,3 +489,95 @@ export async function getAnalyticsSummary() {
   if (!res.ok) throw new Error(await extractError(res));
   return res.json();
 }
+
+/**
+ * Generate a Google Ads Audit Report via 2-step WebSocket flow.
+ */
+export function generateGoogleAdsReport(payload, onProgress) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const res = await authFetch(`${BASE_URL}/report/generate-google-ads`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(await extractError(res));
+      const { job_id } = await res.json();
+
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+      const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-google-ads';
+      const wsUrl = `${wsBase}?job_id=${encodeURIComponent(job_id)}&token=${encodeURIComponent(token || '')}`;
+      const ws = new WebSocket(wsUrl);
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'result') {
+            ws.close();
+            resolve(data);
+          } else if (data.type === 'error') {
+            ws.close();
+            reject(new Error(data.message || 'Error from backend'));
+          } else if (data.type === 'progress' && onProgress) {
+            onProgress(data.message);
+          }
+        } catch (err) {
+          console.error('WebSocket message parse error:', err);
+        }
+      };
+
+      ws.onerror = () => reject(new Error('WebSocket connection failed'));
+      ws.onclose = (event) => {
+        if (!event.wasClean) reject(new Error('WebSocket closed unexpectedly'));
+      };
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+/**
+ * Generate a Meta Ads Audit Report via 2-step WebSocket flow.
+ */
+export function generateMetaAdsReport(payload, onProgress) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const res = await authFetch(`${BASE_URL}/report/generate-meta-ads`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(await extractError(res));
+      const { job_id } = await res.json();
+
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+      const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-meta-ads';
+      const wsUrl = `${wsBase}?job_id=${encodeURIComponent(job_id)}&token=${encodeURIComponent(token || '')}`;
+      const ws = new WebSocket(wsUrl);
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'result') {
+            ws.close();
+            resolve(data);
+          } else if (data.type === 'error') {
+            ws.close();
+            reject(new Error(data.message || 'Error from backend'));
+          } else if (data.type === 'progress' && onProgress) {
+            onProgress(data.message);
+          }
+        } catch (err) {
+          console.error('WebSocket message parse error:', err);
+        }
+      };
+
+      ws.onerror = () => reject(new Error('WebSocket connection failed'));
+      ws.onclose = (event) => {
+        if (!event.wasClean) reject(new Error('WebSocket closed unexpectedly'));
+      };
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
