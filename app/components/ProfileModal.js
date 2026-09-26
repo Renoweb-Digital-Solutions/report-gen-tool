@@ -36,7 +36,8 @@ export default function ProfileModal({ onClose }) {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('access_token');
+    localStorage.clear();
+    sessionStorage.clear();
     router.push('/?login=true');
     onClose();
   };

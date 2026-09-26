@@ -4,13 +4,13 @@ import { loginUser, registerUser, forgotPasswordRequestOtp, forgotPasswordVerify
 import { Lock, User, Loader2, BarChart3, Globe, ShieldCheck, X, Eye, EyeOff } from 'lucide-react';
 import disposableDomains from 'disposable-email-domains';
 
-export default function AuthModal({ onSuccess, onClose }) {
-  const [view, setView] = useState('login'); // 'login', 'register', 'forgot_email', 'forgot_otp', 'forgot_reset'
+export default function AuthModal({ onSuccess, onClose, initialView = 'login', profileEmail = null }) {
+  const [view, setView] = useState(initialView); // 'login', 'register', 'forgot_email', 'forgot_otp', 'forgot_reset'
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   
-  const [resetEmail, setResetEmail] = useState('');
+  const [resetEmail, setResetEmail] = useState(profileEmail || '');
   const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -237,19 +237,27 @@ export default function AuthModal({ onSuccess, onClose }) {
             )}
 
             {view === 'forgot_email' && (
-              <div className="auth-input-group">
-                <label>Email</label>
-                <div className="auth-input-wrapper">
-                  <Globe size={18} className="auth-icon" />
-                  <input 
-                    type="email" 
-                    value={resetEmail}
-                    onChange={(e) => setResetEmail(e.target.value)}
-                    placeholder="Enter registered email" 
-                    required
-                  />
+              profileEmail ? (
+                <div className="auth-input-group">
+                  <p style={{ color: '#475569', fontSize: '14px', lineHeight: '1.6', marginBottom: '16px' }}>
+                    An OTP will be sent to your registered email (<strong>{profileEmail}</strong>) to verify your identity before changing your password.
+                  </p>
                 </div>
-              </div>
+              ) : (
+                <div className="auth-input-group">
+                  <label>Email</label>
+                  <div className="auth-input-wrapper">
+                    <Globe size={18} className="auth-icon" />
+                    <input 
+                      type="email" 
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      placeholder="Enter registered email" 
+                      required
+                    />
+                  </div>
+                </div>
+              )
             )}
 
             {view === 'forgot_otp' && (

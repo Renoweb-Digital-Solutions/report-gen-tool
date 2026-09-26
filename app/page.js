@@ -25,11 +25,18 @@ export default function LandingPage() {
   const heroRef = useRef(null);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.location.search.includes('login=true')) {
-      setShowAuthModal(true);
-      window.history.replaceState({}, document.title, window.location.pathname);
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('access_token');
+      if (token && !window.location.search.includes('logout=true')) {
+        router.push('/dashboard');
+        return;
+      }
+      if (window.location.search.includes('login=true')) {
+        setShowAuthModal(true);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
     }
-  }, []);
+  }, [router]);
 
   const handleCtaClick = (e) => {
     e.preventDefault();

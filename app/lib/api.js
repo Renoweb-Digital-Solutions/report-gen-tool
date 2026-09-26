@@ -43,7 +43,8 @@ async function authFetch(url, options = {}) {
 
   if (res.status === 401) {
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('access_token');
+      localStorage.clear();
+      sessionStorage.clear();
       window.dispatchEvent(new Event('auth-expired'));
     }
   }
@@ -618,4 +619,17 @@ export async function generateUiUxAudit(payload, onProgress) {
       reject(new Error('WebSocket connection error'));
     };
   });
+}
+
+
+/**
+ * Get report history for the current user
+ */
+export async function getUserReports(page = 1, limit = 10) {
+  const res = await authFetch(`${BASE_URL}/auth/reports/me?page=${page}&limit=${limit}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
 }

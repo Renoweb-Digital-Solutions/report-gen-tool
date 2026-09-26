@@ -57,7 +57,8 @@ export default function Dashboard() {
   const [isSupportOpen, setIsSupportOpen] = useState(false);
 
   const handleLogout = () => {
-    localStorage.removeItem('access_token');
+    localStorage.clear();
+    sessionStorage.clear();
     router.push('/?login=true');
   };
 
@@ -89,14 +90,16 @@ export default function Dashboard() {
     }
 
     if (!isValid) {
-      localStorage.removeItem('access_token');
+      localStorage.clear();
+      sessionStorage.clear();
       router.push('/?login=true');
     } else {
       setAuthChecked(true);
     }
 
     const handleAuthExpired = () => {
-      localStorage.removeItem('access_token');
+      localStorage.clear();
+      sessionStorage.clear();
       router.push('/?login=true');
     };
 
