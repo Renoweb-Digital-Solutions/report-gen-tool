@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ShieldAlert, Users, FileText, Activity, ShieldCheck, LogOut, MessageSquare, Clock, CheckCircle2, RefreshCw, BarChart3 } from 'lucide-react';
-import { getAdminUsers, getAdminTickets, getAnalyticsSummary } from '@/app/lib/api';
+import { getAdminUsers, getAdminTickets, getAnalyticsSummary, suspendAdminUser, unsuspendAdminUser } from '@/app/lib/api';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 
 export default function AdminPanel() {
@@ -14,6 +14,45 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+
+  const [suspendModal, setSuspendModal] = useState({ isOpen: false, user: null, reason: '' });
+  const [submittingSuspend, setSubmittingSuspend] = useState(false);
+
+  const handleSuspendClick = (user) => {
+    if (user.is_suspended) {
+        if (window.confirm(`Are you sure you want to unsuspend ${user.username}?`)) {
+            unsuspendUserCall(user.username);
+        }
+    } else {
+        setSuspendModal({ isOpen: true, user, reason: '' });
+    }
+  };
+
+  const unsuspendUserCall = async (username) => {
+      try {
+          await unsuspendAdminUser(username);
+          fetchData(true);
+      } catch (err) {
+          alert('Error: ' + err.message);
+      }
+  };
+
+  const handleSuspendSubmit = async () => {
+      if (!suspendModal.reason.trim()) {
+          alert('Please provide a reason');
+          return;
+      }
+      setSubmittingSuspend(true);
+      try {
+          await suspendAdminUser(suspendModal.user.username, suspendModal.reason);
+          setSuspendModal({ isOpen: false, user: null, reason: '' });
+          fetchData(true);
+      } catch (err) {
+          alert('Error: ' + err.message);
+      } finally {
+          setSubmittingSuspend(false);
+      }
+  };
 
   const fetchData = async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -231,6 +270,7 @@ export default function AdminPanel() {
                     <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Email</th>
                     <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Role</th>
                     <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Reports</th>
+                    <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -251,6 +291,16 @@ export default function AdminPanel() {
                         <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: '32px', height: '32px', padding: '0 10px', borderRadius: '8px', background: 'rgba(16,185,129,0.1)', color: 'var(--color-success)', fontWeight: 700, fontSize: '14px', border: '1px solid rgba(16,185,129,0.2)' }}>
                           {user.report_count || 0}
                         </div>
+                      </td>
+                      <td style={{ padding: '16px 24px', textAlign: 'right' }}>
+                        {user.role !== 'admin' && (
+                          <button
+                            onClick={() => handleSuspendClick(user)}
+                            style={{ padding: '6px 12px', background: user.is_suspended ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', color: user.is_suspended ? 'var(--color-success)' : 'var(--color-error)', border: 'none', borderRadius: '4px', fontWeight: 600, cursor: 'pointer', fontSize: '12px' }}
+                          >
+                            {user.is_suspended ? 'Unsuspend' : 'Suspend'}
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -320,6 +370,39 @@ export default function AdminPanel() {
           </div>
         </motion.div>
       </div>
+
+      {suspendModal.isOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: 'white', padding: '32px', borderRadius: '16px', width: '100%', maxWidth: '450px' }}>
+            <h3 style={{ marginTop: 0, fontSize: '20px', color: 'var(--color-dark)' }}>Suspend {suspendModal.user?.username}</h3>
+            <p style={{ color: 'rgba(25,25,25,0.6)', marginBottom: '20px' }}>Please provide a reason for suspending this account. An email will be sent to the user automatically.</p>
+            
+            <textarea
+              value={suspendModal.reason}
+              onChange={e => setSuspendModal({...suspendModal, reason: e.target.value})}
+              placeholder="e.g. Violation of terms of service"
+              style={{ width: '100%', minHeight: '100px', padding: '12px', border: '1px solid var(--color-border)', borderRadius: '8px', marginBottom: '20px', fontFamily: 'inherit' }}
+            />
+            
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <button 
+                onClick={() => setSuspendModal({isOpen: false, user: null, reason: ''})}
+                style={{ padding: '10px 16px', background: 'transparent', border: '1px solid var(--color-border)', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleSuspendSubmit}
+                disabled={submittingSuspend}
+                style={{ padding: '10px 16px', background: 'var(--color-error)', color: 'white', border: 'none', borderRadius: '8px', cursor: submittingSuspend ? 'not-allowed' : 'pointer', fontWeight: 600, opacity: submittingSuspend ? 0.7 : 1 }}
+              >
+                {submittingSuspend ? 'Suspending...' : 'Suspend Account'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

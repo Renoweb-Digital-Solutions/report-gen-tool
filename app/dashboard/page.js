@@ -31,6 +31,7 @@ import {
   convertHtmlToPdf,
   downloadBlob,
   generateUiUxAudit,
+  getUserProfile,
 } from '@/app/lib/api';
 
 // ── Helpers ──
@@ -55,6 +56,7 @@ export default function Dashboard() {
   const [username, setUsername] = useState('User');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSupportOpen, setIsSupportOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -83,6 +85,7 @@ export default function Dashboard() {
           if (payload.sub) {
             setUsername(payload.sub);
           }
+          getUserProfile().then(profile => setUserProfile(profile)).catch(err => console.error(err));
         }
       } catch(e) {
         isValid = false;
@@ -136,6 +139,10 @@ export default function Dashboard() {
     payload,
     fallbackFilename,
   }) => {
+    if (userProfile?.is_suspended) {
+        alert('Your account is suspended. Reason: ' + (userProfile.suspension_reason || 'Contact support'));
+        return;
+    }
     setReport((prev) => ({ ...prev, loading: true, error: '', html: '', data: null }));
     setPdfReady((p) => ({ ...p, [tabKey]: false }));
     setPdfLoading((p) => ({ ...p, [tabKey]: false }));
@@ -260,6 +267,10 @@ export default function Dashboard() {
     });
 
   const handleUiUxSubmit = async (payload) => {
+    if (userProfile?.is_suspended) {
+        alert('Your account is suspended. Reason: ' + (userProfile.suspension_reason || 'Contact support'));
+        return;
+    }
     const tabKey = 'ui_ux';
     setUiUxReport((prev) => ({ ...prev, loading: true, error: '', html: '', data: null }));
     setUiUxProgress('Starting audit...');
@@ -309,6 +320,10 @@ export default function Dashboard() {
   };
 
   const handleAdsSubmit = async (platform, payload) => {
+    if (userProfile?.is_suspended) {
+        alert('Your account is suspended. Reason: ' + (userProfile.suspension_reason || 'Contact support'));
+        return;
+    }
     const tabKey = 'ads';
     setAdsReport((prev) => ({ ...prev, loading: true, error: '', html: '', data: null }));
     setAdsProgress('Starting audit...');
@@ -499,7 +514,16 @@ export default function Dashboard() {
 
         {/* ── Main Content (Form) ── */}
         <main className="main-content" key={activeTab}>
-          <div className="form-panel">
+          <div className={`form-panel ${userProfile?.is_suspended ? 'suspended-form' : ''}`}>
+            {userProfile?.is_suspended && (
+                <div style={{ background: '#fef2f2', border: '1px solid #ef4444', color: '#991b1b', padding: '16px', borderRadius: '8px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontSize: '20px' }}>⚠️</span>
+                    <div>
+                        <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 600 }}>Your account has been suspended</h4>
+                        <p style={{ margin: 0, fontSize: '14px', marginTop: '4px' }}>Reason: {userProfile.suspension_reason || 'Please contact support.'}</p>
+                    </div>
+                </div>
+            )}
             {renderForm()}
           </div>
         </main>

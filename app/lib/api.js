@@ -463,6 +463,31 @@ export async function getAdminUsers() {
 }
 
 /**
+ * Suspend a user from the admin panel
+ */
+export async function suspendAdminUser(username, reason) {
+  const res = await adminAuthFetch(`${BASE_URL}/admin/users/${encodeURIComponent(username)}/suspend`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reason }),
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+}
+
+/**
+ * Unsuspend a user from the admin panel
+ */
+export async function unsuspendAdminUser(username) {
+  const res = await adminAuthFetch(`${BASE_URL}/admin/users/${encodeURIComponent(username)}/unsuspend`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+}
+
+/**
  * Fetch all support tickets for the admin panel
  */
 export async function getAdminTickets() {
