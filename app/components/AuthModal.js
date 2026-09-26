@@ -9,12 +9,12 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  
+
   const [resetEmail, setResetEmail] = useState(profileEmail || '');
   const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  
+
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
@@ -36,7 +36,7 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
       if (view === 'register') {
         const domain = email.split('@')[1]?.toLowerCase();
         const customBlocklist = ['playboot.com', 'luxusmail.com', 'fexpost.com', 'fexbox.org', 'fexbox.ru', 'freemail.su'];
-        
+
         if (!domain || disposableDomains.includes(domain) || customBlocklist.includes(domain)) {
           showToast('Disposable or temporary email addresses are not allowed.');
           return;
@@ -126,7 +126,7 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
   return (
     <div className="auth-modal-overlay">
       <div className="auth-modal-container">
-        
+
         {/* LEFT SIDE - Form */}
         <div className="auth-modal-left">
           {onClose && (
@@ -174,11 +174,11 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
                   <label>Username</label>
                   <div className="auth-input-wrapper">
                     <User size={18} className="auth-icon" />
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      placeholder="Enter username" 
+                      placeholder="Enter username"
                       required
                     />
                   </div>
@@ -189,11 +189,11 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
                     <label>Email</label>
                     <div className="auth-input-wrapper">
                       <Globe size={18} className="auth-icon" />
-                      <input 
-                        type="email" 
+                      <input
+                        type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Enter email address" 
+                        placeholder="Enter email address"
                         required
                       />
                     </div>
@@ -204,9 +204,9 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <label style={{ margin: 0 }}>Password</label>
                     {view === 'login' && (
-                      <button 
-                        type="button" 
-                        className="auth-forgot-password-link" 
+                      <button
+                        type="button"
+                        className="auth-forgot-password-link"
                         onClick={() => setView('forgot_email')}
                         style={{ background: 'none', border: 'none', color: '#3b82f6', fontSize: '13px', cursor: 'pointer', padding: 0 }}
                       >
@@ -216,15 +216,15 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
                   </div>
                   <div className="auth-input-wrapper" style={{ marginTop: '5px' }}>
                     <Lock size={18} className="auth-icon" />
-                    <input 
+                    <input
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter password" 
+                      placeholder="Enter password"
                       required
                     />
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="auth-password-toggle"
                       onClick={() => setShowPassword(!showPassword)}
                       aria-label={showPassword ? "Hide password" : "Show password"}
@@ -248,11 +248,11 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
                   <label>Email</label>
                   <div className="auth-input-wrapper">
                     <Globe size={18} className="auth-icon" />
-                    <input 
-                      type="email" 
+                    <input
+                      type="email"
                       value={resetEmail}
                       onChange={(e) => setResetEmail(e.target.value)}
-                      placeholder="Enter registered email" 
+                      placeholder="Enter registered email"
                       required
                     />
                   </div>
@@ -265,11 +265,11 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
                 <label>6-Digit OTP</label>
                 <div className="auth-input-wrapper">
                   <Lock size={18} className="auth-icon" />
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
-                    placeholder="Enter OTP" 
+                    placeholder="Enter OTP"
                     maxLength={6}
                     required
                   />
@@ -283,15 +283,15 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
                   <label>New Password</label>
                   <div className="auth-input-wrapper">
                     <Lock size={18} className="auth-icon" />
-                    <input 
+                    <input
                       type={showPassword ? "text" : "password"}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="Enter new password" 
+                      placeholder="Enter new password"
                       required
                     />
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="auth-password-toggle"
                       onClick={() => setShowPassword(!showPassword)}
                     >
@@ -303,11 +303,11 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
                   <label>Confirm Password</label>
                   <div className="auth-input-wrapper">
                     <Lock size={18} className="auth-icon" />
-                    <input 
+                    <input
                       type={showPassword ? "text" : "password"}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="Confirm new password" 
+                      placeholder="Confirm new password"
                       required
                     />
                   </div>
@@ -318,10 +318,10 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
             <button type="submit" className="auth-submit-btn" disabled={loading}>
               {loading ? <Loader2 className="spinner" size={20} /> : (
                 view === 'login' ? 'Log In' :
-                view === 'register' ? 'Sign Up' :
-                view === 'forgot_email' ? 'Send OTP' :
-                view === 'forgot_otp' ? 'Verify OTP' :
-                'Reset Password'
+                  view === 'register' ? 'Sign Up' :
+                    view === 'forgot_email' ? 'Send OTP' :
+                      view === 'forgot_otp' ? 'Verify OTP' :
+                        'Reset Password'
               )}
             </button>
           </form>
@@ -335,16 +335,8 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
                 </button>
               </>
             )}
-            {(view === 'forgot_email' || view === 'forgot_otp' || view === 'forgot_reset') && (
-              <>
-                Remembered your password?{' '}
-                <button onClick={() => setView('login')} className="auth-toggle-btn" type="button">
-                  Log in
-                </button>
-              </>
-            )}
           </div>
-          
+
           {toast && (
             <div className={`auth-toast ${toast.type}`}>
               {toast.msg}
@@ -376,12 +368,12 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
                 <div className="auth-line long"></div>
               </div>
             </div>
-            
+
             {/* Background glowing effects */}
             <div className="auth-glow blob-1"></div>
             <div className="auth-glow blob-2"></div>
           </div>
-          
+
           <div className="auth-right-text">
             <h3>Automated Precision</h3>
             <p>Generate in-depth reports seamlessly, backed by our advanced audit engine.</p>
