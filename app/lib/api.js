@@ -661,57 +661,59 @@ export function generateMetaAdsReport(payload, onProgress) {
  * Generate a UI/UX Audit Report.
  */
 export async function generateUiUxAudit(payload, onProgress) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-  // 1) Create job via POST
-  const res = await authFetch(`${BASE_URL}/report/generate-ui-ux`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-  if (!res.ok) throw new Error(await extractError(res));
-  const { job_id } = await res.json();
-
-  // 2) Connect via WebSocket with retry
   const MAX_RETRIES = 3;
-  let attempt = 0;
 
-  const connect = () => new Promise((resolve, reject) => {
-    attempt++;
-    const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-ui-ux';
-    const wsUrl = `${wsBase}?job_id=${encodeURIComponent(job_id)}&token=${encodeURIComponent(token || '')}`;
-    const ws = new WebSocket(wsUrl);
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+      // 1) Create a fresh job via POST
+      const res = await authFetch(`${BASE_URL}/report/generate-ui-ux`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error(await extractError(res));
+      const { job_id } = await res.json();
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'progress') {
-        if (onProgress) onProgress(data.message);
-      } else if (data.type === 'result') {
-        ws.close();
-        resolve(data);
-      } else if (data.type === 'error') {
-        ws.close();
-        reject(new Error(data.message));
-      }
-    };
-    ws.onerror = () => {
-      if (attempt < MAX_RETRIES) {
-        const delay = 1000 * attempt;
+      // 2) Connect via WebSocket
+      const result = await new Promise((resolve, reject) => {
+        let settled = false;
+        const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-ui-ux';
+        const wsUrl = `${wsBase}?job_id=${encodeURIComponent(job_id)}&token=${encodeURIComponent(token || '')}`;
+        const ws = new WebSocket(wsUrl);
+
+        ws.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          if (data.type === 'progress') {
+            if (onProgress) onProgress(data.message);
+          } else if (data.type === 'result') {
+            settled = true;
+            ws.close();
+            resolve(data);
+          } else if (data.type === 'error') {
+            settled = true;
+            ws.close();
+            reject(new Error(data.message));
+          }
+        };
+        ws.onerror = () => {
+          if (!settled) { settled = true; reject(new Error('WebSocket connection error')); }
+        };
+        ws.onclose = (event) => {
+          if (!settled && event.code !== 1000) { settled = true; reject(new Error('WebSocket closed unexpectedly')); }
+        };
+      });
+
+      return result; // Success — exit the retry loop
+    } catch (err) {
+      if (attempt < MAX_RETRIES && err.message.includes('WebSocket')) {
         if (onProgress) onProgress(`Connection interrupted, retrying (${attempt}/${MAX_RETRIES})...`);
-        setTimeout(() => connect().then(resolve).catch(reject), delay);
-      } else {
-        reject(new Error('WebSocket connection error after multiple retries. Please check your network and try again.'));
+        await new Promise(r => setTimeout(r, 1500 * attempt));
+        continue; // Retry the entire POST + WS flow
       }
-    };
-    ws.onclose = (event) => {
-      if (event.code !== 1000 && event.code !== 1005 && attempt < MAX_RETRIES) {
-        const delay = 1000 * attempt;
-        if (onProgress) onProgress(`Connection lost, reconnecting (${attempt}/${MAX_RETRIES})...`);
-        setTimeout(() => connect().then(resolve).catch(reject), delay);
-      }
-    };
-  });
-
-  return connect();
+      throw err; // Final attempt failed or non-WebSocket error
+    }
+  }
 }
 
 
