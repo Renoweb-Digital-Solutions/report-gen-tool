@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { ChevronDown, Layers, Globe, MapPin, Camera, Briefcase, Palette, Sparkles, ArrowRight, Menu, X, Building2, User, Zap, ArrowRightLeft, HelpCircle } from 'lucide-react';
+import { ChevronDown, Layers, Globe, MapPin, Camera, Briefcase, Palette, Sparkles, ArrowRight, Menu, X, Building2, User, Zap, ArrowRightLeft, HelpCircle, MonitorSmartphone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import AuthModal from '../AuthModal';
@@ -36,7 +36,8 @@ export function Navbar() {
     { name: 'LinkedIn Company Page Audit', desc: 'Company page & B2B strategy', href: '/linkedin-company-audit', icon: Briefcase, color: '#023dbb' },
     { name: 'Visual Brand Match', desc: 'Cross-platform brand consistency', href: '/visual-brand-match', icon: Palette, color: '#9d4edd' },
     { name: 'AI Visibility Audit', desc: 'ChatGPT & AI search discoverability', href: '/ai-visibility-audit', icon: Sparkles, color: '#10b981' },
-    { name: 'LinkedIn Personal Profile Audit', desc: 'Profile & personal posts', href: '/linkedin-personal-audit', icon: User, color: '#308fef' }
+    { name: 'LinkedIn Personal Profile Audit', desc: 'Profile & personal posts', href: '/linkedin-personal-audit', icon: User, color: '#308fef' },
+    { name: 'UI/UX Audit', desc: 'Design, UX & Core Metrics', href: '/ui-ux-audit', icon: MonitorSmartphone, color: '#f59e0b' }
   ];
 
   const productItems = [

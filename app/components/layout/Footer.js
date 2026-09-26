@@ -83,6 +83,9 @@ export function Footer() {
                 <li>
                   <Link href="/ai-visibility-audit" className="hover:text-white transition-colors">AI Visibility Audit</Link>
                 </li>
+                <li>
+                  <Link href="/ui-ux-audit" className="hover:text-white transition-colors">UI/UX Page Audit</Link>
+                </li>
               </ul>
             </div>
 

@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 import Link from 'next/link';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Globe, MapPin, Camera, Briefcase, Palette, Sparkles, Users, TrendingUp, ArrowUpRight } from 'lucide-react';
+import { Globe, MapPin, Camera, Briefcase, Palette, Sparkles, Users, TrendingUp, ArrowUpRight, MonitorSmartphone } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
 
 const MODULES = [
@@ -13,7 +13,8 @@ const MODULES = [
   { icon: Briefcase, title: 'LinkedIn Company', desc: 'Company page performance and thought leadership.', color: '#023dbb', url: '/linkedin-company-audit', span: 'md:col-span-2 lg:col-span-1' },
   { icon: Users, title: 'LinkedIn Personal', desc: 'Personal profile posts, engagement, and TOFU/MOFU/BOFU funnel mix.', color: '#10b981', url: '/linkedin-personal-audit', span: 'col-span-1' },
   { icon: Palette, title: 'Visual Brand Match', desc: 'Cross-platform brand consistency scoring.', color: '#ffc857', url: '/visual-brand-match', span: 'col-span-1' },
-  { icon: Sparkles, title: 'AI Visibility Audit', desc: 'Brand discoverability in ChatGPT and AI search.', color: '#9d4edd', url: '/ai-visibility-audit', span: 'md:col-span-2 lg:col-span-2' },
+  { icon: Sparkles, title: 'AI Visibility Audit', desc: 'Brand discoverability in ChatGPT and AI search.', color: '#9d4edd', url: '/ai-visibility-audit', span: 'md:col-span-2 lg:col-span-1' },
+  { icon: MonitorSmartphone, title: 'UI/UX Audit', desc: 'Design, UX & Core Metrics scoring.', color: '#f59e0b', url: '/ui-ux-audit', span: 'col-span-1' },
 ];
 
 const COMING_SOON = [

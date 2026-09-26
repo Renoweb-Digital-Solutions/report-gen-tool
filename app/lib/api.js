@@ -581,3 +581,41 @@ export function generateMetaAdsReport(payload, onProgress) {
     }
   });
 }
+
+/**
+ * Generate a UI/UX Audit Report.
+ */
+export async function generateUiUxAudit(payload, onProgress) {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+  // 1) Create job via POST
+  const res = await authFetch(`${BASE_URL}/report/generate-ui-ux`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  const { job_id } = await res.json();
+
+  // 2) Connect via WebSocket
+  return new Promise((resolve, reject) => {
+    const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-ui-ux';
+    const wsUrl = `${wsBase}?job_id=${encodeURIComponent(job_id)}&token=${encodeURIComponent(token || '')}`;
+    const ws = new WebSocket(wsUrl);
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === 'progress') {
+        if (onProgress) onProgress(data.message);
+      } else if (data.type === 'result') {
+        ws.close();
+        resolve(data);
+      } else if (data.type === 'error') {
+        ws.close();
+        reject(new Error(data.message));
+      }
+    };
+    ws.onerror = () => {
+      reject(new Error('WebSocket connection error'));
+    };
+  });
+}

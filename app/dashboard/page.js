@@ -14,6 +14,7 @@ import LinkedInReportForm from '@/app/forms/LinkedInReportForm';
 import LinkedInPersonalForm from '@/app/forms/LinkedInPersonalForm';
 import VisualBrandForm from '@/app/forms/VisualBrandForm';
 import AdsAuditForm from '@/app/forms/AdsAuditForm';
+import UiUxAuditForm from '@/app/forms/UiUxAuditForm';
 import SupportModal from '@/app/components/SupportModal';
 import { HelpCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -29,6 +30,7 @@ import {
   generateMetaAdsReport,
   convertHtmlToPdf,
   downloadBlob,
+  generateUiUxAudit,
 } from '@/app/lib/api';
 
 // ── Helpers ──
@@ -113,13 +115,15 @@ export default function Dashboard() {
   const [linkedinPersonalReport, setLinkedinPersonalReport] = useSessionState('report_linkedin_personal', INITIAL_REPORT_STATE);
   const [visualReport,    setVisualReport]    = useSessionState('report_visual',    INITIAL_REPORT_STATE);
   const [adsReport,       setAdsReport]       = useSessionState('report_ads',       INITIAL_REPORT_STATE);
+  const [uiUxReport,      setUiUxReport]      = useSessionState('report_ui_ux',     INITIAL_REPORT_STATE);
   const [adsProgress,     setAdsProgress]     = useState('');
+  const [uiUxProgress,    setUiUxProgress]    = useState('');
 
   // PDF blobs live in refs — not serialisable, intentionally ephemeral
-  const pdfBlobs    = useRef({ full: null, website: null, gmb: null, instagram: null, linkedin: null, linkedin_personal: null, visual: null, ads: null });
-  const pdfFilenames = useRef({ full: '', website: '', gmb: '', instagram: '', linkedin: '', linkedin_personal: '', visual: '', ads: '' });
-  const [pdfReady,  setPdfReady]   = useState({ full: false, website: false, gmb: false, instagram: false, linkedin: false, linkedin_personal: false, visual: false, ads: false });
-  const [pdfLoading, setPdfLoading] = useState({ full: false, website: false, gmb: false, instagram: false, linkedin: false, linkedin_personal: false, visual: false, ads: false });
+  const pdfBlobs    = useRef({ full: null, website: null, gmb: null, instagram: null, linkedin: null, linkedin_personal: null, visual: null, ads: null, ui_ux: null });
+  const pdfFilenames = useRef({ full: '', website: '', gmb: '', instagram: '', linkedin: '', linkedin_personal: '', visual: '', ads: '', ui_ux: '' });
+  const [pdfReady,  setPdfReady]   = useState({ full: false, website: false, gmb: false, instagram: false, linkedin: false, linkedin_personal: false, visual: false, ads: false, ui_ux: false });
+  const [pdfLoading, setPdfLoading] = useState({ full: false, website: false, gmb: false, instagram: false, linkedin: false, linkedin_personal: false, visual: false, ads: false, ui_ux: false });
 
   // ── Generic report runner ──
   const runReport = async ({
@@ -252,6 +256,55 @@ export default function Dashboard() {
       fallbackFilename: 'renoweb_visual_brand_report.pdf',
     });
 
+  const handleUiUxSubmit = async (payload) => {
+    const tabKey = 'ui_ux';
+    setUiUxReport((prev) => ({ ...prev, loading: true, error: '', html: '', data: null }));
+    setUiUxProgress('Starting audit...');
+    setPdfReady((p) => ({ ...p, [tabKey]: false }));
+    setPdfLoading((p) => ({ ...p, [tabKey]: false }));
+    pdfBlobs.current[tabKey] = null;
+    pdfFilenames.current[tabKey] = '';
+
+    const fallbackFilename = 'renoweb_ui_ux_report.pdf';
+    
+    let brandName = payload.url || payload.domain || '';
+    // Extract domain from url if possible
+    try {
+      if (brandName.startsWith('http')) {
+        brandName = new URL(brandName).hostname.replace('www.', '');
+      }
+    } catch(e) {}
+    if (brandName) brandName = brandName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    
+    const finalFilename = brandName 
+      ? fallbackFilename.replace('renoweb_', `${brandName}_`) 
+      : fallbackFilename;
+
+    try {
+      const data = await generateUiUxAudit(payload, (msg) => setUiUxProgress(msg));
+      const html = data.html_report || data.html || '';
+      const ts = now();
+
+      setUiUxReport({ html, data, loading: false, error: '', timestamp: ts });
+      setUiUxProgress('');
+
+      setPdfLoading((p) => ({ ...p, [tabKey]: true }));
+      try {
+        const blob = await convertHtmlToPdf(html, finalFilename);
+        pdfBlobs.current[tabKey] = blob;
+        pdfFilenames.current[tabKey] = finalFilename;
+        setPdfReady((p) => ({ ...p, [tabKey]: true }));
+      } catch (pdfErr) {
+        console.warn('PDF generation failed:', pdfErr.message);
+      } finally {
+        setPdfLoading((p) => ({ ...p, [tabKey]: false }));
+      }
+    } catch (err) {
+      setUiUxReport((prev) => ({ ...prev, loading: false, error: err.message || 'Audit failed.' }));
+      setUiUxProgress('');
+    }
+  };
+
   const handleAdsSubmit = async (platform, payload) => {
     const tabKey = 'ads';
     setAdsReport((prev) => ({ ...prev, loading: true, error: '', html: '', data: null }));
@@ -323,6 +376,7 @@ export default function Dashboard() {
     linkedin_personal: { report: linkedinPersonalReport, setReport: setLinkedinPersonalReport, label: 'LinkedIn Personal', pdfKey: 'linkedin_personal', onSubmit: handleLinkedInPersonalSubmit },
     visual:    { report: visualReport,    setReport: setVisualReport,    label: 'Visual Brand Match',pdfKey: 'visual',    onSubmit: handleVisualSubmit },
     ads:       { report: adsReport,       setReport: setAdsReport,       label: 'Ads Audit',         pdfKey: 'ads',       onSubmit: handleAdsSubmit },
+    'ui-ux':   { report: uiUxReport,      setReport: setUiUxReport,      label: 'UI/UX Audit',       pdfKey: 'ui_ux',     onSubmit: handleUiUxSubmit },
   };
 
   const current = tabData[activeTab];
@@ -403,6 +457,15 @@ export default function Dashboard() {
           progress={adsProgress}
           onDismissError={() => dismissError(setAdsReport)}
           onSubmit={handleAdsSubmit}
+        />
+      )}
+      {activeTab === 'ui-ux' && (
+        <UiUxAuditForm
+          loading={uiUxReport.loading}
+          error={uiUxReport.error}
+          progress={uiUxProgress}
+          onDismissError={() => dismissError(setUiUxReport)}
+          onSubmit={handleUiUxSubmit}
         />
       )}
     </div>

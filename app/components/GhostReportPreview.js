@@ -90,6 +90,36 @@ const TAB_MOCK_DATA = {
       { val: 'High', lbl: 'Impact' }
     ],
     doneTitle: 'Visual Audit Ready'
+  },
+  ads: {
+    title: 'Ads Audit Config',
+    fields: [
+      { label: 'Domain', val: 'example.com', delay: 0 },
+      { label: 'Platform', val: 'Google & Meta', delay: 1 },
+      { label: 'Keywords', val: 'software, tech', delay: 2 }
+    ],
+    checklist: ['Ad Copy Quality', 'Keyword Relevance', 'Competitor Bids'],
+    stats: [
+      { val: 'A-', lbl: 'Ad Score' },
+      { val: '12', lbl: 'Active Campaigns' },
+      { val: 'High', lbl: 'ROAS Potential' }
+    ],
+    doneTitle: 'Ads Audit Ready'
+  },
+  'ui-ux': {
+    title: 'UI/UX Audit Config',
+    fields: [
+      { label: 'URL', val: 'example.com', delay: 0 },
+      { label: 'Viewports', val: 'Desktop & Mobile', delay: 1 },
+      { label: 'Max Pages', val: '1', delay: 2 }
+    ],
+    checklist: ['Design Flaws', 'Accessibility Check', 'Color Aesthetics'],
+    stats: [
+      { val: '8.5', lbl: 'UX Score' },
+      { val: 'Pass', lbl: 'WCAG' },
+      { val: '95', lbl: 'Lighthouse' }
+    ],
+    doneTitle: 'UI/UX Audit Ready'
   }
 };
 

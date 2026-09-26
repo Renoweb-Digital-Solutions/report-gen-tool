@@ -703,5 +703,65 @@ export const FEATURES = {
         a: "Independent consultants and service providers get the same structured audit and client-ready PDF an agency uses, without building a report template themselves."
       }
     ]
+  },
+  'ui-ux-audit': {
+    slug: 'ui-ux-audit',
+    title: 'UI/UX Page Audit',
+    eyebrow: 'Page Experience & UI',
+    seo: {
+      url: 'https://flawdits.com/ui-ux-audit',
+      metaTitle: 'UI/UX Page Audit Tool: Design, UX & Core Metrics | Flawdits',
+      metaDescription: 'Audit your UI/UX, capture full-page screenshots, check accessibility (Axe-core), and evaluate Core Web Vitals to improve conversion rates.',
+      primaryKeyword: 'UI UX audit tool',
+    },
+    hero: {
+      h1: 'UI/UX Page Audit: Design & Experience Review',
+      subtitle: 'Identify accessibility roadblocks, evaluate mobile/desktop responsive design, and measure technical UX metrics (Core Web Vitals) in a single plain-English report.',
+      badge: "Improve your page's conversion experience",
+      ctaText: 'Run a UI/UX Audit →',
+    },
+    contentBlocks: [
+      {
+        h2: 'A Visual & Technical UX Checker for Modern Brands',
+        body: 'User experience is hard to quantify. Our UI/UX Audit bridges the gap by capturing visual context (desktop, tablet, mobile screenshots) and combining it with raw technical measurements (Core Web Vitals, Axe-core accessibility rules) to provide a plain-English narrative of the user experience.'
+      },
+      {
+        h2: 'Plain English Insights Powered by Expert Analysis',
+        body: 'Instead of handing you a JSON dump of Lighthouse scores, our intelligent pipeline translates technical errors ("LCP is 4.2s") into actionable business insights ("Your page takes too long to show main content, causing visitors to bounce").'
+      },
+      {
+        h2: 'Comprehensive Page Capture & Accessibility Audit',
+        body: 'Every audit renders the live page, extracts accessibility violations, captures full-length screenshots, and builds a priority action plan. Whether you want to improve conversion rates or prepare for a redesign, the UI/UX audit points you in the exact right direction.'
+      }
+    ],
+    featureGrid: {
+      h2: 'What the UI/UX Audit Covers',
+      items: [
+        { title: 'Responsive Screenshots', desc: 'Full-page captures for mobile, tablet, and desktop.' },
+        { title: 'Core Web Vitals', desc: 'LCP, CLS, TBT, and FCP performance scoring.' },
+        { title: 'Accessibility Compliance', desc: 'Axe-core violations with actionable fixes.' },
+        { title: 'Plain English Narrative', desc: 'Technical metrics translated for business stakeholders.' },
+        { title: 'Action Plan', desc: 'Prioritized list of fixes based on severity.' },
+        { title: 'PDF Export', desc: 'Ready-to-present, white-labeled client deliverable.' }
+      ]
+    },
+    ctaBand: {
+      headline: 'Find out why visitors are leaving your page',
+      btnText: 'Audit My UI/UX →'
+    },
+    faqs: [
+      {
+        q: "What does the UI/UX Audit actually check?",
+        a: "It captures screenshots across devices, measures Core Web Vitals via Lighthouse, scans for accessibility violations via Axe-core, and produces a plain-English UX narrative."
+      },
+      {
+        q: "How does it help improve conversions?",
+        a: "By surfacing accessibility roadblocks, confusing visual layouts, and slow loading times, you get a clear prioritized list of what is frustrating your visitors."
+      },
+      {
+        q: "Is it suitable for non-technical stakeholders?",
+        a: "Yes. The AI judgment layer translates all technical findings into plain English, explaining what is wrong, why it matters, and how to fix it."
+      }
+    ]
   }
 };

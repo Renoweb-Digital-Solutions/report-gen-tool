@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, Check, Sparkles, Layers, ShieldCheck, HelpCircle, ChevronDown, CheckCircle2, Globe, MapPin, Camera, Briefcase, Palette, Info, Gauge, User } from 'lucide-react';
+import { ArrowRight, Check, Sparkles, Layers, ShieldCheck, HelpCircle, ChevronDown, CheckCircle2, Globe, MapPin, Camera, Briefcase, Palette, Info, Gauge, User, MonitorSmartphone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Script from 'next/script';
 
@@ -51,6 +51,7 @@ export default function FeatureClient({ initialSlug = 'full-report' }) {
     { slug: 'linkedin-personal-audit', name: 'LinkedIn Personal', icon: User, color: '#308fef' },
     { slug: 'visual-brand-match', name: 'Visual Brand Match', icon: Palette, color: '#9d4edd' },
     { slug: 'ai-visibility-audit', name: 'AI Visibility Audit', icon: Sparkles, color: '#10b981' },
+    { slug: 'ui-ux-audit', name: 'UI/UX Audit', icon: MonitorSmartphone, color: '#f59e0b' },
   ];
 
   const currentModule = modules.find(m => m.slug === activeSlug);
