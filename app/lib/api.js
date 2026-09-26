@@ -525,173 +525,113 @@ export async function getAnalyticsSummary() {
  * Generate a Google Ads Audit Report via 2-step WebSocket flow.
  */
 export async function generateGoogleAdsReport(payload, onProgress) {
-  const MAX_RETRIES = 3;
+  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+  const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-google-ads';
+  const wsUrl = `${wsBase}?token=${encodeURIComponent(token || '')}`;
 
-  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-      const res = await authFetch(`${BASE_URL}/report/generate-google-ads`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error(await extractError(res));
-      const { job_id } = await res.json();
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const ws = new WebSocket(wsUrl);
 
-      const result = await new Promise((resolve, reject) => {
-        let settled = false;
-        const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-google-ads';
-        const wsUrl = `${wsBase}?job_id=${encodeURIComponent(job_id)}&token=${encodeURIComponent(token || '')}`;
-        const ws = new WebSocket(wsUrl);
+    ws.onopen = () => {
+      ws.send(JSON.stringify(payload));
+    };
 
-        ws.onmessage = (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            if (data.type === 'result') {
-              settled = true; ws.close(); resolve(data);
-            } else if (data.type === 'error') {
-              settled = true; ws.close(); reject(new Error(data.message || 'Error from backend'));
-            } else if (data.type === 'progress' && onProgress) {
-              onProgress(data.message);
-            }
-          } catch (err) {
-            console.error('WebSocket message parse error:', err);
-          }
-        };
-        ws.onerror = () => {
-          if (!settled) { settled = true; reject(new Error('WebSocket connection error')); }
-        };
-        ws.onclose = (event) => {
-          if (!settled && event.code !== 1000) { settled = true; reject(new Error('WebSocket closed unexpectedly')); }
-        };
-      });
-
-      return result;
-    } catch (err) {
-      if (attempt < MAX_RETRIES && err.message.includes('WebSocket')) {
-        if (onProgress) onProgress(`Connection interrupted, retrying (${attempt}/${MAX_RETRIES})...`);
-        await new Promise(r => setTimeout(r, 1500 * attempt));
-        continue;
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'result') {
+          settled = true; ws.close(); resolve(data);
+        } else if (data.type === 'error') {
+          settled = true; ws.close(); reject(new Error(data.message || 'Error from backend'));
+        } else if (data.type === 'progress' && onProgress) {
+          onProgress(data.message);
+        }
+      } catch (err) {
+        console.error('WebSocket message parse error:', err);
       }
-      throw err;
-    }
-  }
+    };
+    ws.onerror = () => {
+      if (!settled) { settled = true; reject(new Error('WebSocket connection error')); }
+    };
+    ws.onclose = (event) => {
+      if (!settled && event.code !== 1000) { settled = true; reject(new Error('WebSocket closed unexpectedly')); }
+    };
+  });
 }
 
 /**
  * Generate a Meta Ads Audit Report via 2-step WebSocket flow.
  */
 export async function generateMetaAdsReport(payload, onProgress) {
-  const MAX_RETRIES = 3;
+  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+  const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-meta-ads';
+  const wsUrl = `${wsBase}?token=${encodeURIComponent(token || '')}`;
 
-  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-      const res = await authFetch(`${BASE_URL}/report/generate-meta-ads`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error(await extractError(res));
-      const { job_id } = await res.json();
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const ws = new WebSocket(wsUrl);
 
-      const result = await new Promise((resolve, reject) => {
-        let settled = false;
-        const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-meta-ads';
-        const wsUrl = `${wsBase}?job_id=${encodeURIComponent(job_id)}&token=${encodeURIComponent(token || '')}`;
-        const ws = new WebSocket(wsUrl);
+    ws.onopen = () => {
+      ws.send(JSON.stringify(payload));
+    };
 
-        ws.onmessage = (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            if (data.type === 'result') {
-              settled = true; ws.close(); resolve(data);
-            } else if (data.type === 'error') {
-              settled = true; ws.close(); reject(new Error(data.message || 'Error from backend'));
-            } else if (data.type === 'progress' && onProgress) {
-              onProgress(data.message);
-            }
-          } catch (err) {
-            console.error('WebSocket message parse error:', err);
-          }
-        };
-        ws.onerror = () => {
-          if (!settled) { settled = true; reject(new Error('WebSocket connection error')); }
-        };
-        ws.onclose = (event) => {
-          if (!settled && event.code !== 1000) { settled = true; reject(new Error('WebSocket closed unexpectedly')); }
-        };
-      });
-
-      return result;
-    } catch (err) {
-      if (attempt < MAX_RETRIES && err.message.includes('WebSocket')) {
-        if (onProgress) onProgress(`Connection interrupted, retrying (${attempt}/${MAX_RETRIES})...`);
-        await new Promise(r => setTimeout(r, 1500 * attempt));
-        continue;
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'result') {
+          settled = true; ws.close(); resolve(data);
+        } else if (data.type === 'error') {
+          settled = true; ws.close(); reject(new Error(data.message || 'Error from backend'));
+        } else if (data.type === 'progress' && onProgress) {
+          onProgress(data.message);
+        }
+      } catch (err) {
+        console.error('WebSocket message parse error:', err);
       }
-      throw err;
-    }
-  }
+    };
+    ws.onerror = () => {
+      if (!settled) { settled = true; reject(new Error('WebSocket connection error')); }
+    };
+    ws.onclose = (event) => {
+      if (!settled && event.code !== 1000) { settled = true; reject(new Error('WebSocket closed unexpectedly')); }
+    };
+  });
 }
 
 /**
  * Generate a UI/UX Audit Report.
  */
 export async function generateUiUxAudit(payload, onProgress) {
-  const MAX_RETRIES = 3;
+  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+  const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-ui-ux';
+  const wsUrl = `${wsBase}?token=${encodeURIComponent(token || '')}`;
 
-  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-      // 1) Create a fresh job via POST
-      const res = await authFetch(`${BASE_URL}/report/generate-ui-ux`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      if (!res.ok) throw new Error(await extractError(res));
-      const { job_id } = await res.json();
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const ws = new WebSocket(wsUrl);
 
-      // 2) Connect via WebSocket
-      const result = await new Promise((resolve, reject) => {
-        let settled = false;
-        const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-ui-ux';
-        const wsUrl = `${wsBase}?job_id=${encodeURIComponent(job_id)}&token=${encodeURIComponent(token || '')}`;
-        const ws = new WebSocket(wsUrl);
+    ws.onopen = () => {
+      ws.send(JSON.stringify(payload));
+    };
 
-        ws.onmessage = (event) => {
-          const data = JSON.parse(event.data);
-          if (data.type === 'progress') {
-            if (onProgress) onProgress(data.message);
-          } else if (data.type === 'result') {
-            settled = true;
-            ws.close();
-            resolve(data);
-          } else if (data.type === 'error') {
-            settled = true;
-            ws.close();
-            reject(new Error(data.message));
-          }
-        };
-        ws.onerror = () => {
-          if (!settled) { settled = true; reject(new Error('WebSocket connection error')); }
-        };
-        ws.onclose = (event) => {
-          if (!settled && event.code !== 1000) { settled = true; reject(new Error('WebSocket closed unexpectedly')); }
-        };
-      });
-
-      return result; // Success — exit the retry loop
-    } catch (err) {
-      if (attempt < MAX_RETRIES && err.message.includes('WebSocket')) {
-        if (onProgress) onProgress(`Connection interrupted, retrying (${attempt}/${MAX_RETRIES})...`);
-        await new Promise(r => setTimeout(r, 1500 * attempt));
-        continue; // Retry the entire POST + WS flow
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === 'progress') {
+        if (onProgress) onProgress(data.message);
+      } else if (data.type === 'result') {
+        settled = true; ws.close(); resolve(data);
+      } else if (data.type === 'error') {
+        settled = true; ws.close(); reject(new Error(data.message));
       }
-      throw err; // Final attempt failed or non-WebSocket error
-    }
-  }
+    };
+    ws.onerror = () => {
+      if (!settled) { settled = true; reject(new Error('WebSocket connection error')); }
+    };
+    ws.onclose = (event) => {
+      if (!settled && event.code !== 1000) { settled = true; reject(new Error('WebSocket closed unexpectedly')); }
+    };
+  });
 }
 
 
