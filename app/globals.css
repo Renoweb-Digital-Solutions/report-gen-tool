@@ -1265,11 +1265,14 @@ body {
   overflow: hidden;
   background: white;
   box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
 }
 
 .report-iframe {
   width: 100%;
-  height: 600px;
+  height: calc(100vh - 180px);
+  min-height: 600px;
   border: none;
   display: block;
   animation: iframeFadeIn 400ms ease both;
