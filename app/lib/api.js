@@ -228,40 +228,55 @@ export async function generateWebsiteReport(payload) {
  * Generate an Instagram Audit Report.
  */
 export function generateInstagramReport(payload) {
+  const MAX_RETRIES = 3;
+  let attempt = 0;
+  let settled = false;
+
   return new Promise((resolve, reject) => {
-    const wsUrl = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-instagram';
-    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-    const ws = new WebSocket(token ? `${wsUrl}?token=${encodeURIComponent(token)}` : wsUrl);
+    const connect = () => {
+      attempt++;
+      const wsUrl = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-instagram';
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+      const ws = new WebSocket(token ? `${wsUrl}?token=${encodeURIComponent(token)}` : wsUrl);
 
-    ws.onopen = () => {
-      ws.send(JSON.stringify(payload));
-    };
+      ws.onopen = () => {
+        ws.send(JSON.stringify(payload));
+      };
 
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'result') {
-          ws.close();
-          resolve(data);
-        } else if (data.type === 'error') {
-          ws.close();
-          reject(new Error(data.message || 'Error from backend'));
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'result') {
+            settled = true;
+            ws.close();
+            resolve(data);
+          } else if (data.type === 'error') {
+            settled = true;
+            ws.close();
+            reject(new Error(data.message || 'Error from backend'));
+          }
+        } catch (err) {
+          console.error('WebSocket message parse error:', err);
         }
-        // Progress messages are ignored for now as requested
-      } catch (err) {
-        console.error('WebSocket message parse error:', err);
-      }
-    };
+      };
 
-    ws.onerror = (error) => {
-      reject(new Error('WebSocket connection failed'));
-    };
+      ws.onerror = () => {
+        if (settled) return;
+        if (attempt < MAX_RETRIES) {
+          setTimeout(connect, 1000 * attempt);
+        } else {
+          reject(new Error('WebSocket connection failed after multiple retries.'));
+        }
+      };
 
-    ws.onclose = (event) => {
-      if (!event.wasClean) {
-        reject(new Error('WebSocket closed unexpectedly'));
-      }
+      ws.onclose = (event) => {
+        if (settled) return;
+        if (event.code !== 1000 && event.code !== 1005 && attempt < MAX_RETRIES) {
+          setTimeout(connect, 1000 * attempt);
+        }
+      };
     };
+    connect();
   });
 }
 
@@ -298,50 +313,65 @@ export function generateLinkedInPersonalReport(payload) {
 
       // Step 2: Connect to the WebSocket for streaming results
       const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-      const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-linkedin';
-      const wsUrl = `${wsBase}?job_id=${encodeURIComponent(job_id)}&token=${encodeURIComponent(token || '')}`;
-      const ws = new WebSocket(wsUrl);
+      const MAX_RETRIES = 3;
+      let attempt = 0;
+      let settled = false;
 
-      // Keep-alive ping every 30s to prevent idle timeouts
-      let pingInterval = null;
+      const connect = () => {
+        attempt++;
+        const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-linkedin';
+        const wsUrl = `${wsBase}?job_id=${encodeURIComponent(job_id)}&token=${encodeURIComponent(token || '')}`;
+        const ws = new WebSocket(wsUrl);
 
-      ws.onopen = () => {
-        pingInterval = setInterval(() => {
-          if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: 'ping' }));
+        // Keep-alive ping every 30s to prevent idle timeouts
+        let pingInterval = null;
+
+        ws.onopen = () => {
+          pingInterval = setInterval(() => {
+            if (ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify({ type: 'ping' }));
+            }
+          }, 30000);
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'result') {
+              settled = true;
+              clearInterval(pingInterval);
+              ws.close();
+              resolve(data);
+            } else if (data.type === 'error') {
+              settled = true;
+              clearInterval(pingInterval);
+              ws.close();
+              reject(new Error(data.message || 'Error from backend'));
+            }
+          } catch (err) {
+            console.error('WebSocket message parse error:', err);
           }
-        }, 30000);
-      };
+        };
 
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === 'result') {
-            clearInterval(pingInterval);
-            ws.close();
-            resolve(data);
-          } else if (data.type === 'error') {
-            clearInterval(pingInterval);
-            ws.close();
-            reject(new Error(data.message || 'Error from backend'));
+        ws.onerror = () => {
+          clearInterval(pingInterval);
+          if (settled) return;
+          if (attempt < MAX_RETRIES) {
+            setTimeout(connect, 1000 * attempt);
+          } else {
+            reject(new Error('WebSocket connection failed after multiple retries.'));
           }
-          // Progress messages are silently consumed
-        } catch (err) {
-          console.error('WebSocket message parse error:', err);
-        }
-      };
+        };
 
-      ws.onerror = () => {
-        clearInterval(pingInterval);
-        reject(new Error('WebSocket connection failed'));
+        ws.onclose = (event) => {
+          clearInterval(pingInterval);
+          if (settled) return;
+          if (event.code !== 1000 && event.code !== 1005 && attempt < MAX_RETRIES) {
+            setTimeout(connect, 1000 * attempt);
+          }
+        };
       };
-
-      ws.onclose = (event) => {
-        clearInterval(pingInterval);
-        if (!event.wasClean) {
-          reject(new Error('WebSocket closed unexpectedly'));
-        }
-      };
+      connect();
     } catch (err) {
       reject(err);
     }
@@ -506,31 +536,53 @@ export function generateGoogleAdsReport(payload, onProgress) {
       const { job_id } = await res.json();
 
       const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-      const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-google-ads';
-      const wsUrl = `${wsBase}?job_id=${encodeURIComponent(job_id)}&token=${encodeURIComponent(token || '')}`;
-      const ws = new WebSocket(wsUrl);
+      const MAX_RETRIES = 3;
+      let attempt = 0;
+      let settled = false;
 
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === 'result') {
-            ws.close();
-            resolve(data);
-          } else if (data.type === 'error') {
-            ws.close();
-            reject(new Error(data.message || 'Error from backend'));
-          } else if (data.type === 'progress' && onProgress) {
-            onProgress(data.message);
+      const connect = () => {
+        attempt++;
+        const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-google-ads';
+        const wsUrl = `${wsBase}?job_id=${encodeURIComponent(job_id)}&token=${encodeURIComponent(token || '')}`;
+        const ws = new WebSocket(wsUrl);
+
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'result') {
+              settled = true;
+              ws.close();
+              resolve(data);
+            } else if (data.type === 'error') {
+              settled = true;
+              ws.close();
+              reject(new Error(data.message || 'Error from backend'));
+            } else if (data.type === 'progress' && onProgress) {
+              onProgress(data.message);
+            }
+          } catch (err) {
+            console.error('WebSocket message parse error:', err);
           }
-        } catch (err) {
-          console.error('WebSocket message parse error:', err);
-        }
-      };
+        };
 
-      ws.onerror = () => reject(new Error('WebSocket connection failed'));
-      ws.onclose = (event) => {
-        if (!event.wasClean) reject(new Error('WebSocket closed unexpectedly'));
+        ws.onerror = () => {
+          if (settled) return;
+          if (attempt < MAX_RETRIES) {
+            if (onProgress) onProgress(`Connection interrupted, retrying (${attempt}/${MAX_RETRIES})...`);
+            setTimeout(connect, 1000 * attempt);
+          } else {
+            reject(new Error('WebSocket connection failed after multiple retries.'));
+          }
+        };
+        ws.onclose = (event) => {
+          if (settled) return;
+          if (event.code !== 1000 && event.code !== 1005 && attempt < MAX_RETRIES) {
+            if (onProgress) onProgress(`Connection lost, reconnecting (${attempt}/${MAX_RETRIES})...`);
+            setTimeout(connect, 1000 * attempt);
+          }
+        };
       };
+      connect();
     } catch (err) {
       reject(err);
     }
@@ -552,31 +604,53 @@ export function generateMetaAdsReport(payload, onProgress) {
       const { job_id } = await res.json();
 
       const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-      const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-meta-ads';
-      const wsUrl = `${wsBase}?job_id=${encodeURIComponent(job_id)}&token=${encodeURIComponent(token || '')}`;
-      const ws = new WebSocket(wsUrl);
+      const MAX_RETRIES = 3;
+      let attempt = 0;
+      let settled = false;
 
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === 'result') {
-            ws.close();
-            resolve(data);
-          } else if (data.type === 'error') {
-            ws.close();
-            reject(new Error(data.message || 'Error from backend'));
-          } else if (data.type === 'progress' && onProgress) {
-            onProgress(data.message);
+      const connect = () => {
+        attempt++;
+        const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-meta-ads';
+        const wsUrl = `${wsBase}?job_id=${encodeURIComponent(job_id)}&token=${encodeURIComponent(token || '')}`;
+        const ws = new WebSocket(wsUrl);
+
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'result') {
+              settled = true;
+              ws.close();
+              resolve(data);
+            } else if (data.type === 'error') {
+              settled = true;
+              ws.close();
+              reject(new Error(data.message || 'Error from backend'));
+            } else if (data.type === 'progress' && onProgress) {
+              onProgress(data.message);
+            }
+          } catch (err) {
+            console.error('WebSocket message parse error:', err);
           }
-        } catch (err) {
-          console.error('WebSocket message parse error:', err);
-        }
-      };
+        };
 
-      ws.onerror = () => reject(new Error('WebSocket connection failed'));
-      ws.onclose = (event) => {
-        if (!event.wasClean) reject(new Error('WebSocket closed unexpectedly'));
+        ws.onerror = () => {
+          if (settled) return;
+          if (attempt < MAX_RETRIES) {
+            if (onProgress) onProgress(`Connection interrupted, retrying (${attempt}/${MAX_RETRIES})...`);
+            setTimeout(connect, 1000 * attempt);
+          } else {
+            reject(new Error('WebSocket connection failed after multiple retries.'));
+          }
+        };
+        ws.onclose = (event) => {
+          if (settled) return;
+          if (event.code !== 1000 && event.code !== 1005 && attempt < MAX_RETRIES) {
+            if (onProgress) onProgress(`Connection lost, reconnecting (${attempt}/${MAX_RETRIES})...`);
+            setTimeout(connect, 1000 * attempt);
+          }
+        };
       };
+      connect();
     } catch (err) {
       reject(err);
     }
@@ -597,8 +671,12 @@ export async function generateUiUxAudit(payload, onProgress) {
   if (!res.ok) throw new Error(await extractError(res));
   const { job_id } = await res.json();
 
-  // 2) Connect via WebSocket
-  return new Promise((resolve, reject) => {
+  // 2) Connect via WebSocket with retry
+  const MAX_RETRIES = 3;
+  let attempt = 0;
+
+  const connect = () => new Promise((resolve, reject) => {
+    attempt++;
     const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-ui-ux';
     const wsUrl = `${wsBase}?job_id=${encodeURIComponent(job_id)}&token=${encodeURIComponent(token || '')}`;
     const ws = new WebSocket(wsUrl);
@@ -616,9 +694,24 @@ export async function generateUiUxAudit(payload, onProgress) {
       }
     };
     ws.onerror = () => {
-      reject(new Error('WebSocket connection error'));
+      if (attempt < MAX_RETRIES) {
+        const delay = 1000 * attempt;
+        if (onProgress) onProgress(`Connection interrupted, retrying (${attempt}/${MAX_RETRIES})...`);
+        setTimeout(() => connect().then(resolve).catch(reject), delay);
+      } else {
+        reject(new Error('WebSocket connection error after multiple retries. Please check your network and try again.'));
+      }
+    };
+    ws.onclose = (event) => {
+      if (event.code !== 1000 && event.code !== 1005 && attempt < MAX_RETRIES) {
+        const delay = 1000 * attempt;
+        if (onProgress) onProgress(`Connection lost, reconnecting (${attempt}/${MAX_RETRIES})...`);
+        setTimeout(() => connect().then(resolve).catch(reject), delay);
+      }
     };
   });
+
+  return connect();
 }
 
 
