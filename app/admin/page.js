@@ -288,8 +288,19 @@ export default function AdminPanel() {
                         </span>
                       </td>
                       <td style={{ padding: '16px 24px', textAlign: 'center' }}>
-                        <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: '32px', height: '32px', padding: '0 10px', borderRadius: '8px', background: 'rgba(16,185,129,0.1)', color: 'var(--color-success)', fontWeight: 700, fontSize: '14px', border: '1px solid rgba(16,185,129,0.2)' }}>
-                          {user.report_count || 0}
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: '32px', height: '32px', padding: '0 10px', borderRadius: '8px', background: 'rgba(16,185,129,0.1)', color: 'var(--color-success)', fontWeight: 700, fontSize: '14px', border: '1px solid rgba(16,185,129,0.2)' }} title="Total Reports">
+                            {user.report_count || 0}
+                          </div>
+                          {user.report_breakdown && Object.keys(user.report_breakdown).length > 0 && (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', justifyContent: 'center', maxWidth: '180px' }}>
+                              {Object.entries(user.report_breakdown).map(([type, count]) => (
+                                <span key={type} style={{ fontSize: '10px', padding: '3px 6px', background: 'rgba(48,143,239,0.1)', border: '1px solid rgba(48,143,239,0.2)', borderRadius: '4px', color: 'var(--brand-blue)', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                                  {type.replace(' Audit', '')}: {count}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </td>
                       <td style={{ padding: '16px 24px', textAlign: 'right' }}>
