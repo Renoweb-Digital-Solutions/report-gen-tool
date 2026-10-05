@@ -12,6 +12,7 @@
  *   onDownload  — callback to trigger download
  */
 import SocialAuditTable from './SocialAuditTable';
+import AdsLibraryTable from './AdsLibraryTable';
 import ScanCardLoader from './ScanCardLoader';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -37,7 +38,8 @@ export default function ReportPreview({
   };
 
   // ── No report yet ──
-  if (!loading && !htmlReport) {
+  const hasData = htmlReport || (reportData && (reportData.ads_library_data || reportData.posts || reportData.data));
+  if (!loading && !hasData) {
     return null;
   }
 
@@ -97,6 +99,14 @@ export default function ReportPreview({
               return (
                 <div className="native-report-container">
                   <SocialAuditTable posts={posts} />
+                </div>
+              );
+            }
+
+            if (reportLabel === 'Ads Audit' && reportData?.ads_library_data) {
+              return (
+                <div className="native-report-container h-full overflow-y-auto">
+                  <AdsLibraryTable adsData={reportData.ads_library_data} />
                 </div>
               );
             }

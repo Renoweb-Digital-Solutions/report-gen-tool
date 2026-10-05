@@ -427,6 +427,7 @@ export async function generateGmbReport(payload) {
  * Do NOT use for client-side PDF generation (no WeasyPrint / html2pdf).
  */
 export async function convertHtmlToPdf(htmlReport, filename) {
+  if (!htmlReport) throw new Error('HTML content is empty.');
   const res = await authFetch(`${BASE_URL}/report/html-to-pdf`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -547,82 +548,101 @@ export async function getAnalyticsSummary() {
 }
 
 /**
- * Generate a Google Ads Audit Report via 2-step WebSocket flow.
+ * Unified Ads Library Report Generation (Google & Meta)
+ * 2-step WebSocket flow: POST /ads-library/search/job -> WS /ws/ads-library/search
  */
-export async function generateGoogleAdsReport(payload, onProgress) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-  const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-google-ads';
-  const wsUrl = `${wsBase}?token=${encodeURIComponent(token || '')}`;
+export async function generateAdsLibraryReport(payload, onProgress) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Step 1: Create the job via REST
+      const res = await authFetch(`${BASE_URL}/ads-library/search/job`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(await extractError(res));
+      const { job_id } = await res.json();
 
-  return new Promise((resolve, reject) => {
-    let settled = false;
-    const ws = new WebSocket(wsUrl);
+      // Step 2: Connect to the WebSocket for streaming results
+      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+      const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/ads-library/search';
+      const wsUrl = `${wsBase}?job_id=${encodeURIComponent(job_id)}&token=${encodeURIComponent(token || '')}`;
 
-    ws.onopen = () => {
-      ws.send(JSON.stringify(payload));
-    };
+      let settled = false;
+      const ws = new WebSocket(wsUrl);
 
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'result') {
-          settled = true; ws.close(); resolve(data);
-        } else if (data.type === 'error') {
-          settled = true; ws.close(); reject(new Error(data.message || 'Error from backend'));
-        } else if (data.type === 'progress' && onProgress) {
-          onProgress(data.message);
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'result') {
+            settled = true; ws.close(); resolve(data);
+          } else if (data.type === 'error') {
+            settled = true; ws.close(); reject(new Error(data.message || 'Error from backend'));
+          } else if (data.type === 'progress' && onProgress) {
+            onProgress(data.message);
+          }
+        } catch (err) {
+          console.error('WebSocket message parse error:', err);
         }
-      } catch (err) {
-        console.error('WebSocket message parse error:', err);
-      }
-    };
-    ws.onerror = () => {
-      if (!settled) { settled = true; reject(new Error('WebSocket connection error')); }
-    };
-    ws.onclose = (event) => {
-      if (!settled && event.code !== 1000) { settled = true; reject(new Error('WebSocket closed unexpectedly')); }
-    };
+      };
+
+      ws.onerror = () => {
+        if (!settled) { settled = true; reject(new Error('WebSocket connection error')); }
+      };
+
+      ws.onclose = (event) => {
+        if (!settled && event.code !== 1000) { settled = true; reject(new Error('WebSocket closed unexpectedly')); }
+      };
+    } catch (err) {
+      reject(err);
+    }
   });
 }
 
 /**
- * Generate a Meta Ads Audit Report via 2-step WebSocket flow.
+ * Get Meta Ads Library supported countries
  */
-export async function generateMetaAdsReport(payload, onProgress) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-  const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-meta-ads';
-  const wsUrl = `${wsBase}?token=${encodeURIComponent(token || '')}`;
-
-  return new Promise((resolve, reject) => {
-    let settled = false;
-    const ws = new WebSocket(wsUrl);
-
-    ws.onopen = () => {
-      ws.send(JSON.stringify(payload));
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'result') {
-          settled = true; ws.close(); resolve(data);
-        } else if (data.type === 'error') {
-          settled = true; ws.close(); reject(new Error(data.message || 'Error from backend'));
-        } else if (data.type === 'progress' && onProgress) {
-          onProgress(data.message);
-        }
-      } catch (err) {
-        console.error('WebSocket message parse error:', err);
-      }
-    };
-    ws.onerror = () => {
-      if (!settled) { settled = true; reject(new Error('WebSocket connection error')); }
-    };
-    ws.onclose = (event) => {
-      if (!settled && event.code !== 1000) { settled = true; reject(new Error('WebSocket closed unexpectedly')); }
-    };
-  });
+export async function getMetaCountries() {
+  const res = await authFetch(`${BASE_URL}/ads-library/meta/countries`);
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
 }
+
+/**
+ * Search Meta Page Candidates
+ */
+export async function searchMetaPages(payload) {
+  const res = await authFetch(`${BASE_URL}/ads-library/meta/pages/search`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+}
+
+/**
+ * Get Google Ads supported regions
+ */
+export async function getGoogleRegions() {
+  const res = await authFetch(`${BASE_URL}/ads-library/google/regions`);
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+}
+
+/**
+ * Search Google Advertiser Candidates
+ */
+export async function searchGoogleAdvertisers(payload) {
+  const res = await authFetch(`${BASE_URL}/ads-library/google/advertisers/search`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+}
+
 
 /**
  * Generate a UI/UX Audit Report.

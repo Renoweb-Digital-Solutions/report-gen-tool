@@ -26,6 +26,10 @@ const DEFAULTS = {
   gmb_company_name: '',
   gmb_target_url: '',
   gmb_location_query: '',
+  ui_ux_url: '',
+  ads_platform: 'google',
+  ads_google_domain: '',
+  ads_meta_query: '',
 };
 
 export default function FullReportForm({ loading, error, onDismissError, onSubmit }) {
@@ -35,6 +39,8 @@ export default function FullReportForm({ loading, error, onDismissError, onSubmi
     ig: false,
     li: false,
     gmb: false,
+    ui_ux: false,
+    ads: false,
   });
 
   const toggleSection = (section) => {
@@ -63,6 +69,20 @@ export default function FullReportForm({ loading, error, onDismissError, onSubmi
       payload.gmb_company_name = fields.gmb_company_name.trim();
       payload.gmb_target_url = fields.gmb_target_url.trim();
       payload.gmb_location_query = fields.gmb_location_query.trim();
+    }
+
+    if (fields.ui_ux_url?.trim()) {
+      payload.ui_ux_url = fields.ui_ux_url.trim();
+    }
+
+    if (fields.ads_google_domain?.trim() || fields.ads_meta_query?.trim()) {
+      payload.ads_platform = fields.ads_platform;
+      payload.ads_limit = 40;
+      if (fields.ads_platform === 'google' && fields.ads_google_domain?.trim()) {
+        payload.ads_google_domain = fields.ads_google_domain.trim();
+      } else if (fields.ads_platform === 'meta' && fields.ads_meta_query?.trim()) {
+        payload.ads_meta_query = fields.ads_meta_query.trim();
+      }
     }
 
     onSubmit(payload);
@@ -256,6 +276,99 @@ export default function FullReportForm({ loading, error, onDismissError, onSubmi
                 onChange={set('gmb_location_query')}
               />
             </FormField>
+          </div>
+        </div>
+
+        {/* ── UI/UX Audit ── */}
+        <div 
+          className="form-section-header clickable"
+          onClick={() => toggleSection('ui_ux')}
+        >
+          <div className="section-icon-chip">
+            <Sparkles size={16} strokeWidth={2.5} />
+          </div>
+          <div className="form-section-title">
+            UI/UX Audit
+            <span className="optional-badge">Optional</span>
+          </div>
+          <ChevronDown 
+            size={18} 
+            color="rgba(25,25,25,0.4)" 
+            style={{ transform: openSections.ui_ux ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }} 
+          />
+        </div>
+
+        <div className={`accordion-content ${openSections.ui_ux ? 'open' : ''}`}>
+          <div className="form-grid">
+            <FormField label="Target Website URL" htmlFor="full-ui-ux-url" tooltip="The exact page URL to audit">
+              <input
+                id="full-ui-ux-url"
+                className="form-input"
+                type="url"
+                placeholder="https://example.com/landing-page"
+                value={fields.ui_ux_url || ''}
+                onChange={set('ui_ux_url')}
+              />
+            </FormField>
+          </div>
+        </div>
+
+        {/* ── Ads Library ── */}
+        <div 
+          className="form-section-header clickable"
+          onClick={() => toggleSection('ads')}
+        >
+          <div className="section-icon-chip">
+            <Globe size={16} strokeWidth={2.5} />
+          </div>
+          <div className="form-section-title">
+            Ads Library Audit
+            <span className="optional-badge">Optional</span>
+          </div>
+          <ChevronDown 
+            size={18} 
+            color="rgba(25,25,25,0.4)" 
+            style={{ transform: openSections.ads ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }} 
+          />
+        </div>
+
+        <div className={`accordion-content ${openSections.ads ? 'open' : ''}`}>
+          <div className="form-grid">
+            <FormField label="Platform" htmlFor="full-ads-platform">
+              <select
+                id="full-ads-platform"
+                className="form-select"
+                value={fields.ads_platform || 'google'}
+                onChange={set('ads_platform')}
+              >
+                <option value="google">Google Ads Transparency</option>
+                <option value="meta">Meta Ads Library</option>
+              </select>
+            </FormField>
+
+            {(fields.ads_platform || 'google') === 'google' ? (
+              <FormField label="Google Domain / Keyword" htmlFor="full-ads-google">
+                <input
+                  id="full-ads-google"
+                  className="form-input"
+                  type="text"
+                  placeholder="nike.com or Nike"
+                  value={fields.ads_google_domain || ''}
+                  onChange={set('ads_google_domain')}
+                />
+              </FormField>
+            ) : (
+              <FormField label="Meta Page Name" htmlFor="full-ads-meta">
+                <input
+                  id="full-ads-meta"
+                  className="form-input"
+                  type="text"
+                  placeholder="e.g. Nike"
+                  value={fields.ads_meta_query || ''}
+                  onChange={set('ads_meta_query')}
+                />
+              </FormField>
+            )}
           </div>
         </div>
 

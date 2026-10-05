@@ -26,8 +26,7 @@ import {
   generateLinkedInReport,
   generateLinkedInPersonalReport,
   generateVisualReport,
-  generateGoogleAdsReport,
-  generateMetaAdsReport,
+  generateAdsLibraryReport,
   convertHtmlToPdf,
   downloadBlob,
   generateUiUxAudit,
@@ -333,9 +332,9 @@ export default function Dashboard() {
     pdfFilenames.current[tabKey] = '';
 
     const fallbackFilename = `renoweb_${platform}_ads_report.pdf`;
-    const apiFn = platform === 'google' ? generateGoogleAdsReport : generateMetaAdsReport;
+    const apiFn = generateAdsLibraryReport;
     
-    let brandName = payload.domain_or_advertiser || payload.page_url_or_keyword || '';
+    let brandName = payload.google_domain || payload.meta_query || '';
     if (brandName) brandName = brandName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
     const finalFilename = brandName 
       ? fallbackFilename.replace(`renoweb_${platform}`, `${brandName}_${platform}`) 
@@ -343,7 +342,7 @@ export default function Dashboard() {
 
     try {
       const data = await apiFn(payload, (msg) => setAdsProgress(msg));
-      const html = data.html_report || data.html || '';
+      const html = data.ads_library_data?.full_html_report || data.ads_library_data?.html_report || data.html_report || data.html || '';
       const ts = now();
 
       setAdsReport({ html, data, loading: false, error: '', timestamp: ts });
@@ -402,7 +401,7 @@ export default function Dashboard() {
   // ── Determine layout phase ──
   // Phase 1: no report generated for current tab → sidebar + full-width form
   // Phase 2: report exists or loading → horizontal tabs + 2-column layout
-  const hasReport = current ? (current.report.html || current.report.loading) : false;
+  const hasReport = current ? (current.report.html || current.report.data || current.report.loading) : false;
 
   // ── Form renderer ──
   const renderForm = () => (
