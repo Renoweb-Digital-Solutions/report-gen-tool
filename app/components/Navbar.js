@@ -7,8 +7,14 @@ import ThemeToggle from './ThemeToggle';
 
 export default function Navbar({ onMenuClick }) {
   return (
-    <nav className="navbar" role="navigation" aria-label="Main navigation">
-      <div className="flex items-center gap-2 md:gap-6 navbar-left">
+    <>
+      <div className="beta-banner">
+        <span className="truncate max-w-full block px-4 w-full text-center">
+          The application is in beta. If anything breaks please let us know through support.
+        </span>
+      </div>
+      <nav className="navbar" role="navigation" aria-label="Main navigation">
+        <div className="flex items-center gap-2 md:gap-6 navbar-left">
         {onMenuClick && (
           <button className="mobile-menu-btn" onClick={onMenuClick} aria-label="Toggle menu">
             <Menu size={24} />
@@ -38,6 +44,7 @@ export default function Navbar({ onMenuClick }) {
         <ThemeToggle />
       </div>
     </nav>
+    </>
   );
 }
 
