@@ -79,7 +79,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+    <div className="profile-page-container min-h-screen bg-slate-50 font-sans text-slate-900">
       <Navbar />
       
       {showAuthModal && <AuthModal initialView="forgot_email" profileEmail={profile?.email} onClose={() => setShowAuthModal(false)} />}
@@ -174,7 +174,12 @@ export default function ProfilePage() {
                 </div>
               </div>
               
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto relative">
+                {loadingReports && (
+                  <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center z-10" style={{ minHeight: '200px' }}>
+                    <div className="animate-spin w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full" />
+                  </div>
+                )}
                 <table className="w-full text-left text-sm text-slate-600">
                   <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-100">
                     <tr>
@@ -183,12 +188,7 @@ export default function ProfilePage() {
                       <th className="px-6 py-4 font-bold">Date & Time</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 relative">
-                    {loadingReports && (
-                      <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center z-10">
-                        <div className="animate-spin w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full" />
-                      </div>
-                    )}
+                  <tbody className="divide-y divide-slate-100">
                     {reports.length === 0 ? (
                       <tr>
                         <td colSpan="3" className="px-6 py-12 text-center text-slate-500">

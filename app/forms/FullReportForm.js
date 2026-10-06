@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import FormField from '../components/FormField';
 import ErrorBanner from '../components/ErrorBanner';
 import { useSessionState } from '../hooks/useSessionState';
+import { getMetaCountries, getGoogleRegions } from '../lib/api';
 import { Globe, Camera, Briefcase, MapPin, ChevronDown, Sparkles } from 'lucide-react';
 import AnimatedSubmitButton from '../components/AnimatedSubmitButton';
 
@@ -29,11 +30,47 @@ const DEFAULTS = {
   ui_ux_url: '',
   ads_platform: 'google',
   ads_google_domain: '',
+  ads_google_region: 'anywhere',
+  ads_google_time_period: 'last_30_days',
+  ads_google_ad_format: 'all',
+  ads_google_platform: 'all',
   ads_meta_query: '',
+  ads_meta_country: 'ALL',
+  ads_meta_media_type: 'all',
+  ads_meta_active_status: 'all',
+  ads_meta_platforms: ['facebook', 'instagram'],
 };
 
 export default function FullReportForm({ loading, error, onDismissError, onSubmit }) {
   const [fields, setFields] = useSessionState('form_full', DEFAULTS);
+  
+  const [metaCountries, setMetaCountries] = useState([]);
+  const [googleRegions, setGoogleRegions] = useState([]);
+
+  useEffect(() => {
+    getMetaCountries().then(data => {
+      if (data && data.countries) {
+        const sorted = [...data.countries].sort((a, b) => {
+          const nameA = (typeof a === 'string' ? a : a.name) || '';
+          const nameB = (typeof b === 'string' ? b : b.name) || '';
+          return nameA.localeCompare(nameB);
+        });
+        setMetaCountries(sorted);
+      }
+    }).catch(() => {});
+    
+    getGoogleRegions().then(data => {
+      if (data && data.regions) {
+        const sorted = [...data.regions].sort((a, b) => {
+          const nameA = (typeof a === 'string' ? a : a.name) || '';
+          const nameB = (typeof b === 'string' ? b : b.name) || '';
+          return nameA.localeCompare(nameB);
+        });
+        setGoogleRegions(sorted);
+      }
+    }).catch(() => {});
+  }, []);
+
   // Accordion state
   const [openSections, setOpenSections] = useState({
     ig: false,
@@ -77,11 +114,19 @@ export default function FullReportForm({ loading, error, onDismissError, onSubmi
 
     if (fields.ads_google_domain?.trim() || fields.ads_meta_query?.trim()) {
       payload.ads_platform = fields.ads_platform;
-      payload.ads_limit = 40;
+      payload.ads_limit = Number(fields.ads_limit);
       if (fields.ads_platform === 'google' && fields.ads_google_domain?.trim()) {
         payload.ads_google_domain = fields.ads_google_domain.trim();
+        payload.ads_google_region = fields.ads_google_region;
+        payload.ads_google_time_period = fields.ads_google_time_period;
+        payload.ads_google_ad_format = fields.ads_google_ad_format;
+        payload.ads_google_platform = fields.ads_google_platform;
       } else if (fields.ads_platform === 'meta' && fields.ads_meta_query?.trim()) {
         payload.ads_meta_query = fields.ads_meta_query.trim();
+        payload.ads_meta_country = fields.ads_meta_country;
+        payload.ads_meta_media_type = fields.ads_meta_media_type;
+        payload.ads_meta_active_status = fields.ads_meta_active_status;
+        payload.ads_meta_platforms = fields.ads_meta_platforms;
       }
     }
 
@@ -133,7 +178,7 @@ export default function FullReportForm({ loading, error, onDismissError, onSubmi
           </div>
           <ChevronDown 
             size={18} 
-            color="rgba(25,25,25,0.4)" 
+            className="accordion-chevron" 
             style={{ transform: openSections.ig ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }} 
           />
         </div>
@@ -178,7 +223,7 @@ export default function FullReportForm({ loading, error, onDismissError, onSubmi
           </div>
           <ChevronDown 
             size={18} 
-            color="rgba(25,25,25,0.4)" 
+            className="accordion-chevron" 
             style={{ transform: openSections.li ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }} 
           />
         </div>
@@ -237,7 +282,7 @@ export default function FullReportForm({ loading, error, onDismissError, onSubmi
           </div>
           <ChevronDown 
             size={18} 
-            color="rgba(25,25,25,0.4)" 
+            className="accordion-chevron" 
             style={{ transform: openSections.gmb ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }} 
           />
         </div>
@@ -293,7 +338,7 @@ export default function FullReportForm({ loading, error, onDismissError, onSubmi
           </div>
           <ChevronDown 
             size={18} 
-            color="rgba(25,25,25,0.4)" 
+            className="accordion-chevron" 
             style={{ transform: openSections.ui_ux ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }} 
           />
         </div>
@@ -327,7 +372,7 @@ export default function FullReportForm({ loading, error, onDismissError, onSubmi
           </div>
           <ChevronDown 
             size={18} 
-            color="rgba(25,25,25,0.4)" 
+            className="accordion-chevron" 
             style={{ transform: openSections.ads ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }} 
           />
         </div>
@@ -346,28 +391,114 @@ export default function FullReportForm({ loading, error, onDismissError, onSubmi
               </select>
             </FormField>
 
+            <FormField label="Results Limit" htmlFor="full-ads-limit">
+              <input
+                id="full-ads-limit"
+                className="form-input"
+                type="number"
+                min={1}
+                max={100}
+                value={fields.ads_limit}
+                onChange={set('ads_limit')}
+              />
+            </FormField>
+
             {(fields.ads_platform || 'google') === 'google' ? (
-              <FormField label="Google Domain / Keyword" htmlFor="full-ads-google">
-                <input
-                  id="full-ads-google"
-                  className="form-input"
-                  type="text"
-                  placeholder="nike.com or Nike"
-                  value={fields.ads_google_domain || ''}
-                  onChange={set('ads_google_domain')}
-                />
-              </FormField>
+              <>
+                <FormField label="Google Domain / Keyword" htmlFor="full-ads-google">
+                  <input
+                    id="full-ads-google"
+                    className="form-input"
+                    type="text"
+                    placeholder="nike.com or Nike"
+                    value={fields.ads_google_domain || ''}
+                    onChange={set('ads_google_domain')}
+                  />
+                </FormField>
+                
+                <div className="form-grid-2">
+                  <FormField label="Target Region" htmlFor="full-ads-g-region">
+                    <select id="full-ads-g-region" className="form-select" value={fields.ads_google_region} onChange={set('ads_google_region')}>
+                      {googleRegions.length > 0 ? (
+                        googleRegions.map((r, i) => <option key={`gr_${i}`} value={r.region || r.code || (typeof r === 'string' ? r : '')}>{r.name || r}</option>)
+                      ) : (
+                        <option value="anywhere">Anywhere</option>
+                      )}
+                    </select>
+                  </FormField>
+                  <FormField label="Time Period" htmlFor="full-ads-g-time">
+                    <select id="full-ads-g-time" className="form-select" value={fields.ads_google_time_period} onChange={set('ads_google_time_period')}>
+                      <option value="last_30_days">Last 30 days</option>
+                      <option value="last_3_months">Last 3 months</option>
+                      <option value="last_6_months">Last 6 months</option>
+                      <option value="any">Any time</option>
+                    </select>
+                  </FormField>
+                </div>
+                
+                <div className="form-grid-2">
+                  <FormField label="Ad Format" htmlFor="full-ads-g-format">
+                    <select id="full-ads-g-format" className="form-select" value={fields.ads_google_ad_format} onChange={set('ads_google_ad_format')}>
+                      <option value="all">All Formats</option>
+                      <option value="text">Text</option>
+                      <option value="image">Image</option>
+                      <option value="video">Video</option>
+                    </select>
+                  </FormField>
+                  <FormField label="Google Platform" htmlFor="full-ads-g-platform">
+                    <select id="full-ads-g-platform" className="form-select" value={fields.ads_google_platform} onChange={set('ads_google_platform')}>
+                      <option value="all">All Platforms</option>
+                      <option value="google_search">Google Search</option>
+                      <option value="youtube">YouTube</option>
+                      <option value="google_play">Google Play</option>
+                      <option value="google_maps">Google Maps</option>
+                    </select>
+                  </FormField>
+                </div>
+              </>
             ) : (
-              <FormField label="Meta Page Name" htmlFor="full-ads-meta">
-                <input
-                  id="full-ads-meta"
-                  className="form-input"
-                  type="text"
-                  placeholder="e.g. Nike"
-                  value={fields.ads_meta_query || ''}
-                  onChange={set('ads_meta_query')}
-                />
-              </FormField>
+              <>
+                <FormField label="Meta Page Name" htmlFor="full-ads-meta">
+                  <input
+                    id="full-ads-meta"
+                    className="form-input"
+                    type="text"
+                    placeholder="e.g. Nike"
+                    value={fields.ads_meta_query || ''}
+                    onChange={set('ads_meta_query')}
+                  />
+                </FormField>
+                
+                <div className="form-grid-2">
+                  <FormField label="Target Country" htmlFor="full-ads-m-country">
+                    <select id="full-ads-m-country" className="form-select" value={fields.ads_meta_country} onChange={set('ads_meta_country')}>
+                      {metaCountries.length > 0 ? (
+                        metaCountries.map((c, i) => <option key={`mc_${i}`} value={c.code || (typeof c === 'string' ? c : '')}>{c.name || c}</option>)
+                      ) : (
+                        <option value="US">United States (US)</option>
+                      )}
+                    </select>
+                  </FormField>
+                  <FormField label="Media Type" htmlFor="full-ads-m-media">
+                    <select id="full-ads-m-media" className="form-select" value={fields.ads_meta_media_type} onChange={set('ads_meta_media_type')}>
+                      <option value="all">All Media</option>
+                      <option value="video">Video</option>
+                      <option value="image">Image</option>
+                      <option value="meme">Meme</option>
+                      <option value="image_and_meme">Image & Meme</option>
+                      <option value="none">No Media</option>
+                    </select>
+                  </FormField>
+                </div>
+                
+                <FormField label="Active Status" htmlFor="full-ads-m-status">
+                  <select id="full-ads-m-status" className="form-select" value={fields.ads_meta_active_status} onChange={set('ads_meta_active_status')}>
+                    <option value="all">All</option>
+                    <option value="active">Active Only</option>
+                    <option value="inactive">Inactive Only</option>
+                  </select>
+                </FormField>
+              </>
             )}
           </div>
         </div>

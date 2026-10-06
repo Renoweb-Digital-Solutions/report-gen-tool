@@ -123,13 +123,13 @@ export default function SupportModal({ onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 support-modal-backdrop" onClick={onClose}>
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ duration: 0.25, ease: 'easeOut' }}
-        className="w-full max-w-xl bg-white rounded-3xl shadow-2xl overflow-hidden relative"
+        className="w-full max-w-xl bg-white rounded-3xl shadow-2xl overflow-hidden relative support-modal-container"
         onClick={(e) => e.stopPropagation()}
       >
         {/* HEADER */}

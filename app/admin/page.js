@@ -2,9 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ShieldAlert, Users, FileText, Activity, ShieldCheck, LogOut, MessageSquare, Clock, CheckCircle2, RefreshCw, BarChart3 } from 'lucide-react';
+import { ShieldAlert, Users, FileText, Activity, ShieldCheck, LogOut, MessageSquare, Clock, CheckCircle2, RefreshCw, BarChart3, ChevronDown } from 'lucide-react';
 import { getAdminUsers, getAdminTickets, getAnalyticsSummary, suspendAdminUser, unsuspendAdminUser } from '@/app/lib/api';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
+import ThemeToggle from '@/app/components/ThemeToggle';
 
 export default function AdminPanel() {
   const [users, setUsers] = useState([]);
@@ -14,6 +15,15 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+
+  const [expandedUsers, setExpandedUsers] = useState({});
+
+  const toggleUserExpansion = (username) => {
+    setExpandedUsers(prev => ({
+      ...prev,
+      [username]: !prev[username]
+    }));
+  };
 
   const [suspendModal, setSuspendModal] = useState({ isOpen: false, user: null, reason: '' });
   const [submittingSuspend, setSubmittingSuspend] = useState(false);
@@ -124,7 +134,7 @@ export default function AdminPanel() {
   const totalUsers = users.length;
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--color-surface)', padding: '40px 24px', fontFamily: 'var(--font-primary)' }}>
+    <div className="admin-page-container" style={{ minHeight: '100vh', background: 'var(--color-surface)', padding: '40px 24px', fontFamily: 'var(--font-primary)' }}>
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
         
         {/* Header */}
@@ -136,12 +146,15 @@ export default function AdminPanel() {
               </div>
               <h1 style={{ fontSize: '28px', fontWeight: 700, color: 'var(--color-dark)', letterSpacing: '-0.02em', margin: 0 }}>Admin Dashboard</h1>
             </div>
-            <p style={{ color: 'rgba(25,25,25,0.6)', fontSize: '14px', marginLeft: '40px', margin: 0 }}>Overview of users and report generation activity.</p>
+            <p className="admin-header-subtitle" style={{ color: 'rgba(25,25,25,0.6)', fontSize: '14px', marginLeft: '40px', margin: 0 }}>Overview of users and report generation activity.</p>
           </div>
           
-          <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: 'rgba(239,68,68,0.1)', color: 'var(--color-error)', border: 'none', borderRadius: 'var(--radius-md)', fontWeight: 600, cursor: 'pointer' }}>
-            <LogOut size={16} /> Logout
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <ThemeToggle />
+            <button onClick={handleLogout} className="admin-logout-btn" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: 'rgba(239,68,68,0.1)', color: 'var(--color-error)', border: 'none', borderRadius: 'var(--radius-md)', fontWeight: 600, cursor: 'pointer' }}>
+              <LogOut size={16} /> Logout
+            </button>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -183,13 +196,13 @@ export default function AdminPanel() {
           <div style={{ padding: '0', borderBottom: '1px solid var(--color-border)', background: 'rgba(244,247,255,0.3)', display: 'flex', alignItems: 'center' }}>
             <button 
               onClick={() => setActiveTab('users')}
-              style={{ padding: '20px', minWidth: '150px', background: activeTab === 'users' ? '#ffffff' : 'transparent', border: 'none', borderBottom: activeTab === 'users' ? '3px solid var(--brand-blue)' : '3px solid transparent', fontSize: '16px', fontWeight: 700, color: activeTab === 'users' ? 'var(--brand-deep)' : 'rgba(25,25,25,0.5)', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+              className={`admin-tab-btn ${activeTab === 'users' ? 'active' : ''}`}
             >
               <Users size={18} /> User Accounts
             </button>
             <button 
               onClick={() => setActiveTab('tickets')}
-              style={{ padding: '20px', minWidth: '150px', background: activeTab === 'tickets' ? '#ffffff' : 'transparent', border: 'none', borderBottom: activeTab === 'tickets' ? '3px solid var(--brand-blue)' : '3px solid transparent', fontSize: '16px', fontWeight: 700, color: activeTab === 'tickets' ? 'var(--brand-deep)' : 'rgba(25,25,25,0.5)', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+              className={`admin-tab-btn ${activeTab === 'tickets' ? 'active' : ''}`}
             >
               <MessageSquare size={18} /> Support Tickets
               {tickets.filter(t => t.status === 'Open').length > 0 && (
@@ -200,7 +213,7 @@ export default function AdminPanel() {
             </button>
             <button 
               onClick={() => setActiveTab('analytics')}
-              style={{ padding: '20px', minWidth: '150px', background: activeTab === 'analytics' ? '#ffffff' : 'transparent', border: 'none', borderBottom: activeTab === 'analytics' ? '3px solid var(--brand-blue)' : '3px solid transparent', fontSize: '16px', fontWeight: 700, color: activeTab === 'analytics' ? 'var(--brand-deep)' : 'rgba(25,25,25,0.5)', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+              className={`admin-tab-btn ${activeTab === 'analytics' ? 'active' : ''}`}
             >
               <BarChart3 size={18} /> Analytics
             </button>
@@ -265,12 +278,12 @@ export default function AdminPanel() {
             ) : activeTab === 'users' ? (
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
-                  <tr style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}>
-                    <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Username</th>
-                    <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Email</th>
-                    <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Role</th>
-                    <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Reports</th>
-                    <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Actions</th>
+                  <tr className="admin-table-header-row">
+                    <th className="admin-table-th">Username</th>
+                    <th className="admin-table-th">Email</th>
+                    <th className="admin-table-th">Role</th>
+                    <th className="admin-table-th">Reports</th>
+                    <th className="admin-table-th" style={{ textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -287,19 +300,29 @@ export default function AdminPanel() {
                           {user.role || 'user'}
                         </span>
                       </td>
-                      <td style={{ padding: '16px 24px', textAlign: 'center' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: '32px', height: '32px', padding: '0 10px', borderRadius: '8px', background: 'rgba(16,185,129,0.1)', color: 'var(--color-success)', fontWeight: 700, fontSize: '14px', border: '1px solid rgba(16,185,129,0.2)' }} title="Total Reports">
-                            {user.report_count || 0}
-                          </div>
-                          {user.report_breakdown && Object.keys(user.report_breakdown).length > 0 && (
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', justifyContent: 'center', maxWidth: '180px' }}>
-                              {Object.entries(user.report_breakdown).map(([type, count]) => (
-                                <span key={type} style={{ fontSize: '10px', padding: '3px 6px', background: 'rgba(48,143,239,0.1)', border: '1px solid rgba(48,143,239,0.2)', borderRadius: '4px', color: 'var(--brand-blue)', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                                  {type.replace(' Audit', '')}: {count}
-                                </span>
-                              ))}
+                      <td style={{ padding: '16px 24px', verticalAlign: 'top' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <button
+                            onClick={() => toggleUserExpansion(user.username)}
+                            style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', outline: 'none' }}
+                          >
+                            <span className="admin-reports-label text-xs font-bold uppercase" style={{ color: 'var(--color-text-muted)' }}>TOTAL</span>
+                            <div className="admin-reports-total" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: '24px', height: '24px', padding: '0 8px', borderRadius: '6px', background: 'rgba(16,185,129,0.1)', color: 'var(--color-success)', fontWeight: 700, fontSize: '12px', border: '1px solid rgba(16,185,129,0.2)' }}>
+                              {user.report_count || 0}
                             </div>
+                            {user.report_breakdown && Object.keys(user.report_breakdown).length > 0 && (
+                              <ChevronDown size={14} style={{ color: 'var(--color-text-muted)', transform: expandedUsers[user.username] ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                            )}
+                          </button>
+                          {expandedUsers[user.username] && user.report_breakdown && Object.keys(user.report_breakdown).length > 0 && (
+                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', gap: '4px', paddingLeft: '8px', borderLeft: '2px solid var(--color-border)', overflow: 'hidden' }}>
+                              {Object.entries(user.report_breakdown).map(([type, count]) => (
+                                <div key={type} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', fontSize: '11px' }}>
+                                  <span style={{ color: 'var(--color-text-sub)', fontWeight: 500 }}>{type.replace(' Audit', '')}</span>
+                                  <span style={{ color: 'var(--color-text-main)', fontWeight: 700 }}>{count}</span>
+                                </div>
+                              ))}
+                            </motion.div>
                           )}
                         </div>
                       </td>
@@ -325,11 +348,11 @@ export default function AdminPanel() {
             ) : (
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
-                  <tr style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}>
-                    <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>User</th>
-                    <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Ticket Details</th>
-                    <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</th>
-                    <th style={{ padding: '16px 24px', fontSize: '12px', fontWeight: 600, color: 'rgba(25,25,25,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Date</th>
+                  <tr className="admin-table-header-row">
+                    <th className="admin-table-th">User</th>
+                    <th className="admin-table-th">Ticket Details</th>
+                    <th className="admin-table-th">Status</th>
+                    <th className="admin-table-th" style={{ textAlign: 'right' }}>Date</th>
                   </tr>
                 </thead>
                 <tbody>

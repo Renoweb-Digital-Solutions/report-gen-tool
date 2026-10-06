@@ -2,6 +2,7 @@ import { DM_Sans, Oswald } from "next/font/google";
 import "./globals.css";
 import { AnalyticsProvider } from "./components/AnalyticsProvider";
 import CookieBanner from "./components/CookieBanner";
+import { ThemeProvider } from "./context/ThemeContext";
 
 // Self-hosted via next/font — no @import needed in CSS, zero layout shift
 const dmSans = DM_Sans({
@@ -27,12 +28,40 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${oswald.variable}`}>
+    <html lang="en" className={`${dmSans.variable} ${oswald.variable}`} suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var saved = localStorage.getItem('flawdits_theme');
+                  var theme = saved;
+                  if (!theme) {
+                    theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                  }
+                  var path = window.location.pathname;
+                  var inScope = path.startsWith('/dashboard') || (path.startsWith('/admin') && path !== '/admin/login');
+                  if (theme === 'dark' && inScope) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.removeAttribute('data-theme');
+                    document.documentElement.classList.remove('dark');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body>
-        <AnalyticsProvider>
-          {children}
-          <CookieBanner />
-        </AnalyticsProvider>
+        <ThemeProvider>
+          <AnalyticsProvider>
+            {children}
+            <CookieBanner />
+          </AnalyticsProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

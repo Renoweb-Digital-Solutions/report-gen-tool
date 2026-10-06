@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { Menu } from 'lucide-react';
 import ApiHealthBadge from './ApiHealthBadge';
+import ThemeToggle from './ThemeToggle';
 
 export default function Navbar({ onMenuClick }) {
   return (
@@ -28,13 +29,15 @@ export default function Navbar({ onMenuClick }) {
       <div className="flex items-center gap-2 md:gap-3">
         <ApiHealthBadge />
         <div
-          className="hidden md:flex items-center gap-[6px] text-[11.5px] text-brandInk/50 bg-brandInk/5 px-3 py-1.5 rounded-2xl border border-brandInk/10 select-none"
+          className="session-pill hidden md:flex items-center gap-[6px] text-[11.5px] text-brandInk/50 bg-brandInk/5 px-3 py-1.5 rounded-2xl border border-brandInk/10 select-none"
           title="Your inputs and reports persist across page refreshes but clear when this tab is closed."
         >
           <span aria-hidden="true">🔒</span>
           Session data clears on tab close
         </div>
+        <ThemeToggle />
       </div>
     </nav>
   );
 }
+
