@@ -24,6 +24,9 @@ export const metadata = {
   title: "Flawdits",
   description:
     "Generate comprehensive digital presence audit reports — SEO, Instagram, LinkedIn, and visual brand match analysis — powered by Renoweb.",
+  verification: {
+    google: "Q2BUcYgqtAlhXgvX3FrTcZQvIUNqRHzVSo3-UgNl3X8",
+  },
 };
 
 export default function RootLayout({ children }) {
