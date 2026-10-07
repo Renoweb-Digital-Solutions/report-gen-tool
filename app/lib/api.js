@@ -691,3 +691,29 @@ export async function getUserReports(page = 1, limit = 10) {
   if (!res.ok) throw new Error(await extractError(res));
   return res.json();
 }
+
+/**
+ * Generate AI email for admin
+ */
+export async function generateAdminEmail(payload) {
+  const res = await adminAuthFetch(`${BASE_URL}/admin/emails/generate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+}
+
+/**
+ * Send admin email
+ */
+export async function sendAdminEmail(payload) {
+  const res = await adminAuthFetch(`${BASE_URL}/admin/emails/send`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+}

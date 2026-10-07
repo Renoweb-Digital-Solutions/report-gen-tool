@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ShieldAlert, Users, FileText, Activity, ShieldCheck, LogOut, MessageSquare, Clock, CheckCircle2, RefreshCw, BarChart3, ChevronDown } from 'lucide-react';
-import { getAdminUsers, getAdminTickets, getAnalyticsSummary, suspendAdminUser, unsuspendAdminUser } from '@/app/lib/api';
+import { ShieldAlert, Users, FileText, Activity, ShieldCheck, LogOut, MessageSquare, Clock, CheckCircle2, RefreshCw, BarChart3, ChevronDown, Mail, Wand2, Send } from 'lucide-react';
+import { getAdminUsers, getAdminTickets, getAnalyticsSummary, suspendAdminUser, unsuspendAdminUser, generateAdminEmail, sendAdminEmail } from '@/app/lib/api';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import ThemeToggle from '@/app/components/ThemeToggle';
 
@@ -27,6 +27,39 @@ export default function AdminPanel() {
 
   const [suspendModal, setSuspendModal] = useState({ isOpen: false, user: null, reason: '' });
   const [submittingSuspend, setSubmittingSuspend] = useState(false);
+
+  const [emailModal, setEmailModal] = useState({ isOpen: false, type: 'feedback', context: '', subject: '', body: '', to_email: '', username: '' });
+  const [generatingEmail, setGeneratingEmail] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
+
+  const handleGenerateEmail = async () => {
+      setGeneratingEmail(true);
+      try {
+          const res = await generateAdminEmail({ type: emailModal.type, context: emailModal.context, username: emailModal.username });
+          setEmailModal(prev => ({ ...prev, body: res.generated_body }));
+      } catch (err) {
+          alert('Error generating email: ' + err.message);
+      } finally {
+          setGeneratingEmail(false);
+      }
+  };
+
+  const handleSendEmail = async () => {
+      if (!emailModal.to_email.trim() || !emailModal.subject.trim() || !emailModal.body.trim()) {
+          alert('Please fill out recipient, subject and body');
+          return;
+      }
+      setSendingEmail(true);
+      try {
+          await sendAdminEmail({ to_email: emailModal.to_email, subject: emailModal.subject, body: emailModal.body });
+          alert('Email sent successfully!');
+          setEmailModal({ isOpen: false, type: 'feedback', context: '', subject: '', body: '', to_email: '', username: '' });
+      } catch (err) {
+          alert('Error sending email: ' + err.message);
+      } finally {
+          setSendingEmail(false);
+      }
+  };
 
   const handleSuspendClick = (user) => {
     if (user.is_suspended) {
@@ -218,7 +251,12 @@ export default function AdminPanel() {
               <BarChart3 size={18} /> Analytics
             </button>
 
-
+            <button
+              onClick={() => setEmailModal(prev => ({ ...prev, isOpen: true }))}
+              style={{ marginLeft: 'auto', padding: '8px 12px', background: 'rgba(37, 99, 235, 0.1)', border: '1px solid rgba(37, 99, 235, 0.2)', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--brand-blue)', fontSize: '13px', fontWeight: 600, transition: 'all 0.2s' }}
+            >
+              <Mail size={14} /> Send Email
+            </button>
             <button
               onClick={() => fetchData(true)}
               disabled={refreshing}
@@ -326,7 +364,14 @@ export default function AdminPanel() {
                           )}
                         </div>
                       </td>
-                      <td style={{ padding: '16px 24px', textAlign: 'right' }}>
+                      <td style={{ padding: '16px 24px', textAlign: 'right', display: 'flex', justifyContent: 'flex-end', gap: '8px', alignItems: 'center' }}>
+                        <button
+                          onClick={() => setEmailModal(prev => ({ ...prev, isOpen: true, to_email: user.email, username: user.username }))}
+                          style={{ padding: '6px', background: 'rgba(37,99,235,0.1)', color: 'var(--brand-blue)', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          title="Send Email"
+                        >
+                          <Mail size={16} />
+                        </button>
                         {user.role !== 'admin' && (
                           <button
                             onClick={() => handleSuspendClick(user)}
@@ -436,6 +481,122 @@ export default function AdminPanel() {
           </div>
         </div>
       )}
+
+      {emailModal.isOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ background: 'var(--color-white)', padding: '32px', borderRadius: '16px', width: '100%', maxWidth: '900px', maxHeight: '90vh', overflowY: 'auto', border: '1px solid var(--color-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h3 style={{ margin: 0, fontSize: '20px', color: 'var(--color-dark)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Mail size={20} color="var(--brand-blue)" /> AI Email Campaign
+                </h3>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
+                {/* Left Column */}
+                <div style={{ flex: '1 1 350px' }}>
+                    <h4 style={{ margin: '0 0 16px 0', fontSize: '15px', color: 'var(--color-dark)' }}>1. Generate Template</h4>
+                    
+                    <div style={{ marginBottom: '16px' }}>
+                        <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: 600, color: 'var(--color-dark)' }}>Email Type</label>
+                        <select 
+                            value={emailModal.type} 
+                            onChange={e => setEmailModal({...emailModal, type: e.target.value})}
+                            style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-border)', outline: 'none', background: 'var(--color-surface)', color: 'var(--color-dark)' }}
+                        >
+                            <option value="feedback">Request Feedback</option>
+                            <option value="marketing">Marketing / Outreach</option>
+                        </select>
+                    </div>
+
+                    <div style={{ marginBottom: '16px' }}>
+                        <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: 600, color: 'var(--color-dark)' }}>Context / Topic (Optional)</label>
+                        <textarea
+                            value={emailModal.context}
+                            onChange={e => setEmailModal({...emailModal, context: e.target.value})}
+                            placeholder="Enter context, or leave blank for a default AI template..."
+                            style={{ width: '100%', minHeight: '120px', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-border)', outline: 'none', fontFamily: 'inherit', background: 'var(--color-surface)', color: 'var(--color-dark)' }}
+                        />
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                        <button 
+                            onClick={handleGenerateEmail}
+                            disabled={generatingEmail}
+                            style={{ padding: '10px 20px', background: 'rgba(37,99,235,0.1)', color: 'var(--brand-blue)', border: '1px solid rgba(37,99,235,0.2)', borderRadius: '8px', cursor: generatingEmail ? 'not-allowed' : 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', width: '100%', justifyContent: 'center' }}
+                        >
+                            <Wand2 size={16} /> {generatingEmail ? 'Generating...' : 'Generate with AI'}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Right Column */}
+                <div style={{ flex: '1 1 400px', borderLeft: '1px solid var(--color-border)', paddingLeft: '32px' }}>
+                    <h4 style={{ margin: '0 0 16px 0', fontSize: '15px', color: 'var(--color-dark)' }}>2. Review & Send</h4>
+                    
+                    <div style={{ marginBottom: '16px' }}>
+                        <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: 600, color: 'var(--color-dark)' }}>Recipient Email</label>
+                        <input 
+                            type="email"
+                            value={emailModal.to_email}
+                            onChange={e => setEmailModal({...emailModal, to_email: e.target.value})}
+                            placeholder="user@example.com"
+                            style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-border)', outline: 'none', background: 'var(--color-surface)', color: 'var(--color-dark)' }}
+                        />
+                    </div>
+
+                    <div style={{ marginBottom: '16px' }}>
+                        <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: 600, color: 'var(--color-dark)' }}>Email Subject</label>
+                        <select 
+                            value={emailModal.subject}
+                            onChange={e => setEmailModal({...emailModal, subject: e.target.value})}
+                            style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-border)', outline: 'none', background: 'var(--color-surface)', color: 'var(--color-dark)' }}
+                        >
+                            <option value="">Select a subject...</option>
+                            {emailModal.type === 'feedback' ? (
+                                <>
+                                    <option value="We value your feedback!">We value your feedback!</option>
+                                    <option value="How was your experience with Flawdits?">How was your experience with Flawdits?</option>
+                                    <option value="Help us improve Flawdits">Help us improve Flawdits</option>
+                                </>
+                            ) : (
+                                <>
+                                    <option value="New updates from Flawdits">New updates from Flawdits</option>
+                                    <option value="Discover what's new on Flawdits">Discover what's new on Flawdits</option>
+                                    <option value="A special message from the Flawdits team">A special message from the Flawdits team</option>
+                                </>
+                            )}
+                        </select>
+                    </div>
+
+                    <div style={{ marginBottom: '24px' }}>
+                        <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: 600, color: 'var(--color-dark)' }}>Email Body (Editable)</label>
+                        <textarea
+                            value={emailModal.body}
+                            onChange={e => setEmailModal({...emailModal, body: e.target.value})}
+                            style={{ width: '100%', minHeight: '180px', padding: '10px', borderRadius: '8px', border: '1px solid var(--color-border)', outline: 'none', fontFamily: 'inherit', background: 'var(--color-surface)', color: 'var(--color-dark)' }}
+                        />
+                    </div>
+                    
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+                        <button 
+                            onClick={() => setEmailModal({isOpen: false, type: 'feedback', context: '', subject: '', body: '', to_email: '', username: ''})}
+                            style={{ padding: '10px 16px', background: 'transparent', color: 'var(--color-dark)', border: '1px solid var(--color-border)', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            onClick={handleSendEmail}
+                            disabled={sendingEmail}
+                            style={{ padding: '10px 16px', background: 'var(--brand-blue)', color: 'white', border: 'none', borderRadius: '8px', cursor: sendingEmail ? 'not-allowed' : 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', opacity: sendingEmail ? 0.7 : 1 }}
+              >
+                <Send size={16} /> {sendingEmail ? 'Sending...' : 'Send Email'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )}
 
     </div>
   );
