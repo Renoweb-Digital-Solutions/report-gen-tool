@@ -39,6 +39,7 @@ const DEFAULTS = {
   ads_meta_media_type: 'all',
   ads_meta_active_status: 'all',
   ads_meta_platforms: ['facebook', 'instagram'],
+  ads_limit: 20,
 };
 
 export default function FullReportForm({ loading, error, onDismissError, onSubmit }) {
