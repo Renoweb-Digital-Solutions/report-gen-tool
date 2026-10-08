@@ -6,6 +6,7 @@ import ErrorBanner from '../components/ErrorBanner';
 import AnimatedSubmitButton from '../components/AnimatedSubmitButton';
 import { useSessionState } from '../hooks/useSessionState';
 import { getMetaCountries, getGoogleRegions, searchMetaPages, searchGoogleAdvertisers } from '../lib/api';
+import { Info } from 'lucide-react';
 
 const DEFAULTS = {
   platform: 'google',
@@ -55,8 +56,8 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
         });
         setMetaCountries(sorted);
       }
-    }).catch(() => {});
-    
+    }).catch(() => { });
+
     getGoogleRegions().then(data => {
       if (data && data.regions) {
         const sorted = [...data.regions].sort((a, b) => {
@@ -66,7 +67,7 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
         });
         setGoogleRegions(sorted);
       }
-    }).catch(() => {});
+    }).catch(() => { });
   }, []);
 
   const set = (key) => (e) =>
@@ -140,7 +141,7 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
       payload.google_domain = fields.google_domain;
       payload.google_advertiser_id = fields.google_advertiser_id || null;
       payload.google_region = fields.google_region;
-      payload.google_time_period = fields.google_time_period === 'any' ? null : fields.google_time_period;
+      payload.google_time_period = fields.google_time_period;
       payload.google_ad_format = fields.google_ad_format === 'all' ? null : fields.google_ad_format;
       payload.google_platform = fields.google_platform === 'all' ? null : fields.google_platform;
     } else {
@@ -151,7 +152,7 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
       payload.meta_active_status = fields.meta_active_status;
       payload.meta_media_type = fields.meta_media_type;
       payload.meta_platforms = fields.meta_platforms;
-      
+
       if (fields.meta_start_date) payload.meta_start_date = fields.meta_start_date;
       if (fields.meta_end_date) payload.meta_end_date = fields.meta_end_date;
     }
@@ -161,13 +162,22 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
 
   const isGoogle = fields.platform === 'google';
 
-  const isFormValid = isGoogle 
-    ? (fields.google_domain || fields.google_advertiser_id) 
+  const isFormValid = isGoogle
+    ? (fields.google_domain || fields.google_advertiser_id)
     : (fields.meta_query || fields.meta_page_id);
 
   return (
     <form id="form-ads-audit" onSubmit={handleSubmit} noValidate>
-      <h2 className="form-panel-title">Ads Library Audit</h2>
+      <h2 className="form-panel-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        Ads Library Audit
+        <span
+          className="sidebar-tab-beta-badge"
+          style={{ display: 'flex', alignItems: 'center', gap: '2px', cursor: 'help', marginTop: '2px' }}
+          title="This pipeline is in development and might be unstable"
+        >
+          BETA <Info size={10} strokeWidth={3} />
+        </span>
+      </h2>
       <p className="form-panel-subtitle">
         Audit Google Ads Transparency Center or Meta Ads Library with in-depth analysis.
       </p>
@@ -176,7 +186,7 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
       {candidateError && <ErrorBanner message={candidateError} onDismiss={() => setCandidateError('')} />}
 
       <div className="form-grid" style={{ marginTop: error || candidateError ? 16 : 0 }}>
-        
+
         {/* PLATFORM SELECTOR */}
         <FormField label="Platform" htmlFor="ads-platform">
           <select
@@ -184,9 +194,9 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
             className="form-select"
             value={fields.platform}
             onChange={(e) => {
-                set('platform')(e);
-                setMetaPageCandidates([]);
-                setGoogleAdvCandidates([]);
+              set('platform')(e);
+              setMetaPageCandidates([]);
+              setGoogleAdvCandidates([]);
             }}
             disabled={loading}
           >
@@ -194,7 +204,7 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
             <option value="meta">Meta Ads Library</option>
           </select>
         </FormField>
-        
+
         <FormField label="Results Limit" htmlFor="ads-limit">
           <input
             id="ads-limit"
@@ -223,8 +233,8 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
                     onChange={set('google_domain')}
                     disabled={loading}
                   />
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors font-medium whitespace-nowrap"
                     onClick={handleSearchGoogleAdvertisers}
                     disabled={!fields.google_domain || loading || isSearchingCandidates}
@@ -248,25 +258,20 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
             </div>
 
             {googleAdvCandidates.length > 0 && (
-              <div className="col-span-1 sm:col-span-2 p-4 bg-gray-50 border border-gray-200 rounded-xl">
-                <h4 className="text-sm font-semibold text-gray-700 mb-2">Select an Advertiser (Optional but recommended):</h4>
-                <div className="max-h-48 overflow-y-auto space-y-2">
-                  <div className={`p-2 border rounded cursor-pointer ${!fields.google_advertiser_id ? 'bg-blue-50 border-blue-500' : 'bg-white'}`} onClick={() => setFields(p => ({...p, google_advertiser_id: ''}))}>
-                    <div className="font-medium text-sm">Do not specify (Use keyword only)</div>
-                  </div>
-                  {googleAdvCandidates.map((adv, idx) => {
-                    const advId = adv.advertiser_id || adv.id;
-                    return (
-                    <div 
-                      key={`gadv_${idx}_${advId}`} 
-                      className={`p-2 border rounded cursor-pointer ${fields.google_advertiser_id === advId ? 'bg-blue-50 border-blue-500' : 'bg-white hover:bg-gray-50'}`}
-                      onClick={() => setFields(p => ({...p, google_advertiser_id: advId}))}
-                    >
-                      <div className="font-medium text-sm text-gray-900">{adv.name}</div>
-                      <div className="text-xs text-gray-500">ID: {advId} {adv.location ? `• ${adv.location}` : ''}</div>
-                    </div>
-                  )})}
-                </div>
+              <div className="col-span-1 sm:col-span-2">
+                <FormField label="Select an Advertiser (Optional but recommended)" htmlFor="g-adv-select">
+                  <select id="g-adv-select" className="form-select" value={fields.google_advertiser_id} onChange={set('google_advertiser_id')} disabled={loading}>
+                    <option value="">Do not specify (Use keyword only)</option>
+                    {googleAdvCandidates.map((adv, idx) => {
+                      const advId = adv.advertiser_id || adv.id || '';
+                      return (
+                        <option key={`gadv_${idx}_${advId}`} value={advId}>
+                          {adv.name} (ID: {advId})
+                        </option>
+                      );
+                    })}
+                  </select>
+                </FormField>
               </div>
             )}
 
@@ -318,8 +323,8 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
                     onChange={set('meta_query')}
                     disabled={loading}
                   />
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors font-medium whitespace-nowrap"
                     onClick={handleSearchMetaPages}
                     disabled={!fields.meta_query || loading || isSearchingCandidates}
@@ -329,6 +334,25 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
                 </div>
               </FormField>
             </div>
+
+            {metaPageCandidates.length > 0 && (
+              <div className="col-span-1 sm:col-span-2">
+                <FormField label="Select a Page (Optional but recommended)" htmlFor="m-page-select">
+                  <select id="m-page-select" className="form-select" value={fields.meta_page_id} onChange={set('meta_page_id')} disabled={loading}>
+                    <option value="">Do not specify (Use keyword only)</option>
+                    {metaPageCandidates.map((page, idx) => {
+                      const pageId = page.page_id || page.id || '';
+                      const pageName = page.page_name || page.name || page.title;
+                      return (
+                        <option key={`mpage_${idx}_${pageId}`} value={pageId}>
+                          {pageName || 'Unknown Page'} (ID: {pageId})
+                        </option>
+                      );
+                    })}
+                  </select>
+                </FormField>
+              </div>
+            )}
 
             <div className="col-span-1 sm:col-span-2">
               <FormField label="Target Country" htmlFor="m-country">
@@ -342,33 +366,6 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
               </FormField>
             </div>
 
-            {metaPageCandidates.length > 0 && (
-              <div className="col-span-1 sm:col-span-2 p-4 bg-gray-50 border border-gray-200 rounded-xl">
-                <h4 className="text-sm font-semibold text-gray-700 mb-2">Select a Page (Optional but recommended):</h4>
-                <div className="max-h-48 overflow-y-auto space-y-2">
-                  <div className={`p-2 border rounded cursor-pointer ${!fields.meta_page_id ? 'bg-blue-50 border-blue-500' : 'bg-white'}`} onClick={() => setFields(p => ({...p, meta_page_id: ''}))}>
-                    <div className="font-medium text-sm">Do not specify (Use keyword only)</div>
-                  </div>
-                  {metaPageCandidates.map((page, idx) => {
-                    const pageId = page.page_id || page.id;
-                    const pageName = page.page_name || page.name || page.title;
-                    const pageAvatar = page.profile_pic_url || page.image || page.avatar;
-                    return (
-                    <div 
-                      key={`mpage_${idx}_${pageId}`} 
-                      className={`p-2 border rounded cursor-pointer flex items-center gap-3 ${fields.meta_page_id === pageId ? 'bg-blue-50 border-blue-500' : 'bg-white hover:bg-gray-50'}`}
-                      onClick={() => setFields(p => ({...p, meta_page_id: pageId}))}
-                    >
-                      {pageAvatar && <img src={pageAvatar} alt="" className="w-10 h-10 rounded-full" />}
-                      <div>
-                        <div className="font-medium text-sm text-gray-900">{pageName || `Unknown Page`}</div>
-                        <div className="text-xs text-gray-500">ID: {pageId}</div>
-                      </div>
-                    </div>
-                  )})}
-                </div>
-              </div>
-            )}
 
             <div className="col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField label="Media Type" htmlFor="m-media">
@@ -390,14 +387,14 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
                 </select>
               </FormField>
             </div>
-            
+
             <div className="col-span-1 sm:col-span-2">
-              <label className="form-label block mb-2 text-[#081a3a] font-bold text-sm">Placements</label>
+              <label className="form-label block mb-2 font-bold text-sm">Placements</label>
               <div className="flex flex-wrap gap-4">
                 {['facebook', 'instagram', 'audience_network', 'messenger', 'threads'].map(p => (
-                  <label key={p} className="flex items-center gap-2 cursor-pointer text-sm font-medium text-[#081a3a]">
-                    <input 
-                      type="checkbox" 
+                  <label key={p} className="flex items-center gap-2 cursor-pointer text-sm font-medium text-slate-800 dark:text-slate-200">
+                    <input
+                      type="checkbox"
                       className="rounded border-[#b7d0ff] text-blue-600 focus:ring-blue-500"
                       checked={fields.meta_platforms.includes(p)}
                       onChange={handleCheckbox('meta_platforms', p)}
@@ -410,7 +407,7 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
             </div>
           </>
         )}
-        
+
         {loading && progress && (
           <div className="col-span-1 sm:col-span-2 p-4 bg-blue-50 border border-blue-100 rounded-xl mt-2 animate-pulse">
             <div className="flex items-center gap-3">
@@ -421,7 +418,7 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
         )}
 
         <div className="col-span-1 sm:col-span-2 mt-2">
-          <AnimatedSubmitButton 
+          <AnimatedSubmitButton
             loading={loading}
             disabled={!isFormValid}
             defaultText="Generate Ads Audit"

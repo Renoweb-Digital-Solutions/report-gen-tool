@@ -8,10 +8,12 @@ function AdCard({ ad, provider }) {
   const format = ad.ad_format || 'Unknown Format';
   const platform = ad.platform || (ad.publisher_platforms && ad.publisher_platforms.join(', ')) || 'Unknown Platform';
   
-  // Try to find image or text to display
+  // Try to find image, video or text to display
   const creativeBody = ad.text || ad.primary_text || (ad.ad_creative_bodies && ad.ad_creative_bodies[0]) || '';
-  const imageUrl = (ad.image_urls && ad.image_urls[0]) || ad.image_url || (ad.video_urls && ad.video_urls[0]) || '';
-  const previewUrl = ad.preview_url || ad.source_url || '';
+  const mediaList = ad.media_urls || ad.mediaUrls || [];
+  const videoUrl = (ad.video_urls && ad.video_urls[0]) || mediaList.find(m => typeof m === 'string' && (m.includes('.mp4') || m.includes('video')));
+  const imageUrl = (ad.image_urls && ad.image_urls[0]) || ad.image_url || mediaList.find(m => m !== videoUrl) || videoUrl || '';
+  const previewUrl = ad.preview_url || ad.libraryUrl || ad.library_url || ad.source_url || '';
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
@@ -68,6 +70,11 @@ function AdCard({ ad, provider }) {
             )}
             {!imageUrl && !creativeBody && previewUrl && (
               <div className="text-sm text-gray-400 italic text-center py-6 mb-4">No visual preview available</div>
+            )}
+            {videoUrl && (
+              <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="mb-3 block w-full text-center px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-xs font-semibold">
+                ▶ Watch Ad Video ↗
+              </a>
             )}
             <div className="mt-auto">
               {previewUrl ? (

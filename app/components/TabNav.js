@@ -2,18 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { BarChart, Globe, MapPin, Camera, Briefcase, UserCircle, Palette, LogOut, Megaphone, MonitorSmartphone } from 'lucide-react';
+import { BarChart, Globe, MapPin, Camera, Briefcase, UserCircle, Palette, LogOut, Megaphone, MonitorSmartphone, Info } from 'lucide-react';
 
 const TABS = [
-  { id: 'full',       label: 'Full Report',        icon: BarChart,   desc: 'SEO, social & brand' },
-  { id: 'website',    label: 'Website Anatomy',     icon: Globe,      desc: 'Performance & health' },
-  { id: 'gmb',        label: 'GMB Audit',           icon: MapPin,     desc: 'Google Business Profile' },
-  { id: 'instagram',  label: 'Instagram Audit',     icon: Camera,     desc: 'Post & engagement analysis' },
-  { id: 'linkedin',   label: 'LinkedIn Audit',      icon: Briefcase,  desc: 'Company page review' },
+  { id: 'full', label: 'Full Report', icon: BarChart, desc: 'SEO, social & brand' },
+  { id: 'website', label: 'Website Anatomy', icon: Globe, desc: 'Performance & health' },
+  { id: 'gmb', label: 'GMB Audit', icon: MapPin, desc: 'Google Business Profile' },
+  { id: 'instagram', label: 'Instagram Audit', icon: Camera, desc: 'Post & engagement analysis' },
+  { id: 'linkedin', label: 'LinkedIn Audit', icon: Briefcase, desc: 'Company page review' },
   { id: 'linkedin_personal', label: 'LinkedIn Personal', icon: UserCircle, desc: 'Profile & personal posts' },
-  { id: 'visual',     label: 'Visual Brand Match',  icon: Palette,    desc: 'Color & identity check' },
-  { id: 'ads',        label: 'Ads Audit',           icon: Megaphone,  desc: 'Google & Meta Ads check' },
-  { id: 'ui-ux',      label: 'UI/UX Audit',         icon: MonitorSmartphone, desc: 'Design, UX & Core Metrics' },
+  { id: 'visual', label: 'Visual Brand Match', icon: Palette, desc: 'Color & identity check' },
+  { id: 'ads', label: 'Ads Audit', icon: Megaphone, desc: 'Google & Meta Ads check' },
+  { id: 'ui-ux', label: 'UI/UX Audit', icon: MonitorSmartphone, desc: 'Design, UX & Core Metrics' },
 ];
 
 export { TABS };
@@ -41,7 +41,18 @@ export default function TabNav({ activeTab, onTabChange, onLogout }) {
                 <Icon size={18} strokeWidth={2.5} />
               </span>
               <span className="sidebar-tab-text">
-                <span className="sidebar-tab-label">{tab.label}</span>
+                <span className="sidebar-tab-label">
+                  {tab.label}
+                  {tab.id === 'ads' || tab.id === 'ui-ux' ? (
+                    <span
+                      className="sidebar-tab-beta-badge"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', cursor: 'help' }}
+                      title="This pipeline is in development and might be unstable"
+                    >
+                      BETA <Info size={8} strokeWidth={3} />
+                    </span>
+                  ) : ""}
+                </span>
                 <span className="sidebar-tab-desc">{tab.desc}</span>
               </span>
             </button>
@@ -49,18 +60,18 @@ export default function TabNav({ activeTab, onTabChange, onLogout }) {
         })}
       </div>
       <div className="sidebar-nav-footer">
-        <Link 
+        <Link
           href="/dashboard/profile"
-          className="sidebar-profile-full-btn" 
+          className="sidebar-profile-full-btn"
           style={{ marginBottom: '8px', textDecoration: 'none' }}
           title="Profile"
         >
           <UserCircle size={18} />
           <span>Profile</span>
         </Link>
-        <button 
-          className="sidebar-logout-full-btn" 
-          onClick={onLogout} 
+        <button
+          className="sidebar-logout-full-btn"
+          onClick={onLogout}
           title="Log Out"
         >
           <LogOut size={18} />

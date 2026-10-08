@@ -4,6 +4,7 @@ import FormField from '../components/FormField';
 import ErrorBanner from '../components/ErrorBanner';
 import { useSessionState } from '../hooks/useSessionState';
 import AnimatedSubmitButton from '../components/AnimatedSubmitButton';
+import { Info } from 'lucide-react';
 
 const DEFAULTS = {
   url: '',
@@ -28,7 +29,16 @@ export default function UiUxAuditForm({ loading, error, progress, onDismissError
 
   return (
     <form id="form-ui-ux-audit" onSubmit={handleSubmit} noValidate>
-      <h2 className="form-panel-title">UI/UX Audit</h2>
+      <h2 className="form-panel-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        UI/UX Audit
+        <span 
+          className="sidebar-tab-beta-badge" 
+          style={{ display: 'flex', alignItems: 'center', gap: '2px', cursor: 'help', marginTop: '2px' }}
+          title="This pipeline is in development and might be unstable"
+        >
+          BETA <Info size={10} strokeWidth={3} />
+        </span>
+      </h2>
       <p className="form-panel-subtitle">
         Design, UX & Core Metrics scoring based on full-page visual captures and accessibility compliance.
       </p>
