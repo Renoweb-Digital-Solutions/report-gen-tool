@@ -1,4 +1,5 @@
 'use client';
+import { logoutSession, revokeAllDevices } from '@/app/features/auth/api';
 import { useState, useEffect } from 'react';
 import Navbar from '@/app/components/Navbar';
 import { useRouter } from 'next/navigation';
@@ -18,6 +19,8 @@ export default function ProfilePage() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingReports, setLoadingReports] = useState(false);
+  const [securityBusy, setSecurityBusy] = useState(false);
+  const [securityError, setSecurityError] = useState('');
 
   useEffect(() => {
     async function loadData() {
@@ -33,7 +36,7 @@ export default function ProfilePage() {
         setTotalReports(reportsData.total || 0);
       } catch (err) {
         console.error(err);
-        // Unauthorized, but we can just show empty
+        router.push('/?login=true');
       } finally {
         setLoading(false);
       }
@@ -55,10 +58,14 @@ export default function ProfilePage() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.clear();
-    sessionStorage.clear();
-    router.push('/?logout=true');
+  const handleLogout = async (forget = false, all = false) => {
+    setSecurityBusy(true);
+    setSecurityError('');
+    try {
+      if (all) await revokeAllDevices(); else await logoutSession('user', forget);
+      router.push('/?logout=true');
+    } catch (error) { setSecurityError(error.message || 'Could not sign out. Please try again.'); }
+    finally { setSecurityBusy(false); }
   };
 
   const getStatusBadge = (status) => {
@@ -114,9 +121,12 @@ export default function ProfilePage() {
                   <button onClick={() => setShowAuthModal(true)} className="flex items-center justify-center gap-2 w-full py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-all">
                     <KeyRound size={16} className="text-slate-500" /> Change Password
                   </button>
-                  <button onClick={handleLogout} className="flex items-center justify-center gap-2 w-full py-2.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 text-sm font-bold rounded-xl transition-all">
+                  <button disabled={securityBusy} onClick={() => handleLogout()} className="flex items-center justify-center gap-2 w-full py-2.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 text-sm font-bold rounded-xl transition-all">
                     <LogOut size={16} className="text-red-500" /> Log Out
                   </button>
+                  <button disabled={securityBusy} onClick={() => handleLogout(true)} className="w-full py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all">Forget this device & sign out</button>
+                  <button disabled={securityBusy} onClick={() => handleLogout(false, true)} className="w-full py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all">Sign out & forget all devices</button>
+                  {securityError && <p role="alert" className="text-sm text-red-600">{securityError}</p>}
                 </div>
               </div>
             </motion.div>

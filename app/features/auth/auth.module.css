@@ -1,0 +1,73 @@
+/* Scoped additions consumed by OTP and auth forms; existing branding/layout remain authoritative. */
+/* FORM LAYOUT: scoped to OTP content; global modal/illustration styles stay in globals.css. */
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.instructions {
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+/* Numeric spacing makes all six digits readable; tabular figures keep digit widths stable. */
+.code {
+  letter-spacing: 0.35em;
+  font-variant-numeric: tabular-nums;
+}
+.hint {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 0;
+}
+/* TRUST CHOICE: wrap explanatory text without compressing the checkbox on narrow screens. */
+.remember {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: #334155;
+  font-size: 14px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+.remember input {
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+  accent-color: #023dbb;
+  flex-shrink: 0;
+}
+/* SECONDARY ACTIONS: wrapping keeps resend and back controls usable on small viewports. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+}
+.actions button {
+  background: transparent;
+  border: 0;
+  color: #023dbb;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+.actions button:disabled {
+  color: #64748b;
+  cursor: default;
+}
+/* ACCESSIBILITY: provide a visible keyboard focus indicator, independent of hover styling. */
+.actions button:focus-visible,
+.remember input:focus-visible {
+  outline: 2px solid #308fef;
+  outline-offset: 4px;
+}
+.status {
+  color: #475569;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-top: 12px;
+}

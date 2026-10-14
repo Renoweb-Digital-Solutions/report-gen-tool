@@ -1,4 +1,6 @@
 'use client';
+import { getUserProfile } from '@/app/lib/api';
+import { logoutSession, revokeAllDevices } from '@/app/features/auth/api';
 import { useState, useEffect } from 'react';
 import { X, LogOut, User as UserIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -8,38 +10,24 @@ export default function ProfileModal({ onClose }) {
   const [username, setUsername] = useState('Loading...');
   const [initial, setInitial] = useState('N');
 
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
   useEffect(() => {
-    try {
-      const token = localStorage.getItem('access_token');
-      if (token) {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-        const payload = JSON.parse(jsonPayload);
-        if (payload.sub) {
-          setUsername(payload.sub);
-          setInitial(payload.sub.charAt(0).toUpperCase());
-        } else {
-          setUsername('User');
-          setInitial('U');
-        }
-      } else {
-        setUsername('Guest');
-        setInitial('G');
-      }
-    } catch(e) {
-      setUsername('User');
-      setInitial('U');
-    }
+    getUserProfile().then(profile => {
+      setUsername(profile.username);
+      setInitial(profile.username.charAt(0).toUpperCase());
+    }).catch(() => { setUsername('User'); setInitial('U'); });
   }, []);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    sessionStorage.clear();
-    router.push('/?login=true');
-    onClose();
+  const handleLogout = async (forget = false, all = false) => {
+    setBusy(true);
+    setError('');
+    try {
+      if (all) await revokeAllDevices(); else await logoutSession('user', forget);
+      router.push('/?login=true');
+      onClose();
+    } catch (error) { setError(error.message); }
+    finally { setBusy(false); }
   };
 
   return (
@@ -67,10 +55,13 @@ export default function ProfileModal({ onClose }) {
             <UserIcon size={18} />
             <span>View Profile & Tickets</span>
           </button>
-          <button className="profile-logout-btn" onClick={handleLogout}>
+          <button className="profile-logout-btn" disabled={busy} onClick={() => handleLogout()}>
             <LogOut size={18} />
             <span>Log out</span>
           </button>
+          <button className="profile-logout-btn" disabled={busy} onClick={() => handleLogout(true)}>Forget this device & sign out</button>
+          <button className="profile-logout-btn" disabled={busy} onClick={() => handleLogout(false, true)}>Sign out & forget all devices</button>
+          {error && <p role="alert">{error}</p>}
         </div>
       </div>
     </div>

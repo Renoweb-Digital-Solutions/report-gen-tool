@@ -1,4 +1,5 @@
 'use client';
+import { hasSessionHint, checkSession } from '@/app/features/auth/api';
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
@@ -26,10 +27,8 @@ export default function LandingPage() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('access_token');
-      if (token && !window.location.search.includes('logout=true')) {
-        router.push('/dashboard');
-        return;
+      if (!window.location.search.includes('logout=true') && !window.location.search.includes('login=true')) {
+        checkSession().then(() => router.push('/dashboard')).catch(() => {});
       }
       if (window.location.search.includes('login=true')) {
         setShowAuthModal(true);
@@ -40,7 +39,7 @@ export default function LandingPage() {
 
   const handleCtaClick = (e) => {
     e.preventDefault();
-    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+    const token = hasSessionHint();
     if (token) {
       router.push('/dashboard');
     } else {

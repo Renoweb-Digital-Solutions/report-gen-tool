@@ -1,4 +1,5 @@
 'use client';
+import { logoutSession } from '@/app/features/auth/api';
 
 import { useState, useRef, useEffect } from 'react';
 import { useSessionState } from '@/app/hooks/useSessionState';
@@ -57,56 +58,22 @@ export default function Dashboard() {
   const [isSupportOpen, setIsSupportOpen] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    sessionStorage.clear();
-    router.push('/?login=true');
+  const handleLogout = async () => {
+    try { await logoutSession(); router.push('/?login=true'); }
+    catch (error) { window.alert(error.message || 'Could not sign out. Please try again.'); }
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    let isValid = false;
-
-    if (token) {
-      try {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-        const payload = JSON.parse(jsonPayload);
-        
-        const currentTime = Math.floor(Date.now() / 1000);
-        if (payload.exp && payload.exp < currentTime) {
-          isValid = false;
-        } else {
-          isValid = true;
-          if (payload.sub) {
-            setUsername(payload.sub);
-          }
-          getUserProfile().then(profile => setUserProfile(profile)).catch(err => console.error(err));
-        }
-      } catch(e) {
-        isValid = false;
-      }
-    }
-
-    if (!isValid) {
-      localStorage.clear();
-      sessionStorage.clear();
-      router.push('/?login=true');
-    } else {
+    let active = true;
+    getUserProfile().then(profile => {
+      if (!active) return;
+      setUsername(profile.username);
+      setUserProfile(profile);
       setAuthChecked(true);
-    }
-
-    const handleAuthExpired = () => {
-      localStorage.clear();
-      sessionStorage.clear();
-      router.push('/?login=true');
-    };
-
+    }).catch(() => { if (active) router.push('/?login=true'); });
+    const handleAuthExpired = () => router.push('/?login=true');
     window.addEventListener('auth-expired', handleAuthExpired);
-    return () => window.removeEventListener('auth-expired', handleAuthExpired);
+    return () => { active = false; window.removeEventListener('auth-expired', handleAuthExpired); };
   }, [router]);
 
   const [activeTab, setActiveTab] = useSessionState('active_tab', 'full');

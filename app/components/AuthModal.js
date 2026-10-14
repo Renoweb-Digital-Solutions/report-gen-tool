@@ -1,10 +1,19 @@
+/** Existing branded authentication modal, integrating browser-bound OTP and recovery flows. */
 'use client';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { loginUser, registerUser, forgotPasswordRequestOtp, forgotPasswordVerifyOtp, forgotPasswordReset } from '@/app/lib/api';
 import { Lock, User, Loader2, BarChart3, Globe, ShieldCheck, X, Eye, EyeOff } from 'lucide-react';
 import disposableDomains from 'disposable-email-domains';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { markSession, clearSessionHint } from '@/app/features/auth/api';
+import { useOtpChallenge } from '@/app/features/auth/hooks/useOtpChallenge';
+import OtpFields from '@/app/features/auth/components/OtpFields';
 
 export default function AuthModal({ onSuccess, onClose, initialView = 'login', profileEmail = null }) {
+  const flow = useOtpChallenge();
+  const reducedMotion = useReducedMotion();
+  const dialogRef = useRef(null);
+  const [recoveryChallenge, setRecoveryChallenge] = useState('');
   const [view, setView] = useState(initialView); // 'login', 'register', 'forgot_email', 'forgot_otp', 'forgot_reset'
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -17,15 +26,31 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const loadingRef = useRef(false);
+  loadingRef.current = loading;
   const [toast, setToast] = useState(null);
 
   const showToast = (msg, type = 'error') => {
     setToast({ msg, type });
-    setTimeout(() => setToast(null), 4000);
+
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
+    setToast(null);
+    if (view === 'login_otp') {
+      setLoading(true);
+      try {
+        await flow.verify();
+        if (onSuccess) onSuccess();
+      } catch (err) {
+        showToast(err.message);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
 
     if (view === 'login' || view === 'register') {
       if (!username || !password || (view === 'register' && !email)) {
@@ -47,8 +72,14 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
       try {
         if (view === 'login') {
           const data = await loginUser(username, password);
-          localStorage.setItem('access_token', data.access_token);
-          if (onSuccess) onSuccess();
+          setPassword('');
+          if (data.status === 'otp_required') {
+            flow.begin(data);
+            setView('login_otp');
+          } else {
+            markSession();
+            if (onSuccess) onSuccess();
+          }
         } else {
           await registerUser({ username, email, password });
           showToast('Registration successful! Please log in.', 'success');
@@ -71,6 +102,8 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
       setLoading(true);
       try {
         const data = await forgotPasswordRequestOtp(resetEmail);
+        setRecoveryChallenge(data.challenge_id);
+        setOtp('');
         showToast(data.message || 'OTP sent successfully', 'success');
         setView('forgot_otp');
       } catch (err) {
@@ -88,7 +121,7 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
       }
       setLoading(true);
       try {
-        await forgotPasswordVerifyOtp(resetEmail, otp);
+        await forgotPasswordVerifyOtp(resetEmail, otp, recoveryChallenge);
         showToast('OTP verified successfully', 'success');
         setView('forgot_reset');
       } catch (err) {
@@ -112,8 +145,10 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
       try {
         const data = await forgotPasswordReset(resetEmail, otp, newPassword, confirmPassword);
         showToast(data.message || 'Password resetted successfully', 'success');
+        clearSessionHint();
         setView('login');
         setPassword('');
+        setOtp('');
       } catch (err) {
         showToast(err.message || 'Failed to reset password');
       } finally {
@@ -123,18 +158,49 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
     }
   };
 
+  // Keep modal keyboard focus inside the form and restore focus to its trigger on exit.
+  useEffect(() => {
+    const previous = document.activeElement;
+    const dialog = dialogRef.current;
+    const focusable = () => Array.from(dialog.querySelectorAll('input:not(:disabled), button:not(:disabled), [tabindex="0"]')).filter(node => node.offsetParent !== null);
+    (dialog.querySelector('input:not(:disabled)') || focusable()[0])?.focus();
+    const handleKey = event => {
+      if (event.key === 'Escape' && onClose && !loadingRef.current) onClose();
+      if (event.key !== 'Tab') return;
+      const nodes = focusable();
+      const first = nodes[0], last = nodes[nodes.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
+    dialog.addEventListener('keydown', handleKey);
+    return () => { dialog.removeEventListener('keydown', handleKey); previous?.focus(); };
+  }, [onClose]);
+
+  const handleResend = async () => {
+    setLoading(true);
+    setToast(null);
+    try { await flow.resend(); showToast('A new code has been sent. Use the latest email.', 'success'); }
+    catch (error) { showToast(error.message); }
+    finally { setLoading(false); }
+  };
+
   return (
-    <div className="auth-modal-overlay">
-      <div className="auth-modal-container">
+    <div className="auth-modal-overlay" style={{ zIndex: 10001 }}>
+      <motion.div layout transition={{ layout: { duration: reducedMotion ? 0 : 0.3 } }} className="auth-modal-container" style={{ maxHeight: 'calc(100dvh - 40px)', overflowY: 'auto' }} ref={dialogRef} role="dialog" aria-modal="true" aria-label="Flawdits authentication">
 
         {/* LEFT SIDE - Form */}
         <div className="auth-modal-left">
           {onClose && (
-            <button className="auth-close-btn" onClick={onClose} type="button">
+            <button className="auth-close-btn" onClick={onClose} type="button" disabled={loading} aria-label="Close">
               <X size={20} />
             </button>
           )}
+          <AnimatePresence mode="wait" initial={false}>
+          <motion.div key={view} initial={{ opacity: 0, y: reducedMotion ? 0 : 10 }}
+            animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: reducedMotion ? 0 : -6 }}
+            transition={{ duration: reducedMotion ? 0 : 0.22, ease: [0.16, 1, 0.3, 1] }}>
           <div className="auth-header">
+            {view === 'login_otp' && <><h2>Check your email</h2><p>One more step to securely sign in</p></>}
             {view === 'login' && (
               <>
                 <h2>Welcome Back</h2>
@@ -162,23 +228,24 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
             {view === 'forgot_reset' && (
               <>
                 <h2>New Password</h2>
-                <p>Enter your new password below</p>
+                <p>Use at least 12 characters for your new password</p>
               </>
             )}
           </div>
 
-          <form onSubmit={handleSubmit} className="auth-form">
+          <form onSubmit={handleSubmit} className="auth-form" aria-busy={loading}>
+            {view === 'login_otp' && <OtpFields flow={flow} loading={loading} onResend={handleResend} onBack={() => { flow.reset(); setToast(null); setView('login'); }} />}
             {(view === 'login' || view === 'register') && (
               <>
                 <div className="auth-input-group">
-                  <label>Username</label>
+                  <label>{view === 'login' ? 'Username or email' : 'Username'}</label>
                   <div className="auth-input-wrapper">
                     <User size={18} className="auth-icon" />
                     <input
                       type="text"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      placeholder="Enter username"
+                      placeholder={view === 'login' ? 'Enter username or email' : 'Enter username'} autoComplete="username" disabled={loading}
                       required
                     />
                   </div>
@@ -207,7 +274,7 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
                       <button
                         type="button"
                         className="auth-forgot-password-link"
-                        onClick={() => setView('forgot_email')}
+                        disabled={loading} onClick={() => { setToast(null); setView('forgot_email'); }}
                         style={{ background: 'none', border: 'none', color: '#3b82f6', fontSize: '13px', cursor: 'pointer', padding: 0 }}
                       >
                         Forgot Password?
@@ -220,7 +287,7 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter password"
+                      placeholder="Enter password" autoComplete={view === 'register' ? 'new-password' : 'current-password'} disabled={loading}
                       required
                     />
                     <button
@@ -268,8 +335,8 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
                   <input
                     type="text"
                     value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    placeholder="Enter OTP"
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    placeholder="Enter OTP" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" autoFocus
                     maxLength={6}
                     required
                   />
@@ -287,7 +354,7 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
                       type={showPassword ? "text" : "password"}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="Enter new password"
+                      placeholder="Enter new password" minLength={12} autoComplete="new-password"
                       required
                     />
                     <button
@@ -315,9 +382,10 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
               </>
             )}
 
-            <button type="submit" className="auth-submit-btn" disabled={loading}>
+            <button type="submit" className="auth-submit-btn" disabled={loading || (view === 'login_otp' && (flow.otp.length !== 6 || flow.expiresIn === 0))}>
               {loading ? <Loader2 className="spinner" size={20} /> : (
                 view === 'login' ? 'Log In' :
+                  view === 'login_otp' ? 'Verify & log in' :
                   view === 'register' ? 'Sign Up' :
                     view === 'forgot_email' ? 'Send OTP' :
                       view === 'forgot_otp' ? 'Verify OTP' :
@@ -330,15 +398,19 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
             {(view === 'login' || view === 'register') && (
               <>
                 {view === 'login' ? "Don't have an account? " : "Already have an account? "}
-                <button onClick={() => setView(view === 'login' ? 'register' : 'login')} className="auth-toggle-btn" type="button">
+                <button disabled={loading} onClick={() => { setToast(null); setView(view === 'login' ? 'register' : 'login'); }} className="auth-toggle-btn" type="button">
                   {view === 'login' ? 'Sign up' : 'Log in'}
                 </button>
               </>
             )}
           </div>
 
+          {view.startsWith('forgot_') && <button className="auth-toggle-btn" type="button" disabled={loading}
+            style={{ marginTop: '16px' }} onClick={() => { setOtp(''); setToast(null); setView('login'); }}>Back to sign in</button>}
+          </motion.div>
+          </AnimatePresence>
           {toast && (
-            <div className={`auth-toast ${toast.type}`}>
+            <div className={`auth-toast ${toast.type}`} role={toast.type === 'error' ? 'alert' : 'status'}>
               {toast.msg}
             </div>
           )}
@@ -380,7 +452,7 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
           </div>
         </div>
 
-      </div>
+      </motion.div>
     </div>
   );
 }

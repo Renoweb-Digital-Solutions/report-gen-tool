@@ -1,3 +1,4 @@
+/** Homepage text animation with identical SSR/client markup, including reduced-motion users. */
 'use client';
 import { motion, useReducedMotion } from 'framer-motion';
 
@@ -11,7 +12,7 @@ export function TextReveal({ text, className = "", delay = 0, as = "div", style 
     hidden: { opacity: 0 },
     visible: (i = 1) => ({
       opacity: 1,
-      transition: { staggerChildren: 0.05, delayChildren: delay * i },
+      transition: shouldReduceMotion ? { duration: 0, staggerChildren: 0, delayChildren: 0 } : { staggerChildren: 0.05, delayChildren: delay * i },
     }),
   };
 
@@ -20,7 +21,7 @@ export function TextReveal({ text, className = "", delay = 0, as = "div", style 
       opacity: 1,
       y: 0,
       filter: "blur(0px)",
-      transition: {
+      transition: shouldReduceMotion ? { duration: 0 } : {
         type: "spring",
         damping: 12,
         stiffness: 100,
@@ -38,10 +39,7 @@ export function TextReveal({ text, className = "", delay = 0, as = "div", style 
     },
   };
 
-  if (shouldReduceMotion) {
-    return <span className={className}>{text}</span>;
-  }
-
+  // Keep the heading tag and word spans identical during hydration; disable motion via variants.
   const Component = motion[as] || motion.div;
 
   return (

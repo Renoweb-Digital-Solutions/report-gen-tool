@@ -1,4 +1,5 @@
 'use client';
+import { hasSessionHint } from '@/app/features/auth/api';
 
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
@@ -18,7 +19,7 @@ export function CtaBanner({
 
   const handleCtaClick = (e) => {
     e.preventDefault();
-    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+    const token = hasSessionHint();
     if (token) {
       router.push('/dashboard');
     } else {

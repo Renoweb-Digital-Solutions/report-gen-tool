@@ -1,4 +1,5 @@
 'use client';
+import { hasSessionHint } from '@/app/features/auth/api';
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
@@ -21,7 +22,7 @@ export function Navbar() {
   const handleCtaClick = (e) => {
     e.preventDefault();
     setIsMobileMenuOpen(false);
-    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+    const token = hasSessionHint();
     if (token) {
       router.push('/dashboard');
     } else {

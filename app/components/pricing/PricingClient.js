@@ -1,4 +1,5 @@
 'use client';
+import { hasSessionHint } from '@/app/features/auth/api';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -24,7 +25,7 @@ export default function PricingClient() {
 
   const handleCtaClick = (e) => {
     e.preventDefault();
-    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+    const token = hasSessionHint();
     if (token) {
       router.push('/dashboard');
     } else {

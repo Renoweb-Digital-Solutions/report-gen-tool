@@ -1,4 +1,5 @@
 'use client';
+import { checkSession, logoutSession } from '@/app/features/auth/api';
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
@@ -118,17 +119,12 @@ export default function AdminPanel() {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('admin_access_token');
-    if (!token) {
-      window.location.href = '/admin/login';
-      return;
-    }
-    fetchData();
+    checkSession('admin').then(() => fetchData()).catch(() => { window.location.href = '/admin/login'; });
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('admin_access_token');
-    window.location.href = '/admin/login';
+  const handleLogout = async () => {
+    try { await logoutSession('admin'); window.location.href = '/admin/login'; }
+    catch (error) { setError(error.message || 'Could not sign out. Please try again.'); }
   };
 
   if (loading) {

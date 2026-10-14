@@ -1,3 +1,5 @@
+/** Existing report API adapters; cookie transport is shared with features/auth/api.js. */
+import { browserFetch, clearSessionHint } from '@/app/features/auth/api';
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
 
 /**
@@ -31,45 +33,20 @@ async function extractError(res) {
  * Authenticated fetch wrapper
  */
 async function authFetch(url, options = {}) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-  const headers = new Headers(options.headers || {});
-
-  if (token) {
-    headers.set('Authorization', `Bearer ${token}`);
-  }
-
-  const updatedOptions = { ...options, headers };
-  const res = await fetch(url, updatedOptions);
-
-  if (res.status === 401) {
-    if (typeof window !== 'undefined') {
-      localStorage.clear();
-      sessionStorage.clear();
-      window.dispatchEvent(new Event('auth-expired'));
-    }
+  const res = await browserFetch(url, options);
+  if (res.status === 401 && typeof window !== 'undefined') {
+    clearSessionHint();
+    window.dispatchEvent(new Event('auth-expired'));
   }
   return res;
 }
 
-/**
- * Authenticated fetch wrapper for Admins
- */
+/** Use the independent admin cookie and redirect on a revoked/expired session. */
 async function adminAuthFetch(url, options = {}) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('admin_access_token') : null;
-  const headers = new Headers(options.headers || {});
-
-  if (token) {
-    headers.set('Authorization', `Bearer ${token}`);
-  }
-
-  const updatedOptions = { ...options, headers };
-  const res = await fetch(url, updatedOptions);
-
-  if (res.status === 401) {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('admin_access_token');
-      window.location.href = '/admin/login';
-    }
+  const res = await browserFetch(url, options);
+  if (res.status === 401 && typeof window !== 'undefined') {
+    clearSessionHint('admin');
+    window.location.href = '/admin/login';
   }
   return res;
 }
@@ -78,7 +55,7 @@ async function adminAuthFetch(url, options = {}) {
  * Register a new user
  */
 export async function registerUser(payload) {
-  const res = await fetch(`${BASE_URL}/auth/create-user`, {
+  const res = await browserFetch(`${BASE_URL}/auth/create-user`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -88,14 +65,14 @@ export async function registerUser(payload) {
 }
 
 /**
- * Log in to get access token
+ * Validate credentials and receive an OTP challenge or authenticated cookie session
  */
 export async function loginUser(username, password) {
   const params = new URLSearchParams();
   params.append('username', username);
   params.append('password', password);
 
-  const res = await fetch(`${BASE_URL}/auth/token`, {
+  const res = await browserFetch(`${BASE_URL}/auth/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: params,
@@ -108,7 +85,7 @@ export async function loginUser(username, password) {
  * Forgot password - request OTP
  */
 export async function forgotPasswordRequestOtp(email) {
-  const res = await fetch(`${BASE_URL}/auth/forgot-password`, {
+  const res = await browserFetch(`${BASE_URL}/auth/forgot-password`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email }),
@@ -120,11 +97,11 @@ export async function forgotPasswordRequestOtp(email) {
 /**
  * Forgot password - verify OTP
  */
-export async function forgotPasswordVerifyOtp(email, otp) {
-  const res = await fetch(`${BASE_URL}/auth/verify-otp`, {
+export async function forgotPasswordVerifyOtp(email, otp, challengeId) {
+  const res = await browserFetch(`${BASE_URL}/auth/verify-otp`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, otp }),
+    body: JSON.stringify({ email, otp, challenge_id: challengeId }),
   });
   if (!res.ok) throw new Error(await extractError(res));
   return res.json();
@@ -134,7 +111,7 @@ export async function forgotPasswordVerifyOtp(email, otp) {
  * Forgot password - reset password
  */
 export async function forgotPasswordReset(email, otp, newPassword, confirmPassword) {
-  const res = await fetch(`${BASE_URL}/auth/reset-password`, {
+  const res = await browserFetch(`${BASE_URL}/auth/reset-password`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, otp, new_password: newPassword, confirm_password: confirmPassword }),
@@ -199,7 +176,7 @@ export async function getUserTickets() {
  * Public endpoint — no auth required.
  */
 export async function matchFaqs(query, faqs) {
-  const res = await fetch(`${BASE_URL}/auth/support/faq-match`, {
+  const res = await browserFetch(`${BASE_URL}/auth/support/faq-match`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query, faqs }),
@@ -236,8 +213,7 @@ export function generateInstagramReport(payload) {
     const connect = () => {
       attempt++;
       const wsUrl = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-instagram';
-      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
-      const ws = new WebSocket(token ? `${wsUrl}?token=${encodeURIComponent(token)}` : wsUrl);
+      const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
         ws.send(JSON.stringify(payload));
@@ -297,7 +273,7 @@ export async function generateLinkedInReport(payload) {
  * Generate a LinkedIn Personal/Company Audit Report via the 2-step WebSocket flow.
  *
  * Step 1: POST /report/generate-linkedin-personal → { job_id }
- * Step 2: WS  /ws/report/generate-linkedin?job_id=<id>&token=<jwt> → progress + result
+ * Step 2: WS  /ws/report/generate-linkedin?job_id=<id> (HttpOnly cookie session) → progress + result
  */
 export function generateLinkedInPersonalReport(payload) {
   return new Promise(async (resolve, reject) => {
@@ -312,7 +288,6 @@ export function generateLinkedInPersonalReport(payload) {
       const { job_id } = await res.json();
 
       // Step 2: Connect to the WebSocket for streaming results
-      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
       const MAX_RETRIES = 3;
       let attempt = 0;
       let settled = false;
@@ -320,7 +295,7 @@ export function generateLinkedInPersonalReport(payload) {
       const connect = () => {
         attempt++;
         const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-linkedin';
-        const wsUrl = `${wsBase}?job_id=${encodeURIComponent(job_id)}&token=${encodeURIComponent(token || '')}`;
+        const wsUrl = `${wsBase}?job_id=${encodeURIComponent(job_id)}`;
         const ws = new WebSocket(wsUrl);
 
         // Keep-alive ping every 30s to prevent idle timeouts
@@ -508,7 +483,7 @@ export async function adminLogin(username, password) {
   params.append('username', username);
   params.append('password', password);
 
-  const res = await fetch(`${BASE_URL}/auth/admin/token`, {
+  const res = await browserFetch(`${BASE_URL}/auth/admin/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: params,
@@ -523,7 +498,7 @@ export async function adminLogin(username, password) {
  */
 export async function sendAnalyticsEvent(payload) {
   try {
-    const res = await fetch(`${BASE_URL}/analytics/event`, {
+    const res = await browserFetch(`${BASE_URL}/analytics/event`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -564,9 +539,8 @@ export async function generateAdsLibraryReport(payload, onProgress) {
       const { job_id } = await res.json();
 
       // Step 2: Connect to the WebSocket for streaming results
-      const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
       const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/ads-library/search';
-      const wsUrl = `${wsBase}?job_id=${encodeURIComponent(job_id)}&token=${encodeURIComponent(token || '')}`;
+      const wsUrl = `${wsBase}?job_id=${encodeURIComponent(job_id)}`;
 
       let settled = false;
       const ws = new WebSocket(wsUrl);
@@ -648,9 +622,8 @@ export async function searchGoogleAdvertisers(payload) {
  * Generate a UI/UX Audit Report.
  */
 export async function generateUiUxAudit(payload, onProgress) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
   const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-ui-ux';
-  const wsUrl = `${wsBase}?token=${encodeURIComponent(token || '')}`;
+  const wsUrl = wsBase;
 
   return new Promise((resolve, reject) => {
     let settled = false;
