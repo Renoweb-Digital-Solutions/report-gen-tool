@@ -71,3 +71,9 @@
   line-height: 1.6;
   margin-top: 12px;
 }
+
+/* Persistent OAuth/OTP messages belong in the form flow rather than floating
+   over the heading. Errors and account-exists instructions remain readable. */
+.feedback { margin-top: 16px; padding: 12px 14px; border-radius: 10px; font-size: 13px; line-height: 1.6; color: #334155; background: #eff6ff; border: 1px solid #dbeafe; overflow-wrap: anywhere; }
+.feedback[data-tone='error'] { color: #b42338; background: #fff1f2; border-color: #fecdd3; }
+.feedback[data-tone='success'] { color: #166534; background: #f0fdf4; border-color: #bbf7d0; }

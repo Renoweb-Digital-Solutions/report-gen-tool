@@ -8,9 +8,18 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { markSession, clearSessionHint } from '@/app/features/auth/api';
 import { useOtpChallenge } from '@/app/features/auth/hooks/useOtpChallenge';
 import OtpFields from '@/app/features/auth/components/OtpFields';
+import GoogleAuthButton from '@/app/features/auth/components/GoogleAuthButton';
+import { startGoogle, cancelGoogle } from '@/app/features/auth/google';
+import googleStyles from '@/app/features/auth/google.module.css';
+import authStyles from '@/app/features/auth/auth.module.css';
 
-export default function AuthModal({ onSuccess, onClose, initialView = 'login', profileEmail = null }) {
-  const flow = useOtpChallenge();
+export default function AuthModal({ onSuccess, onClose, initialView = 'login', profileEmail = null, initialGoogleResult = null }) {
+  // Google and password forms share presentation/countdowns, but use separate
+  // backend challenge purposes. Callback data arrives through a private cookie,
+  // never through query parameters or a Google token stored in JavaScript.
+  const [googleActive, setGoogleActive] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
+  const flow = useOtpChallenge('user', googleActive ? 'google' : 'password');
   const reducedMotion = useReducedMotion();
   const dialogRef = useRef(null);
   const [recoveryChallenge, setRecoveryChallenge] = useState('');
@@ -35,6 +44,73 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
 
   };
 
+  useEffect(() => {
+    if (!initialGoogleResult) return;
+    if (initialGoogleResult.status === 'otp_required') {
+      setGoogleActive(true);
+      flow.begin(initialGoogleResult);
+      setUsername('');
+      setView('login_otp');
+    } else {
+      // Explicit Google signup with an existing mailbox switches to sign-in.
+      // Preserve the password form and clearly explain that no duplicate was made.
+      setView('login');
+      if (initialGoogleResult.email) setUsername(initialGoogleResult.email);
+      showToast(initialGoogleResult.message || 'Please sign in to continue.', initialGoogleResult.status === 'account_exists' ? 'info' : 'error');
+    }
+    // This consumes an initial prop once per callback result, not each render of
+    // the hook's functions. The result endpoint itself remains repeatable on reload.
+  }, [initialGoogleResult]);
+
+  useEffect(() => {
+    // Restoring the original page with browser Back can reuse its in-memory
+    // loading state from before Google's redirect. Make the form usable again.
+    const restore = event => {
+      if (event.persisted) { setLoading(false); setGoogleBusy(false); }
+    };
+    window.addEventListener('pageshow', restore);
+    return () => window.removeEventListener('pageshow', restore);
+  }, []);
+
+  const handleGoogle = async () => {
+    if (loading) return;
+    setLoading(true);
+    setGoogleBusy(true);
+    setToast(null);
+    try {
+      const data = await startGoogle(view === 'register' ? 'signup' : 'login');
+      window.location.assign(data.authorization_url);
+    } catch (error) {
+      showToast(error.message || 'Google sign-in could not be started. Please try again.');
+      setLoading(false);
+      setGoogleBusy(false);
+    }
+  };
+
+  const handleBack = async () => {
+    setLoading(true);
+    setToast(null);
+    try {
+      if (googleActive) await cancelGoogle();
+      flow.reset();
+      setGoogleActive(false);
+      setUsername('');
+      setPassword('');
+      setView('login');
+    } catch (error) { showToast(error.message); }
+    finally { setLoading(false); }
+  };
+
+  const handleClose = async () => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      if (googleActive || initialGoogleResult) await cancelGoogle();
+      onClose?.();
+    } catch (error) { showToast(error.message); }
+    finally { setLoading(false); }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loading) return;
@@ -42,7 +118,7 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
     if (view === 'login_otp') {
       setLoading(true);
       try {
-        await flow.verify();
+        await flow.verify(username);
         if (onSuccess) onSuccess();
       } catch (err) {
         showToast(err.message);
@@ -165,7 +241,7 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
     const focusable = () => Array.from(dialog.querySelectorAll('input:not(:disabled), button:not(:disabled), [tabindex="0"]')).filter(node => node.offsetParent !== null);
     (dialog.querySelector('input:not(:disabled)') || focusable()[0])?.focus();
     const handleKey = event => {
-      if (event.key === 'Escape' && onClose && !loadingRef.current) onClose();
+      if (event.key === 'Escape' && onClose && !loadingRef.current) dialog.querySelector('.auth-close-btn')?.click();
       if (event.key !== 'Tab') return;
       const nodes = focusable();
       const first = nodes[0], last = nodes[nodes.length - 1];
@@ -191,7 +267,7 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
         {/* LEFT SIDE - Form */}
         <div className="auth-modal-left">
           {onClose && (
-            <button className="auth-close-btn" onClick={onClose} type="button" disabled={loading} aria-label="Close">
+            <button className="auth-close-btn" onClick={handleClose} type="button" disabled={loading} aria-label="Close">
               <X size={20} />
             </button>
           )}
@@ -200,7 +276,7 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
             animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: reducedMotion ? 0 : -6 }}
             transition={{ duration: reducedMotion ? 0 : 0.22, ease: [0.16, 1, 0.3, 1] }}>
           <div className="auth-header">
-            {view === 'login_otp' && <><h2>Check your email</h2><p>One more step to securely sign in</p></>}
+            {view === 'login_otp' && <><h2>Check your email</h2><p>{googleActive && flow.challenge?.is_new_account ? 'Choose a username and verify your email to finish signing up' : 'One more step to securely sign in'}</p></>}
             {view === 'login' && (
               <>
                 <h2>Welcome Back</h2>
@@ -233,8 +309,27 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
             )}
           </div>
 
+          {(view === 'login' || view === 'register') && (
+            <>
+              <GoogleAuthButton intent={view === 'register' ? 'signup' : 'login'} busy={googleBusy} disabled={loading} onClick={handleGoogle} />
+              <div className={googleStyles.divider}>or continue with your email</div>
+            </>
+          )}
+
           <form onSubmit={handleSubmit} className="auth-form" aria-busy={loading}>
-            {view === 'login_otp' && <OtpFields flow={flow} loading={loading} onResend={handleResend} onBack={() => { flow.reset(); setToast(null); setView('login'); }} />}
+            {view === 'login_otp' && googleActive && flow.challenge?.is_new_account && (
+              <div className="auth-input-group">
+                <label htmlFor="google-signup-username">Choose your username</label>
+                <div className="auth-input-wrapper">
+                  <User size={18} className="auth-icon" />
+                  <input id="google-signup-username" type="text" value={username} onChange={event => setUsername(event.target.value)}
+                    placeholder="Your Flawdits username" autoComplete="username" minLength={3} maxLength={40}
+                    pattern={'[A-Za-z0-9_][A-Za-z0-9_.\\-]{2,39}'} required disabled={loading} aria-describedby="google-username-help" />
+                </div>
+                <p id="google-username-help" className={authStyles.hint}>3–40 characters. Letters, numbers, underscores, dots, and hyphens.</p>
+              </div>
+            )}
+            {view === 'login_otp' && <OtpFields flow={flow} loading={loading} onResend={handleResend} onBack={handleBack} />}
             {(view === 'login' || view === 'register') && (
               <>
                 <div className="auth-input-group">
@@ -385,7 +480,7 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
             <button type="submit" className="auth-submit-btn" disabled={loading || (view === 'login_otp' && (flow.otp.length !== 6 || flow.expiresIn === 0))}>
               {loading ? <Loader2 className="spinner" size={20} /> : (
                 view === 'login' ? 'Log In' :
-                  view === 'login_otp' ? 'Verify & log in' :
+                  view === 'login_otp' ? (googleActive && flow.challenge?.is_new_account ? 'Verify & create account' : 'Verify & log in') :
                   view === 'register' ? 'Sign Up' :
                     view === 'forgot_email' ? 'Send OTP' :
                       view === 'forgot_otp' ? 'Verify OTP' :
@@ -410,7 +505,7 @@ export default function AuthModal({ onSuccess, onClose, initialView = 'login', p
           </motion.div>
           </AnimatePresence>
           {toast && (
-            <div className={`auth-toast ${toast.type}`} role={toast.type === 'error' ? 'alert' : 'status'}>
+            <div className={authStyles.feedback} data-tone={toast.type} role={toast.type === 'error' ? 'alert' : 'status'}>
               {toast.msg}
             </div>
           )}

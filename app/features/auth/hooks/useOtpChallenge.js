@@ -12,8 +12,9 @@
 
 import { useEffect, useState } from 'react';
 import { resendLogin, verifyLogin } from '../api';
+import { resendGoogle, verifyGoogle } from '../google';
 
-export function useOtpChallenge(kind = 'user') {
+export function useOtpChallenge(kind = 'user', provider = 'password') {
   // Keep the public reference and masked email in memory only. The independent
   // secret browser binding is an HttpOnly cookie managed by the server.
   const [challenge, setChallenge] = useState(null);
@@ -45,7 +46,11 @@ export function useOtpChallenge(kind = 'user') {
   /** Resend clears the old input while retaining the user's checkbox choice. */
   const resend = async () => {
     try {
-      const data = await resendLogin(challenge.challenge_id, kind);
+      // Both providers share display state; the backend keeps their OTP purposes
+      // separate so a Google challenge cannot finish a password-only login route.
+      const data = provider === 'google'
+        ? await resendGoogle(challenge.challenge_id)
+        : await resendLogin(challenge.challenge_id, kind);
       const instant = Date.now();
       // A resend replaces the code and refreshes display metadata. Keep the existing
       // trust choice, but clear the typed code because the previous generation is invalid.
@@ -67,7 +72,9 @@ export function useOtpChallenge(kind = 'user') {
 
   return {
     challenge, otp, setOtp, remember, setRemember, begin, resend, reset,
-    verify: () => verifyLogin(challenge.challenge_id, otp, remember, kind),
+    verify: (username) => provider === 'google'
+      ? verifyGoogle(challenge.challenge_id, otp, remember, username)
+      : verifyLogin(challenge.challenge_id, otp, remember, kind),
     // Clamp expired display values to zero. The component can disable submit,
     // but the API must also reject expired codes independently of this display.
     expiresIn: challenge ? Math.max(0, Math.ceil((challenge.expiresAt - clock) / 1000)) : 0,

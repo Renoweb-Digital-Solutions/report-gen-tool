@@ -42,6 +42,11 @@ async function action(path, body) {
   }));
 }
 
+/** Share the cookie/CSRF transport with provider modules without exposing auth secrets. */
+export function authAction(path, body = {}) {
+  return action(path, body);
+}
+
 /** Verify a browser-bound login challenge, optionally beginning seven-day device trust. */
 export async function verifyLogin(challengeId, otp, rememberDevice, kind = 'user') {
   const data = await action('login/verify', { challenge_id: challengeId, otp, remember_device: rememberDevice, kind });

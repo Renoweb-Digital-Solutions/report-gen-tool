@@ -1,0 +1,33 @@
+/* Google button and callback-page additions; consumed by GoogleAuthButton and the completion page. */
+
+/* The outer light effects are decorative; the approved button face remains white. */
+.shell { position: relative; isolation: isolate; border-radius: 16px; padding: 3px; margin: 4px 0 0; }
+.halo { position: absolute; inset: 5px; border-radius: inherit; pointer-events: none; z-index: -1; background: linear-gradient(115deg, #4285f450, #34a85330, #fbbc0530, #ea433530); filter: blur(17px); opacity: 0.35; transition: opacity 280ms ease; }
+.orbit { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; overflow: hidden; background: #e3eaf5; }
+.orbit::before { content: ''; position: absolute; width: 180%; height: 420%; left: -40%; top: -160%; background: conic-gradient(from 0deg, transparent 0deg 90deg, #4285f4 125deg, #34a853 160deg, transparent 200deg 270deg, #fbbc05 305deg, #ea4335 340deg, transparent 360deg); animation: googleOrbit 8s linear infinite; opacity: 0.65; }
+.shell:hover .halo, .shell:focus-within .halo { opacity: 0.85; }
+.shell:hover .orbit::before { animation-duration: 4s; }
+
+/* Use Google's official logo and typography, with a stable, accessible hit area. */
+.button { position: relative; width: 100%; min-height: 48px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; border: 1px solid #747775; border-radius: 13px; background: #fff; color: #1f1f1f; font-size: 14px; font-weight: 500; line-height: 20px; cursor: pointer; box-shadow: 0 4px 12px #1c376408; transition: box-shadow 240ms ease; }
+.button:hover { box-shadow: 0 6px 20px #1c376414; }
+.button:disabled { cursor: wait; }
+.button:focus-visible { outline: 3px solid #4285f4; outline-offset: 5px; }
+.logo { flex-shrink: 0; width: 20px; height: 20px; object-fit: contain; }
+.spinner { position: absolute; right: 14px; animation: googleSpin 800ms linear infinite; }
+.divider { display: flex; align-items: center; gap: 12px; color: #94a3b8; font-size: 12px; margin: 18px 0; }
+.divider::before, .divider::after { content: ''; height: 1px; flex: 1; background: #e2e8f0; }
+
+/* Callback loading appears before the existing modal resumes; no identity data is in the URL. */
+.page { min-height: 100dvh; background: radial-gradient(ellipse at 25% 15%, #e5f0ff, transparent 55%), #f8fafc; display: grid; place-items: center; padding: 24px; }
+.loading { display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; color: #334155; }
+.loading p { font-size: 14px; color: #64748b; }
+
+@keyframes googleOrbit { to { transform: rotate(360deg); } }
+@keyframes googleSpin { to { transform: rotate(360deg); } }
+
+/* Respect reduced motion at CSS level too, not just the spring animation component. */
+@media (prefers-reduced-motion: reduce) {
+  .orbit::before, .spinner { animation: none; }
+  .halo, .button { transition: none; }
+}
