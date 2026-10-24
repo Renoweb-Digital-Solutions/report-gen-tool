@@ -475,6 +475,30 @@ export async function getAdminTickets() {
   return res.json();
 }
 
+// ============================================================================
+// ADMIN SUPPORT WORKFLOW
+// The server owns status, revision checks, private archiving and mail delivery.
+// These calls use the independent admin cookie and never send a recipient or
+// alter report pipelines. Failed requests leave TicketDesk's current row intact.
+// ============================================================================
+/** Persist an explicit ticket change with the revision currently displayed. */
+export async function updateAdminTicket(ticketId, payload) {
+  const response = await adminAuthFetch(`${BASE_URL}/auth/admin/tickets/${encodeURIComponent(ticketId)}`, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+  });
+  if (!response.ok) throw new Error(await extractError(response));
+  return response.json();
+}
+
+/** Retry a known failed/stale notification after explicit admin confirmation. */
+export async function retryAdminTicketEmail(ticketId, notificationId) {
+  const response = await adminAuthFetch(`${BASE_URL}/auth/admin/tickets/${encodeURIComponent(ticketId)}/notification/retry`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ notification_id: notificationId }),
+  });
+  if (!response.ok) throw new Error(await extractError(response));
+  return response.json();
+}
+
 /**
  * Login specifically for admin portal
  */
@@ -513,13 +537,59 @@ export async function sendAnalyticsEvent(payload) {
 /**
  * Get analytics summary for admin
  */
-export async function getAnalyticsSummary() {
-  const res = await adminAuthFetch(`${BASE_URL}/analytics/summary`, {
+export async function getAnalyticsSummary(filters = {}) {
+  // All dashboard panels share the same validated calendar/module filters.
+  const query = new URLSearchParams(Object.entries(filters).filter(([, value]) => value !== '' && value != null));
+  const res = await adminAuthFetch(`${BASE_URL}/analytics/summary?${query}`, {
     method: 'GET',
+    // A reporting outage must produce an actionable error, never endless loading.
+    signal: AbortSignal.timeout(12000),
     headers: { 'Content-Type': 'application/json' },
   });
   if (!res.ok) throw new Error(await extractError(res));
   return res.json();
+}
+
+// ============================================================================
+// ISOLATED INTERACTION TRANSPORT
+// AnalyticsProvider uses a short timeout and keepalive for navigation flushes.
+// This adapter never clears authentication, emits auth-expired, or throws into
+// report handlers. Admin reads use their existing independent cookie transport.
+// ============================================================================
+/** Send a bounded interaction batch; return false on timeout/server/network failure. */
+export async function sendAnalyticsBatch(payload) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 2500);
+  try {
+    const response = await browserFetch(`${BASE_URL}/analytics/batch`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload), signal: controller.signal, keepalive: true,
+    });
+    return response.ok;
+  } catch { return false; }
+  finally { clearTimeout(timeout); }
+}
+
+/** Load safe session detail using exactly the dashboard's current date/module window. */
+export async function getAnalyticsSession(sessionId, filters = {}) {
+  const query = new URLSearchParams(Object.entries(filters).filter(([, value]) => value !== '' && value != null));
+  const response = await adminAuthFetch(`${BASE_URL}/analytics/sessions/${encodeURIComponent(sessionId)}?${query}`, { signal: AbortSignal.timeout(12000) });
+  if (!response.ok) throw new Error(await extractError(response));
+  return response.json();
+}
+
+/**
+ * Export a fresh analytics summary using only the independent admin cookie.
+ * AnalyticsDashboard supplies explicit dates/module matching the displayed
+ * report. The dedicated server renderer accepts no HTML or browser metrics and
+ * never uses the audit PDF pipeline. A failed/expired read becomes a UI error.
+ */
+export async function downloadAnalyticsPdf(filters) {
+  const query = new URLSearchParams(Object.entries(filters).filter(([, value]) => value !== '' && value != null));
+  const response = await adminAuthFetch(`${BASE_URL}/analytics/export.pdf?${query}`, { signal: AbortSignal.timeout(20000) });
+  if (!response.ok) throw new Error(await extractError(response));
+  if (!response.headers.get('content-type')?.includes('application/pdf')) throw new Error('The server did not return a PDF. Please retry.');
+  return response.blob();
 }
 
 /**

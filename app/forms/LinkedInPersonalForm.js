@@ -1,5 +1,11 @@
 'use client';
 
+// ============================================================================
+// CONSENTED CONFIGURATION OBSERVATION
+// Only stable configuration codes are exposed to AnalyticsProvider. Typed user
+// text, account/profile links and pipeline submission behavior remain untouched.
+// ============================================================================
+
 import FormField from '../components/FormField';
 import ErrorBanner from '../components/ErrorBanner';
 import AnimatedSubmitButton from '../components/AnimatedSubmitButton';
@@ -60,7 +66,7 @@ export default function LinkedInPersonalForm({ loading, error, onDismissError, o
         <div className="form-grid-2">
           <FormField label="Posts to Analyze" htmlFor="lip-results-limit">
             <input
-              id="lip-results-limit"
+              id="lip-results-limit" data-analytics-setting="results_limit"
               className="form-input"
               type="number"
               min={1}
@@ -72,7 +78,7 @@ export default function LinkedInPersonalForm({ loading, error, onDismissError, o
 
           <FormField label="Time Range" htmlFor="lip-posted-limit">
             <select
-              id="lip-posted-limit"
+              id="lip-posted-limit" data-analytics-setting="posted_limit"
               className="form-select"
               value={fields.posted_limit}
               onChange={set('posted_limit')}

@@ -1,5 +1,12 @@
 'use client';
 
+// ============================================================================
+// CONSENTED CONFIGURATION OBSERVATION
+// Explicit data-analytics attributes expose only stable settings/control codes to
+// AnalyticsProvider. They never change form state, validation or API payloads.
+// Customer text, domains, profile links and advertiser IDs remain unannotated.
+// ============================================================================
+
 import { useState, useEffect } from 'react';
 import FormField from '../components/FormField';
 import ErrorBanner from '../components/ErrorBanner';
@@ -190,7 +197,7 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
         {/* PLATFORM SELECTOR */}
         <FormField label="Platform" htmlFor="ads-platform">
           <select
-            id="ads-platform"
+            id="ads-platform" data-analytics-setting="ads_platform"
             className="form-select"
             value={fields.platform}
             onChange={(e) => {
@@ -207,7 +214,7 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
 
         <FormField label="Results Limit" htmlFor="ads-limit">
           <input
-            id="ads-limit"
+            id="ads-limit" data-analytics-setting="limit"
             className="form-input"
             type="number"
             min={1}
@@ -236,7 +243,7 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
                   <button
                     type="button"
                     className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors font-medium whitespace-nowrap"
-                    onClick={handleSearchGoogleAdvertisers}
+                    data-analytics-control="search_google" onClick={handleSearchGoogleAdvertisers}
                     disabled={!fields.google_domain || loading || isSearchingCandidates}
                   >
                     {isSearchingCandidates ? 'Searching...' : 'Find Advertiser'}
@@ -247,7 +254,7 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
 
             <div className="col-span-1 sm:col-span-2">
               <FormField label="Target Region" htmlFor="g-region">
-                <select id="g-region" className="form-select" value={fields.google_region} onChange={set('google_region')} disabled={loading}>
+                <select id="g-region" data-analytics-setting="google_region" className="form-select" value={fields.google_region} onChange={set('google_region')} disabled={loading}>
                   {googleRegions.length > 0 ? (
                     googleRegions.map((r, i) => <option key={`gr_${i}`} value={r.region || r.code || (typeof r === 'string' ? r : '')}>{r.name || r}</option>)
                   ) : (
@@ -260,7 +267,7 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
             {googleAdvCandidates.length > 0 && (
               <div className="col-span-1 sm:col-span-2">
                 <FormField label="Select an Advertiser (Optional but recommended)" htmlFor="g-adv-select">
-                  <select id="g-adv-select" className="form-select" value={fields.google_advertiser_id} onChange={set('google_advertiser_id')} disabled={loading}>
+                  <select id="g-adv-select" data-analytics-setting="google_advertiser_selection" data-analytics-presence="true" className="form-select" value={fields.google_advertiser_id} onChange={set('google_advertiser_id')} disabled={loading}>
                     <option value="">Do not specify (Use keyword only)</option>
                     {googleAdvCandidates.map((adv, idx) => {
                       const advId = adv.advertiser_id || adv.id || '';
@@ -277,7 +284,7 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
 
             <div className="col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField label="Time Period" htmlFor="g-time">
-                <select id="g-time" className="form-select" value={fields.google_time_period} onChange={set('google_time_period')} disabled={loading}>
+                <select id="g-time" data-analytics-setting="google_time_period" className="form-select" value={fields.google_time_period} onChange={set('google_time_period')} disabled={loading}>
                   <option value="any">Any time</option>
                   <option value="last_30_days">Last 30 days</option>
                   <option value="last_3_months">Last 3 months</option>
@@ -286,7 +293,7 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
               </FormField>
 
               <FormField label="Ad Format" htmlFor="g-format">
-                <select id="g-format" className="form-select" value={fields.google_ad_format} onChange={set('google_ad_format')} disabled={loading}>
+                <select id="g-format" data-analytics-setting="google_ad_format" className="form-select" value={fields.google_ad_format} onChange={set('google_ad_format')} disabled={loading}>
                   <option value="all">All Formats</option>
                   <option value="text">Text</option>
                   <option value="image">Image</option>
@@ -297,7 +304,7 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
 
             <div className="col-span-1 sm:col-span-2">
               <FormField label="Google Platform" htmlFor="g-platform">
-                <select id="g-platform" className="form-select" value={fields.google_platform} onChange={set('google_platform')} disabled={loading}>
+                <select id="g-platform" data-analytics-setting="google_platform" className="form-select" value={fields.google_platform} onChange={set('google_platform')} disabled={loading}>
                   <option value="all">All Platforms</option>
                   <option value="google_search">Google Search</option>
                   <option value="youtube">YouTube</option>
@@ -326,7 +333,7 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
                   <button
                     type="button"
                     className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors font-medium whitespace-nowrap"
-                    onClick={handleSearchMetaPages}
+                    data-analytics-control="search_meta" onClick={handleSearchMetaPages}
                     disabled={!fields.meta_query || loading || isSearchingCandidates}
                   >
                     {isSearchingCandidates ? 'Searching...' : 'Search Pages'}
@@ -338,7 +345,7 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
             {metaPageCandidates.length > 0 && (
               <div className="col-span-1 sm:col-span-2">
                 <FormField label="Select a Page (Optional but recommended)" htmlFor="m-page-select">
-                  <select id="m-page-select" className="form-select" value={fields.meta_page_id} onChange={set('meta_page_id')} disabled={loading}>
+                  <select id="m-page-select" data-analytics-setting="meta_page_selection" data-analytics-presence="true" className="form-select" value={fields.meta_page_id} onChange={set('meta_page_id')} disabled={loading}>
                     <option value="">Do not specify (Use keyword only)</option>
                     {metaPageCandidates.map((page, idx) => {
                       const pageId = page.page_id || page.id || '';
@@ -356,7 +363,7 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
 
             <div className="col-span-1 sm:col-span-2">
               <FormField label="Target Country" htmlFor="m-country">
-                <select id="m-country" className="form-select" value={fields.meta_country} onChange={set('meta_country')} disabled={loading}>
+                <select id="m-country" data-analytics-setting="meta_country" className="form-select" value={fields.meta_country} onChange={set('meta_country')} disabled={loading}>
                   {metaCountries.length > 0 ? (
                     metaCountries.map((c, i) => <option key={`mc_${i}`} value={c.code || (typeof c === 'string' ? c : '')}>{c.name || c}</option>)
                   ) : (
@@ -369,7 +376,7 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
 
             <div className="col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField label="Media Type" htmlFor="m-media">
-                <select id="m-media" className="form-select" value={fields.meta_media_type} onChange={set('meta_media_type')} disabled={loading}>
+                <select id="m-media" data-analytics-setting="meta_media_type" className="form-select" value={fields.meta_media_type} onChange={set('meta_media_type')} disabled={loading}>
                   <option value="all">All Media</option>
                   <option value="video">Video</option>
                   <option value="image">Image</option>
@@ -380,7 +387,7 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
               </FormField>
 
               <FormField label="Active Status" htmlFor="m-status">
-                <select id="m-status" className="form-select" value={fields.meta_active_status} onChange={set('meta_active_status')} disabled={loading}>
+                <select id="m-status" data-analytics-setting="meta_active_status" className="form-select" value={fields.meta_active_status} onChange={set('meta_active_status')} disabled={loading}>
                   <option value="all">All</option>
                   <option value="active">Active Only</option>
                   <option value="inactive">Inactive Only</option>
@@ -396,6 +403,8 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
                     <input
                       type="checkbox"
                       className="rounded border-[#b7d0ff] text-blue-600 focus:ring-blue-500"
+                      data-analytics-setting="meta_platforms"
+                      data-analytics-value={p}
                       checked={fields.meta_platforms.includes(p)}
                       onChange={handleCheckbox('meta_platforms', p)}
                       disabled={loading}

@@ -6,25 +6,29 @@ export default function CookieBanner() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    const consent = localStorage.getItem('analytics_consent');
-    if (consent !== 'accepted') {
-      setShow(true);
-    }
+    // Respect either saved decision; privacy settings can reopen this banner.
+    try { setShow(!localStorage.getItem('analytics_consent')); }
+    catch { setShow(true); }
   }, []);
 
   const handleAccept = () => {
-    localStorage.setItem('analytics_consent', 'accepted');
+    // Storage failure cannot enable tracking: the provider independently checks consent.
+    try { localStorage.setItem('analytics_consent', 'accepted'); } catch { /* Keep browsing functional. */ }
     setShow(false);
     window.dispatchEvent(new Event('analytics_consent_given'));
   };
 
   const handleDecline = () => {
-    // Strict block: if declined, we still save to avoid annoying them, but don't dispatch event
-    localStorage.setItem('analytics_consent', 'declined');
+    // Withdrawal clears pending telemetry in the provider, including the current tab.
+    try { localStorage.setItem('analytics_consent', 'declined'); } catch { /* Provider is disabled when storage is unavailable. */ }
+    window.dispatchEvent(new CustomEvent('analytics_consent_changed', { detail: { accepted: false } }));
     setShow(false);
   };
 
   return (
+    <>
+    {/* Persistent access lets visitors revise their analytics choice at any time. */}
+    {!show && <button type="button" onClick={() => setShow(true)} className="fixed bottom-2 right-2 z-40 rounded-full border border-slate-300 bg-white px-3 py-1 text-xs text-slate-600 shadow-sm">Privacy choices</button>}
     <AnimatePresence>
       {show && (
         <motion.div
@@ -58,5 +62,6 @@ export default function CookieBanner() {
         </motion.div>
       )}
     </AnimatePresence>
+    </>
   );
 }

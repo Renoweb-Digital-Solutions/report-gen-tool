@@ -10,7 +10,13 @@ import styles from '../google.module.css';
 // Google's current button typography is Google Sans Medium. next/font hosts the
 // font with the application, following the existing Flawdits font-loading pattern.
 // The bundled G asset is downloaded from Google's official branding documentation.
-const googleSans = Google_Sans({ subsets: ['latin'], weight: '500', display: 'swap' });
+// Next's bundled metrics do not include Google Sans. Disable only its automatic
+// size-adjust calculation, which otherwise warns on every compilation. Continue
+// self-hosting the requested font and use explicit local fallbacks while loading.
+const googleSans = Google_Sans({
+  subsets: ['latin'], weight: '500', display: 'swap',
+  adjustFontFallback: false, fallback: ['Arial', 'sans-serif'],
+});
 
 export default function GoogleAuthButton({ intent = 'login', busy = false, disabled = false, onClick }) {
   const reduceMotion = useReducedMotion();

@@ -22,11 +22,13 @@ export default function AnimatedSubmitButton({ loading, disabled, defaultText = 
     } else {
       setPhraseIndex(0);
     }
-    return () => clearInterval(interval);
+    // Stable action metadata lets AnalyticsProvider observe clicks without labels or values.
+  return () => clearInterval(interval);
   }, [loading]);
 
   return (
     <button
+      data-analytics-control="generate"
       type="submit"
       className={`animated-submit-btn ${loading ? 'loading' : ''}`}
       disabled={disabled || loading}

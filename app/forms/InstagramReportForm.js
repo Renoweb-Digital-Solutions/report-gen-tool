@@ -1,5 +1,11 @@
 'use client';
 
+// ============================================================================
+// CONSENTED CONFIGURATION OBSERVATION
+// Only stable configuration codes are exposed to AnalyticsProvider. Typed user
+// text, account/profile links and pipeline submission behavior remain untouched.
+// ============================================================================
+
 import FormField from '../components/FormField';
 import ErrorBanner from '../components/ErrorBanner';
 import AnimatedSubmitButton from '../components/AnimatedSubmitButton';
@@ -49,7 +55,7 @@ export default function InstagramReportForm({ loading, error, onDismissError, on
 
         <FormField label="Results Limit" htmlFor="ig-results-limit">
           <input
-            id="ig-results-limit"
+            id="ig-results-limit" data-analytics-setting="results_limit"
             className="form-input"
             type="number"
             min={1}

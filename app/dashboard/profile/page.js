@@ -70,6 +70,9 @@ export default function ProfilePage() {
 
   const getStatusBadge = (status) => {
     if (status === 'Open') return <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded-md text-xs font-bold flex items-center gap-1"><Clock size={12}/> Open</span>;
+    // Admin status updates use this exact server-owned value; archive flags are
+    // never returned by /tickets/me and cannot change this user's ticket list.
+    if (status === 'In Progress') return <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-bold flex items-center gap-1"><Clock size={12}/> In Progress</span>;
     if (status === 'Closed') return <span className="px-2 py-1 bg-green-100 text-green-700 rounded-md text-xs font-bold flex items-center gap-1"><CheckCircle2 size={12}/> Closed</span>;
     return <span className="px-2 py-1 bg-slate-100 text-slate-700 rounded-md text-xs font-bold flex items-center gap-1">{status}</span>;
   };
@@ -163,6 +166,9 @@ export default function ProfilePage() {
                       <p className="text-sm text-slate-600 mt-2 whitespace-pre-wrap">
                         {ticket.description}
                       </p>
+                      {/* The same saved resolution is emailed on closure. No admin-only
+                          archive, delivery or audit metadata is exposed here. */}
+                      {ticket.status === 'Closed' && ticket.resolution_comment && <div className="mt-4 rounded-xl border border-green-200 bg-green-50 p-4"><h4 className="text-sm font-bold text-green-800">Resolution from our team</h4><p className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">{ticket.resolution_comment}</p></div>}
                       <div className="mt-4 text-xs text-slate-400 font-medium">
                         Submitted on {new Date(ticket.created_at + (ticket.created_at.endsWith('Z') ? '' : 'Z')).toLocaleString()}
                       </div>

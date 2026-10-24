@@ -1,4 +1,6 @@
 'use client';
+import { useAnalytics } from '@/app/components/AnalyticsProvider';
+import { analyticsSettings } from '@/app/lib/analyticsCatalog';
 import { logoutSession } from '@/app/features/auth/api';
 
 import { useState, useRef, useEffect } from 'react';
@@ -51,6 +53,12 @@ const INITIAL_REPORT_STATE = {
 // ── Main Dashboard ──
 
 export default function Dashboard() {
+  // ========================================================================
+  // OBSERVATIONAL ANALYTICS
+  // These events describe browser observations, never authoritative completion.
+  // The provider is non-throwing and no telemetry call is awaited by a pipeline.
+  // ========================================================================
+  const { trackEvent, consented } = useAnalytics();
   const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
   const [username, setUsername] = useState('User');
@@ -77,6 +85,11 @@ export default function Dashboard() {
   }, [router]);
 
   const [activeTab, setActiveTab] = useSessionState('active_tab', 'full');
+
+  // Record panel changes after consent, including initial/restored dashboard tabs.
+  useEffect(() => {
+    if (authChecked && consented) trackEvent('module_viewed', {}, activeTab);
+  }, [activeTab, authChecked, consented, trackEvent]);
 
   // Per-tab report state (html, loading, error, timestamp) — serialisable to sessionStorage
   const [fullReport,      setFullReport]      = useSessionState('report_full',      INITIAL_REPORT_STATE);
@@ -109,6 +122,10 @@ export default function Dashboard() {
         alert('Your account is suspended. Reason: ' + (userProfile.suspension_reason || 'Contact support'));
         return;
     }
+    // Capture only approved final settings; payload contents never enter telemetry.
+    const analyticsStarted = performance.now();
+    trackEvent('form_started', {}, tabKey);
+    trackEvent('audit_requested', { settings: analyticsSettings(payload) }, tabKey);
     setReport((prev) => ({ ...prev, loading: true, error: '', html: '', data: null }));
     setPdfReady((p) => ({ ...p, [tabKey]: false }));
     setPdfLoading((p) => ({ ...p, [tabKey]: false }));
@@ -140,6 +157,8 @@ export default function Dashboard() {
 
     try {
       const data = await apiFn(payload);
+      // The browser received a response; server report history remains separate.
+      trackEvent('audit_received', { duration_ms: performance.now() - analyticsStarted }, tabKey);
       const html = data.html_report || data.html || '';
       const ts   = now();
 
@@ -159,6 +178,8 @@ export default function Dashboard() {
         setPdfLoading((p) => ({ ...p, [tabKey]: false }));
       }
     } catch (err) {
+      // Error messages can contain customer input; record only the failure category.
+      trackEvent('audit_failed', { failure: 'request_failed' }, tabKey);
       setReport((prev) => ({
         ...prev,
         loading: false,
@@ -238,6 +259,11 @@ export default function Dashboard() {
         return;
     }
     const tabKey = 'ui_ux';
+    // Observational lifecycle only: these statements never modify the request.
+    const analyticsModule = tabKey === 'ui_ux' ? 'ui-ux' : tabKey;
+    const analyticsStarted = performance.now();
+    trackEvent('form_started', {}, analyticsModule);
+    trackEvent('audit_requested', { settings: analyticsSettings(payload) }, analyticsModule);
     setUiUxReport((prev) => ({ ...prev, loading: true, error: '', html: '', data: null }));
     setUiUxProgress('Starting audit...');
     setPdfReady((p) => ({ ...p, [tabKey]: false }));
@@ -262,6 +288,8 @@ export default function Dashboard() {
 
     try {
       const data = await generateUiUxAudit(payload, (msg) => setUiUxProgress(msg));
+      // Labelled as a browser result, not a guaranteed server completion.
+      trackEvent('audit_received', { duration_ms: performance.now() - analyticsStarted }, analyticsModule);
       const html = data.html_report || data.html || '';
       const ts = now();
 
@@ -280,6 +308,8 @@ export default function Dashboard() {
         setPdfLoading((p) => ({ ...p, [tabKey]: false }));
       }
     } catch (err) {
+      // Preserve the existing pipeline error flow without sending its message.
+      trackEvent('audit_failed', { failure: 'request_failed' }, analyticsModule);
       setUiUxReport((prev) => ({ ...prev, loading: false, error: err.message || 'Audit failed.' }));
       setUiUxProgress('');
     }
@@ -291,6 +321,11 @@ export default function Dashboard() {
         return;
     }
     const tabKey = 'ads';
+    // Observational lifecycle only: these statements never modify the request.
+    const analyticsModule = tabKey === 'ui_ux' ? 'ui-ux' : tabKey;
+    const analyticsStarted = performance.now();
+    trackEvent('form_started', {}, analyticsModule);
+    trackEvent('audit_requested', { settings: analyticsSettings(payload) }, analyticsModule);
     setAdsReport((prev) => ({ ...prev, loading: true, error: '', html: '', data: null }));
     setAdsProgress('Starting audit...');
     setPdfReady((p) => ({ ...p, [tabKey]: false }));
@@ -309,6 +344,8 @@ export default function Dashboard() {
 
     try {
       const data = await apiFn(payload, (msg) => setAdsProgress(msg));
+      // Labelled as a browser result, not a guaranteed server completion.
+      trackEvent('audit_received', { duration_ms: performance.now() - analyticsStarted }, analyticsModule);
       const html = data.ads_library_data?.full_html_report || data.ads_library_data?.html_report || data.html_report || data.html || '';
       const ts = now();
 
@@ -327,6 +364,8 @@ export default function Dashboard() {
         setPdfLoading((p) => ({ ...p, [tabKey]: false }));
       }
     } catch (err) {
+      // Preserve the existing pipeline error flow without sending its message.
+      trackEvent('audit_failed', { failure: 'request_failed' }, analyticsModule);
       setAdsReport((prev) => ({
         ...prev,
         loading: false,
@@ -341,7 +380,11 @@ export default function Dashboard() {
   const handleDownload = (tabKey) => {
     const blob = pdfBlobs.current[tabKey];
     const filename = pdfFilenames.current[tabKey] || 'audit_report.pdf';
-    if (blob) downloadBlob(blob, filename);
+    if (blob) {
+      downloadBlob(blob, filename);
+      // Record a real download invocation; preparing a PDF does not count.
+      trackEvent('export_downloaded', { control: 'download_pdf' }, tabKey === 'ui_ux' ? 'ui-ux' : tabKey);
+    }
   };
 
   // ── Dismiss error handlers ──
@@ -462,7 +505,8 @@ export default function Dashboard() {
     <>
       <Navbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
 
-      <div className={`dashboard-layout ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+      {/* Module scope lets observers resolve controls without reading their text. */}
+      <div data-analytics-module={activeTab} className={`dashboard-layout ${isSidebarOpen ? 'sidebar-open' : ''}`}>
         {/* Overlay for mobile sidebar */}
         {isSidebarOpen && (
           <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)} />
@@ -510,6 +554,7 @@ export default function Dashboard() {
 
         {/* ── Support Floating Button & Modal ── */}
         <button 
+          data-analytics-control="support_open"
           onClick={() => setIsSupportOpen(true)}
           className="fixed bottom-8 right-8 z-[100] p-4 bg-gradient-to-r from-blue-700 to-blue-600 text-white rounded-full shadow-2xl hover:shadow-[0_20px_40px_rgba(37,99,235,0.3)] transition-all hover:-translate-y-1 flex items-center justify-center group"
           title="Help & Support"

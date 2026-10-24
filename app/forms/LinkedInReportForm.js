@@ -1,5 +1,12 @@
 'use client';
 
+// ============================================================================
+// CONSENTED CONFIGURATION OBSERVATION
+// Explicit data-analytics attributes expose only stable settings/control codes to
+// AnalyticsProvider. They never change form state, validation or API payloads.
+// Customer text, domains, profile links and advertiser IDs remain unannotated.
+// ============================================================================
+
 import FormField from '../components/FormField';
 import ErrorBanner from '../components/ErrorBanner';
 import AnimatedSubmitButton from '../components/AnimatedSubmitButton';
@@ -60,7 +67,7 @@ export default function LinkedInReportForm({ loading, error, onDismissError, onS
         <div className="form-grid-2">
           <FormField label="Results Limit" htmlFor="li-results-limit">
             <input
-              id="li-results-limit"
+              id="li-results-limit" data-analytics-setting="results_limit"
               className="form-input"
               type="number"
               min={1}
@@ -72,7 +79,7 @@ export default function LinkedInReportForm({ loading, error, onDismissError, onS
 
           <FormField label="Time Range" htmlFor="li-posted-limit">
             <select
-              id="li-posted-limit"
+              id="li-posted-limit" data-analytics-setting="posted_limit"
               className="form-select"
               value={fields.posted_limit}
               onChange={set('posted_limit')}
