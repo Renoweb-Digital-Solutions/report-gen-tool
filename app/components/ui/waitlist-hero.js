@@ -39,10 +39,12 @@ export function WaitlistHero({ onCtaClick }) {
       {/* ── Content ── */}
       <div className="hero-content">
         <div className="hero-logo-pill">
+          {/* Keep this reusable hero's product identity aligned with navigation;
+              square dimensions preserve the supplied mark without stretching. */}
           <Image
-            src="/logo.png"
-            alt="Renoweb"
-            width={120}
+            src="/flawdits_logo.png"
+            alt="Flawdits"
+            width={28}
             height={28}
             style={{ height: '28px', width: 'auto', objectFit: 'contain' }}
             priority

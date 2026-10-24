@@ -120,7 +120,9 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
             <ScrollReveal>
               <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center mb-8 shadow-sm border border-slate-200 text-brandDeep">
-                <Image src="/logo.png" alt="Flawdits" width={28} height={28} className="w-7 h-auto opacity-70" />
+                {/* Use the same square product mark as navigation; preserve its
+                    original colors inside this homepage feature badge. */}
+                <Image src="/flawdits_logo.png" alt="Flawdits" width={28} height={28} className="w-7 h-7 object-contain" />
               </div>
               <h2 className="text-4xl sm:text-5xl font-extrabold text-brandInk tracking-tight mb-6">
                 Everything a Client-Facing <br /> Audit Needs

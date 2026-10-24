@@ -20,10 +20,20 @@ const oswald = Oswald({
   display: "swap",
 });
 
+// ============================================================================
+// SITE ICONS
+// All routes inherit the supplied Flawdits mark for PNG-capable browsers and
+// Apple home-screen bookmarks. app/favicon.ico contains resized copies of this
+// same artwork for legacy browser requests; keep it aligned if the logo changes.
+// ============================================================================
 export const metadata = {
   title: "Flawdits",
   description:
     "Generate comprehensive digital presence audit reports — SEO, Instagram, LinkedIn, and visual brand match analysis — powered by Renoweb.",
+  icons: {
+    icon: { url: "/flawdits_logo.png", type: "image/png", sizes: "1000x1000" },
+    apple: { url: "/flawdits_logo.png", sizes: "1000x1000" },
+  },
   verification: {
     google: "Q2BUcYgqtAlhXgvX3FrTcZQvIUNqRHzVSo3-UgNl3X8",
   },

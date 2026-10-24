@@ -162,14 +162,15 @@ export function Navbar() {
         <nav className="w-full h-20 bg-white/95 backdrop-blur-md border-b border-brandDeep/10 transition-all duration-300">
           <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
           
-          {/* Logo */}
+          {/* Flawdits brand: use the supplied square mark with matching dimensions
+              so desktop and mobile navigation reserve space without distortion. */}
           <Link href="/" className="flex items-center gap-3 group">
             <Image
-              src="/logo.png"
+              src="/flawdits_logo.png"
               alt="Flawdits"
-              width={140}
-              height={32}
-              className="h-7 w-auto object-contain transition-transform group-hover:scale-105"
+              width={40}
+              height={40}
+              className="h-10 w-10 object-contain transition-transform group-hover:scale-105"
               priority
             />
           </Link>

@@ -20,11 +20,13 @@ export default function Navbar({ onMenuClick }) {
             <Menu size={24} />
           </button>
         )}
+        {/* Dashboard brand: match the public navigation's square Flawdits asset;
+            explicit dimensions reserve its layout space before image loading. */}
         <Image
-          src="/logo.png"
-          alt="Renoweb logo"
+          src="/flawdits_logo.png"
+          alt="Flawdits logo"
           height={32}
-          width={140}
+          width={32}
           className="navbar-logo"
           priority
           style={{ width: 'auto', height: '32px', objectFit: 'contain' }}

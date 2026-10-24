@@ -22,16 +22,17 @@ export function Footer() {
         {/* Top Header Row with Logo & Tagline */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 pb-16 border-b border-white/10">
 
-          {/* Logo & Info (Col 1 to 4) */}
+          {/* Flawdits brand and info: retain the supplied mark's blue gradient on
+              the dark footer instead of applying the old white silhouette filter. */}
           <div className="lg:col-span-4 space-y-6">
             <Link href="/" className="inline-flex items-center gap-3 group">
               <div className="bg-white/10 backdrop-blur-md p-2.5 rounded-2xl border border-white/15 shadow-md">
                 <Image
-                  src="/logo.png"
+                  src="/flawdits_logo.png"
                   alt="Flawdits Logo"
-                  width={140}
-                  height={32}
-                  className="h-7 w-auto object-contain brightness-0 invert"
+                  width={40}
+                  height={40}
+                  className="h-10 w-10 object-contain"
                 />
               </div>
             </Link>
