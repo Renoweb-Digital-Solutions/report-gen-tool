@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Shared admin shell for /admin and its users/tickets/analytics child routes.
+ * Shared admin shell for /admin and its users/tickets/analytics/feedback child routes.
  * Retains existing account, suspension and email actions. Section reads are
  * isolated; AnalyticsDashboard owns its filters, loading, retries and reporting.
  * Cookie authorization remains authoritative on every protected backend API.
@@ -11,6 +11,8 @@ import { checkSession, logoutSession } from '@/app/features/auth/api';
 import Link from 'next/link';
 import AnalyticsDashboard from './AnalyticsDashboard';
 import TicketDesk from './TicketDesk';
+// The feedback inbox owns paginated reads/errors independently of account tools.
+import FeedbackInbox from './FeedbackInbox';
 import styles from './admin.module.css';
 import React, { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
@@ -19,7 +21,7 @@ import { getAdminUsers, getAdminTickets, suspendAdminUser, unsuspendAdminUser, g
 import ThemeToggle from '@/app/components/ThemeToggle';
 
 /**
- * Shared admin workspace consumed by /admin and dedicated users/tickets/analytics
+ * Shared admin workspace consumed by /admin and dedicated users/tickets/analytics/feedback
  * routes. Existing account/email operations remain here; analytics reads are
  * isolated in AnalyticsDashboard and cannot disable account or ticket access.
  */
@@ -186,7 +188,8 @@ export default function AdminPanel({ initialSection = 'users' }) {
     setTickets(previous => previous.map(ticket => ticket._id === saved._id ? saved : ticket));
   };
 
-  const sectionTitle = activeTab === 'analytics' ? 'Product Analytics' : activeTab === 'tickets' ? 'Support Tickets' : 'User Accounts';
+  // Feedback is route-backed like the other sections and owns its own read state.
+  const sectionTitle = activeTab === 'feedback' ? 'User Feedback' : activeTab === 'analytics' ? 'Product Analytics' : activeTab === 'tickets' ? 'Support Tickets' : 'User Accounts';
   const totalReports = users.reduce((acc, user) => acc + (user.report_count || 0), 0);
   const totalUsers = users.length;
 
@@ -203,6 +206,8 @@ export default function AdminPanel({ initialSection = 'users' }) {
         <nav aria-label="Administration">
           <Link href="/admin/users" aria-current={activeTab === 'users' ? 'page' : undefined}><Users size={19} />User Accounts</Link>
           <Link href="/admin/tickets" aria-current={activeTab === 'tickets' ? 'page' : undefined}><MessageSquare size={19} />Support Tickets{tickets.some(t => !t.admin_archived && ['Open', 'In Progress'].includes(t.status)) && <span className={styles.badge}>{tickets.filter(t => !t.admin_archived && ['Open', 'In Progress'].includes(t.status)).length}</span>}</Link>
+          {/* Feedback identity and comments are only fetched inside this protected section. */}
+          <Link href="/admin/feedback" aria-current={activeTab === 'feedback' ? 'page' : undefined}><MessageSquare size={19} />Feedback</Link>
           <Link href="/admin/analytics" aria-current={activeTab === 'analytics' ? 'page' : undefined}><BarChart3 size={19} />Analytics</Link>
         </nav>
         <div className={styles.railNote}><ShieldCheck size={18} /><span>Admin access<br /><small>Accounts, support & insights</small></span></div>
@@ -218,7 +223,7 @@ export default function AdminPanel({ initialSection = 'users' }) {
               </div>
               <h1 style={{ fontSize: '28px', fontWeight: 700, color: 'var(--color-dark)', letterSpacing: '-0.02em', margin: 0 }}>{sectionTitle}</h1>
             </div>
-            <p className="admin-header-subtitle" style={{ color: 'rgba(25,25,25,0.6)', fontSize: '14px', marginLeft: '40px', margin: 0 }}>{activeTab === 'analytics' ? 'Understand what people use, choose and return to.' : activeTab === 'tickets' ? 'Keep customer questions and issues in one place.' : 'Manage accounts and review recorded report activity.'}</p>
+            <p className="admin-header-subtitle" style={{ color: 'rgba(25,25,25,0.6)', fontSize: '14px', marginLeft: '40px', margin: 0 }}>{activeTab === 'feedback' ? 'See how users feel and what they want to share.' : activeTab === 'analytics' ? 'Understand what people use, choose and return to.' : activeTab === 'tickets' ? 'Keep customer questions and issues in one place.' : 'Manage accounts and review recorded report activity.'}</p>
           </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -273,13 +278,14 @@ export default function AdminPanel({ initialSection = 'users' }) {
           
           <div className={styles.toolbar}>
             <span>{sectionTitle}</span>
-            {activeTab !== 'tickets' && <button
+            {/* Feedback has its own refresh action and is a read-only inbox. */}
+            {activeTab !== 'tickets' && activeTab !== 'feedback' && <button
               onClick={() => setEmailModal(prev => ({ ...prev, isOpen: true }))}
               style={{ marginLeft: 'auto', padding: '8px 12px', background: 'rgba(37, 99, 235, 0.1)', border: '1px solid rgba(37, 99, 235, 0.2)', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--brand-blue)', fontSize: '13px', fontWeight: 600, transition: 'all 0.2s' }}
             >
               <Mail size={14} /> Send Email
             </button>}
-            {activeTab !== 'analytics' && <button
+            {activeTab !== 'analytics' && activeTab !== 'feedback' && <button
               onClick={() => fetchData(true)}
               disabled={refreshing}
               style={{ marginLeft: 'auto', marginRight: '20px', padding: '8px 12px', background: refreshing ? 'rgba(25,25,25,0.05)' : 'white', border: '1px solid var(--color-border)', borderRadius: '6px', cursor: refreshing ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--brand-deep)', fontSize: '13px', fontWeight: 600, transition: 'all 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
@@ -290,7 +296,7 @@ export default function AdminPanel({ initialSection = 'users' }) {
           </div>
           
           <div style={{ overflowX: 'auto' }}>
-            {activeTab === 'analytics' ? <AnalyticsDashboard /> : activeTab === 'users' ? (
+            {activeTab === 'feedback' ? <FeedbackInbox /> : activeTab === 'analytics' ? <AnalyticsDashboard /> : activeTab === 'users' ? (
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
                   <tr className="admin-table-header-row">

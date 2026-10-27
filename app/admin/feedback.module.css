@@ -1,0 +1,26 @@
+/* ========================================================================== */
+/* PRIVATE FEEDBACK INBOX                                                     */
+/* Scoped to FeedbackInbox within AdminWorkspace. Wrapping rows preserve long
+   user comments/email addresses without widening the admin shell. Theme tokens
+   inherit light/dark appearance; no transitions require reduced-motion rules. */
+/* ========================================================================== */
+.inbox { padding: clamp(16px, 3vw, 28px); color: var(--color-dark); }
+.heading, .rowHeader, .row footer, .pagination { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.heading h2 { margin: 0; font-size: 21px; }
+.heading p, .count, .rowHeader p { color: var(--color-text-muted, #64748b); font-size: 12px; line-height: 1.6; }
+.inbox button { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; color: inherit; padding: 9px 14px; font-weight: 600; cursor: pointer; }
+.inbox button:disabled { opacity: .5; cursor: default; }
+.inbox button:focus-visible { outline: 3px solid var(--brand-blue); outline-offset: 3px; }
+.count { margin: 24px 0 14px; }
+.rows { display: grid; gap: 14px; }
+.row { border: 1px solid var(--color-border); border-radius: 14px; padding: 20px; background: var(--color-white); overflow-wrap: anywhere; }
+.rowHeader strong { font-size: 14px; }
+.rowHeader p { margin: 5px 0 0; }
+.rating { background: #308fef14; padding: 8px 12px; border-radius: 30px; font-size: 13px; }
+.rating small { margin-left: 8px; color: var(--color-text-muted, #64748b); }
+.message { white-space: pre-wrap; font-size: 14px; line-height: 1.7; margin: 20px 0; }
+.row footer { font-size: 11px; color: var(--color-text-muted, #64748b); border-top: 1px solid var(--color-border); padding-top: 12px; }
+.empty { text-align: center; padding: 48px 16px; background: var(--color-surface); border-radius: 14px; }
+.empty > span { font-size: 32px; }
+.empty p { font-size: 13px; color: var(--color-text-muted, #64748b); }
+.pagination { margin-top: 24px; font-size: 12px; }

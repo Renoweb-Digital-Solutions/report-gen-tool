@@ -760,3 +760,35 @@ export async function sendAdminEmail(payload) {
   if (!res.ok) throw new Error(await extractError(res));
   return res.json();
 }
+
+// ============================================================================
+// EXPLICIT ACCOUNT FEEDBACK
+// Dashboard calls use the user cookie; inbox reads require the admin cookie.
+// Keep status codes for cross-tab cooldown conflicts and never retry POSTs here.
+// ============================================================================
+/** Read server-owned eligibility before a dashboard reminder opens. */
+export async function getFeedbackStatus() {
+  const res = await authFetch(`${BASE_URL}/feedback/status`);
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+}
+
+/** Submit a selected rating/optional text; only a successful write starts cooldown. */
+export async function submitFeedback(payload) {
+  const res = await authFetch(`${BASE_URL}/feedback`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const error = new Error(await extractError(res));
+    error.status = res.status;
+    throw error;
+  }
+  return res.json();
+}
+
+/** Read one bounded admin inbox page; customer APIs never receive these records. */
+export async function getAdminFeedback(page = 1) {
+  const res = await adminAuthFetch(`${BASE_URL}/feedback/admin?page=${page}&limit=20`);
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+}

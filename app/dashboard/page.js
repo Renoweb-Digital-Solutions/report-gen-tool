@@ -18,6 +18,8 @@ import LinkedInPersonalForm from '@/app/forms/LinkedInPersonalForm';
 import VisualBrandForm from '@/app/forms/VisualBrandForm';
 import AdsAuditForm from '@/app/forms/AdsAuditForm';
 import UiUxAuditForm from '@/app/forms/UiUxAuditForm';
+// Dashboard-only feedback observes result receipt without awaiting any feedback API.
+import FeedbackWidget from '@/app/components/FeedbackWidget';
 import SupportModal from '@/app/components/SupportModal';
 import { HelpCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -65,6 +67,8 @@ export default function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSupportOpen, setIsSupportOpen] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
+  // Each fresh result reschedules the optional card, independent of analytics consent.
+  const [feedbackCompletion, setFeedbackCompletion] = useState(null);
 
   const handleLogout = async () => {
     try { await logoutSession(); router.push('/?login=true'); }
@@ -158,6 +162,8 @@ export default function Dashboard() {
     try {
       const data = await apiFn(payload);
       // The browser received a response; server report history remains separate.
+      // Signal only tool metadata; feedback failure cannot affect the completed audit.
+      setFeedbackCompletion({ module: tabKey, at: Date.now() });
       trackEvent('audit_received', { duration_ms: performance.now() - analyticsStarted }, tabKey);
       const html = data.html_report || data.html || '';
       const ts   = now();
@@ -289,6 +295,8 @@ export default function Dashboard() {
     try {
       const data = await generateUiUxAudit(payload, (msg) => setUiUxProgress(msg));
       // Labelled as a browser result, not a guaranteed server completion.
+      // Signal only tool metadata; feedback failure cannot affect the completed audit.
+      setFeedbackCompletion({ module: tabKey, at: Date.now() });
       trackEvent('audit_received', { duration_ms: performance.now() - analyticsStarted }, analyticsModule);
       const html = data.html_report || data.html || '';
       const ts = now();
@@ -345,6 +353,8 @@ export default function Dashboard() {
     try {
       const data = await apiFn(payload, (msg) => setAdsProgress(msg));
       // Labelled as a browser result, not a guaranteed server completion.
+      // Signal only tool metadata; feedback failure cannot affect the completed audit.
+      setFeedbackCompletion({ module: tabKey, at: Date.now() });
       trackEvent('audit_received', { duration_ms: performance.now() - analyticsStarted }, analyticsModule);
       const html = data.ads_library_data?.full_html_report || data.ads_library_data?.html_report || data.html_report || data.html || '';
       const ts = now();
@@ -565,6 +575,10 @@ export default function Dashboard() {
           </span>
         </button>
 
+        {/* Pause reminders during any pipeline, PDF work, or an open support dialog. */}
+        <FeedbackWidget completion={feedbackCompletion}
+          busy={[fullReport, websiteReport, gmbReport, instagramReport, linkedinReport, linkedinPersonalReport, visualReport, adsReport, uiUxReport].some(report => report.loading) || Object.values(pdfLoading).some(Boolean)}
+          blocked={isSupportOpen} />
         {isSupportOpen && <SupportModal onClose={() => setIsSupportOpen(false)} />}
       </div>
     </>
