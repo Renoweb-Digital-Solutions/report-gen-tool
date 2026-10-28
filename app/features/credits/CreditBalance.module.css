@@ -1,0 +1,136 @@
+/* ========================================================================== */
+/* HEADER WALLET AND ACCOUNT PANEL                                             */
+/* CreditBalance is mounted in Navbar by the dashboard. Its trigger participates */
+/* only in header layout; the portal panel never consumes audit-grid columns.   */
+/* Existing color tokens follow data-theme, including the warm dark palette.   */
+/* ========================================================================== */
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  max-width: 240px;
+  padding: 6px 11px 6px 7px;
+  border: 1px solid var(--color-border);
+  border-radius: 11px;
+  background: var(--color-white);
+  color: var(--color-dark);
+  cursor: pointer;
+  font-family: var(--font-primary);
+  font-size: 12px;
+  white-space: nowrap;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+.trigger:hover, .trigger[aria-expanded="true"] { border-color: var(--brand-deep); box-shadow: var(--shadow-soft); }
+.triggerIcon { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 7px; color: var(--brand-deep); background: color-mix(in srgb, var(--brand-deep) 9%, transparent); }
+.triggerValue { overflow: hidden; text-overflow: ellipsis; font-weight: 700; font-variant-numeric: tabular-nums; }
+.triggerLabel, .triggerArrow { color: color-mix(in srgb, var(--color-dark) 58%, transparent); }
+
+/* ========================================================================== */
+/* MODAL SHELL AND BALANCE HIERARCHY                                            */
+/* A separate scrollable content area keeps close/footer reachable on short     */
+/* screens. The overlay intercepts outside clicks; JS owns focus and Escape.    */
+/* ========================================================================== */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: calc(var(--navbar-height) + 12px) 24px 20px;
+  background: rgba(8, 13, 24, 0.32);
+  backdrop-filter: blur(3px);
+  animation: appear 160ms ease both;
+}
+.panel {
+  --muted: color-mix(in srgb, var(--color-dark) 60%, transparent);
+  display: flex;
+  flex-direction: column;
+  width: 430px;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  background: var(--color-white);
+  color: var(--color-dark);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.25);
+  font-family: var(--font-primary);
+  animation: enter 180ms ease both;
+}
+.header { display: flex; align-items: center; gap: 12px; padding: 23px 24px 19px; border-bottom: 1px solid var(--color-border); }
+.headingIcon { display: grid; place-items: center; flex-shrink: 0; width: 43px; height: 43px; border: 1px solid var(--color-border); border-radius: 13px; color: var(--brand-deep); background: color-mix(in srgb, var(--brand-deep) 6%, var(--color-white)); }
+.heading { flex: 1; min-width: 0; }
+.eyebrow { margin: 0 0 5px; color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: 0.14em; }
+.heading h2 { margin: 0; font-family: var(--font-primary); font-size: 20px; line-height: 1.25; font-weight: 700; letter-spacing: -0.04em; }
+.iconButton { display: grid; place-items: center; width: 32px; height: 32px; flex-shrink: 0; border: 1px solid var(--color-border); border-radius: 9px; background: transparent; color: var(--muted); cursor: pointer; }
+.iconButton:hover { color: var(--color-dark); background: var(--color-surface); }
+.content { overflow-y: auto; overscroll-behavior: contain; padding: 20px 24px 24px; }
+.intro { margin: 0 0 18px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+/* One full-width balance replaces internal available/reserved wallet accounting.
+   The bottom spacing separates the customer balance from recent audit activity. */
+.balances { margin-bottom: 24px; }
+.available { display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 8px; padding: 22px; border-radius: 13px; min-width: 0; }
+.available { color: #fff; background: linear-gradient(135deg, #123575, #2455bb); border: 1px solid #3261bd; }
+.statLabel { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; }
+.available strong { display: block; max-width: 100%; overflow-wrap: anywhere; font-size: 40px; font-weight: 650; line-height: 1.15; letter-spacing: -0.05em; font-variant-numeric: tabular-nums; }
+.statCaption { font-size: 10px; line-height: 1.4; }
+.available .statCaption { color: #c3d7ff; }
+
+/* ========================================================================== */
+/* ACTIVITY, RECOVERY AND HONEST EMPTY/ERROR STATES                             */
+/* Status text and icons communicate meaning independently of color. Failed or */
+/* expired rows stay visible but have no misleading report action.             */
+/* ========================================================================== */
+.sectionHeading { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; }
+.sectionHeading h3 { margin: 0; font-family: var(--font-primary); font-size: 13px; font-weight: 700; }
+.refreshButton { display: inline-flex; align-items: center; gap: 5px; padding: 5px 0 5px 8px; border: none; background: transparent; color: var(--brand-deep); font: inherit; font-size: 11px; cursor: pointer; }
+.refreshButton:disabled { opacity: 0.6; cursor: wait; }
+.activityList { list-style: none; margin: 0; padding: 0; border: 1px solid var(--color-border); border-radius: 12px; overflow: hidden; }
+.activity { display: flex; align-items: center; gap: 10px; padding: 14px 12px; }
+.activity + .activity { border-top: 1px solid var(--color-border); }
+.activityIcon { display: grid; place-items: center; flex-shrink: 0; width: 31px; height: 35px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; color: var(--muted); }
+.activityBody { display: flex; flex-direction: column; flex: 1; gap: 5px; min-width: 0; }
+.activityTitle { font-size: 12px; font-weight: 650; overflow-wrap: anywhere; }
+.status { display: flex; align-items: center; gap: 4px; font-size: 10px; line-height: 1.35; color: var(--muted); }
+.status svg { flex-shrink: 0; }
+.status[data-state="complete"] { color: var(--color-success); }
+.status[data-state="pending"] { color: var(--brand-deep); }
+.status[data-state="failed"] { color: var(--color-error); }
+.date { color: var(--muted); font-size: 9px; }
+.openButton { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; padding: 7px 8px; background: transparent; border: 1px solid var(--color-border); border-radius: 7px; color: var(--brand-deep); font-family: inherit; font-size: 10px; font-weight: 600; cursor: pointer; }
+.openButton:hover { border-color: var(--brand-deep); background: var(--color-surface); }
+.openButton:disabled { opacity: 0.5; cursor: wait; }
+.rowNote { color: var(--muted); font-size: 9px; }
+.empty { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 28px 22px; border: 1px dashed var(--color-border); border-radius: 12px; background: var(--color-surface); }
+.emptyIcon { display: grid; place-items: center; width: 46px; height: 46px; margin-bottom: 13px; border: 1px solid var(--color-border); border-radius: 14px; color: var(--muted); background: var(--color-white); }
+.empty h4 { margin: 0 0 7px; font: 600 13px var(--font-primary); }
+.empty p { max-width: 250px; margin: 0; font-size: 11px; line-height: 1.7; color: var(--muted); }
+.error { display: flex; align-items: flex-start; gap: 7px; margin: 12px 0; padding: 10px 12px; border-radius: 9px; border: 1px solid var(--color-error-border); background: var(--color-error-bg); color: var(--color-error); font-size: 11px; line-height: 1.6; }
+.error svg { flex-shrink: 0; margin-top: 2px; }
+.notice { margin: 12px 0 0; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: 9px; background: var(--color-surface); color: var(--muted); font-size: 11px; line-height: 1.6; }
+.footer { display: flex; align-items: center; gap: 7px; padding: 14px 24px; border-top: 1px solid var(--color-border); color: var(--muted); background: var(--color-surface); font-size: 10px; line-height: 1.5; }
+.footer svg { flex-shrink: 0; }
+
+/* ========================================================================== */
+/* KEYBOARD, MOBILE AND REDUCED MOTION                                         */
+/* Narrow screens use a bottom sheet, never a second form column. No animation  */
+/* is required to understand balances or recovery state.                       */
+/* ========================================================================== */
+.trigger:focus-visible, .panel button:focus-visible { outline: 2px solid var(--brand-deep); outline-offset: 3px; }
+@keyframes appear { from { opacity: 0; } to { opacity: 1; } }
+@keyframes enter { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 600px) {
+  .overlay { padding: 10px; align-items: flex-end; }
+  .panel { width: 100%; max-height: calc(100dvh - 20px); border-radius: 19px; }
+  .header { padding: 18px; }
+  .content { padding: 18px; }
+  .footer { padding: 13px 18px; }
+  .trigger { max-width: 170px; gap: 5px; padding-right: 8px; }
+  .triggerArrow { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .overlay, .panel { animation: none; }
+  .trigger { transition: none; }
+}

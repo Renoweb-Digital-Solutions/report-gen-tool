@@ -21,6 +21,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import AnimatedSubmitButton from "../components/AnimatedSubmitButton";
+// Composite social sections explain their own rates; the button sums all modules.
+import PostCreditRate from "../features/credits/pricing/PostCreditRate";
 
 const POSTED_OPTIONS = [
   { value: "24h", label: "Last 24 hours" },
@@ -111,8 +113,8 @@ export default function FullReportForm({
   const set = (key) => (e) =>
     setFields((prev) => ({ ...prev, [key]: e.target.value }));
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  /** Build one request shape for submission and its display estimate; never send pricing amounts. */
+  function buildPricingPayload() {
     const payload = {
       domain: fields.domain.trim(),
       ...(fields.ig_username.trim() && {
@@ -164,7 +166,16 @@ export default function FullReportForm({
       }
     }
 
-    onSubmit(payload);
+    return payload;
+  }
+
+  // Rebuilding this small object is local only; settings changes never fetch pricing.
+  const pricingPayload = buildPricingPayload();
+
+  /** Submit the same options shown by the button estimate through existing backend billing. */
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(pricingPayload);
   };
 
   return (
@@ -248,15 +259,20 @@ export default function FullReportForm({
               htmlFor="full-ig-limit"
               tooltip="Number of recent posts to analyze"
             >
+              {/* Composite audits use the same post bounds as standalone runs. */}
               <input
                 id="full-ig-limit"
+                aria-describedby="full-ig-post-price"
                 data-analytics-setting="ig_results_limit"
                 className="form-input"
                 type="number"
                 min={1}
+                max={100}
                 value={fields.ig_results_limit}
                 onChange={set("ig_results_limit")}
               />
+              {/* Per-component help stays available before optional target entry. */}
+              <PostCreditRate id="full-ig-post-price" module="instagram" payload={fields} />
             </FormField>
           </div>
         </div>
@@ -306,6 +322,7 @@ export default function FullReportForm({
               <FormField label="Results Limit" htmlFor="full-li-limit">
                 <input
                   id="full-li-limit"
+                  aria-describedby="full-li-post-price"
                   data-analytics-setting="linkedin_results_limit"
                   className="form-input"
                   type="number"
@@ -313,6 +330,8 @@ export default function FullReportForm({
                   value={fields.linkedin_results_limit}
                   onChange={set("linkedin_results_limit")}
                 />
+                {/* Map the Full Report window field to standalone pricing keys. */}
+                <PostCreditRate id="full-li-post-price" module="linkedin" payload={{ ...fields, posted_limit: fields.linkedin_posted_limit }} />
               </FormField>
               <FormField label="Time Range" htmlFor="full-li-posted">
                 <select
@@ -668,7 +687,8 @@ export default function FullReportForm({
           </div>
         </div>
 
-        <AnimatedSubmitButton loading={loading} defaultText="Generate Report" />
+        {/* Display-only estimate includes exactly the submitted audit selections. */}
+        <AnimatedSubmitButton pricingModule="full" pricingInput={pricingPayload} loading={loading} defaultText="Generate Report" />
       </div>
     </form>
   );

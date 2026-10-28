@@ -10,6 +10,8 @@
 import FormField from '../components/FormField';
 import ErrorBanner from '../components/ErrorBanner';
 import AnimatedSubmitButton from '../components/AnimatedSubmitButton';
+// Selected time windows affect the unit rate as well as the total button cost.
+import PostCreditRate from '../features/credits/pricing/PostCreditRate';
 import { useSessionState } from '../hooks/useSessionState';
 
 const POSTED_OPTIONS = [
@@ -68,6 +70,7 @@ export default function LinkedInReportForm({ loading, error, onDismissError, onS
           <FormField label="Results Limit" htmlFor="li-results-limit">
             <input
               id="li-results-limit" data-analytics-setting="results_limit"
+              aria-describedby="li-post-price"
               className="form-input"
               type="number"
               min={1}
@@ -75,6 +78,8 @@ export default function LinkedInReportForm({ loading, error, onDismissError, onS
               value={fields.linkedin_results_limit}
               onChange={set('linkedin_results_limit')}
             />
+            {/* Keep the selected-window rate attached to its quantity field. */}
+            <PostCreditRate id="li-post-price" module="linkedin" payload={fields} />
           </FormField>
 
           <FormField label="Time Range" htmlFor="li-posted-limit">
@@ -91,7 +96,10 @@ export default function LinkedInReportForm({ loading, error, onDismissError, onS
           </FormField>
         </div>
 
-        <AnimatedSubmitButton 
+        {/* Display-only pricing follows this audit and its current settings. */}
+        <AnimatedSubmitButton
+          pricingModule="linkedin"
+          pricingInput={fields}
           loading={loading}
           disabled={!fields.linkedin_company_url.trim()}
           defaultText="Generate Report"

@@ -1,0 +1,16 @@
+/* ========================================================================== */
+/* AUDIT BUTTON DISPLAY ESTIMATE                                               */
+/* AnimatedSubmitButton owns the action and existing loading state. A compact   */
+/* badge displays locally calculated credits without changing button width or  */
+/* making pricing availability an authorization check. Wrap safely on mobile.   */
+/* ========================================================================== */
+.content { display: flex; align-items: center; justify-content: center; gap: 9px; flex-wrap: wrap; }
+.action { display: inline-flex; align-items: center; justify-content: center; gap: 9px; }
+.price { display: inline-flex; align-items: center; padding: 3px 8px; border: 1px solid rgba(255,255,255,0.3); border-radius: 7px; background: rgba(255,255,255,0.13); font-family: var(--font-primary); font-size: 11px; font-weight: 600; line-height: 1.4; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* ========================================================================== */
+/* SOCIAL POST-LIMIT HELP                                                      */
+/* Inherit theme-aware field text and allow longer window explanations to wrap  */
+/* in narrow two-column forms. Reserve no fixed width and keep numeric alignment. */
+/* ========================================================================== */
+.postRate { margin: 6px 0 0; font-family: var(--font-primary); font-size: 12px; line-height: 1.5; color: inherit; font-variant-numeric: tabular-nums; }

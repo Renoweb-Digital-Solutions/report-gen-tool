@@ -236,6 +236,28 @@ body {
   letter-spacing: -0.01em;
 }
 
+/* ========================================================================== */
+/* DASHBOARD ACCOUNT CONTROLS IN NAVIGATION                                    */
+/* Navbar's optional account slot holds the compact credits trigger. Reduce    */
+/* secondary header copy before allowing controls to overflow on narrow views; */
+/* public navigation without that slot retains its established appearance.     */
+/* ========================================================================== */
+.navbar[data-has-account-controls="true"] .navbar-left { min-width: 0; }
+.navbar[data-has-account-controls="true"] .navbar-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 1320px) {
+  .navbar[data-has-account-controls="true"] .session-pill { display: none; }
+}
+@media (max-width: 1050px) {
+  .navbar[data-has-account-controls="true"] .navbar-title { max-width: 190px; }
+}
+@media (max-width: 760px) {
+  .navbar[data-has-account-controls="true"] .navbar-title { display: none; }
+}
+@media (max-width: 600px) {
+  .navbar[data-has-account-controls="true"] .api-health-text { display: none; }
+  .navbar[data-has-account-controls="true"] .api-health-badge { padding: 9px; }
+}
+
 .api-health-badge {
   display: flex;
   align-items: center;

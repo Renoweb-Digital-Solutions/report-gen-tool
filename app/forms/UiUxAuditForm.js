@@ -58,7 +58,9 @@ export default function UiUxAuditForm({ loading, error, progress, onDismissError
           />
         </FormField>
 
-        <AnimatedSubmitButton 
+        {/* Display-only pricing follows this audit and its current settings. */}
+        <AnimatedSubmitButton
+          pricingModule="ui_ux"
           loading={loading}
           progressText={progress}
           disabled={!fields.url.trim()}

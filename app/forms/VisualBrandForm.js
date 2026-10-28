@@ -49,7 +49,9 @@ export default function VisualBrandForm({ loading, error, onDismissError, onSubm
           onFileSelect={handleInstagramFile}
         />
 
-        <AnimatedSubmitButton 
+        {/* Display-only pricing follows this audit and its current settings. */}
+        <AnimatedSubmitButton
+          pricingModule="visual"
           loading={loading}
           defaultText="Generate Report"
         />

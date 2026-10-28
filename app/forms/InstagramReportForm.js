@@ -9,6 +9,8 @@
 import FormField from '../components/FormField';
 import ErrorBanner from '../components/ErrorBanner';
 import AnimatedSubmitButton from '../components/AnimatedSubmitButton';
+// Unit-price help uses the same dashboard pricing snapshot as the total button.
+import PostCreditRate from '../features/credits/pricing/PostCreditRate';
 import { useSessionState } from '../hooks/useSessionState';
 
 const DEFAULTS = {
@@ -54,18 +56,25 @@ export default function InstagramReportForm({ loading, error, onDismissError, on
         </FormField>
 
         <FormField label="Results Limit" htmlFor="ig-results-limit">
+          {/* Match FastAPI, acquisition and credit-pricing validation bounds. */}
           <input
             id="ig-results-limit" data-analytics-setting="results_limit"
+            aria-describedby="ig-post-price"
             className="form-input"
             type="number"
             min={1}
-            max={200}
+            max={100}
             value={fields.ig_results_limit}
             onChange={set('ig_results_limit')}
           />
+          {/* Explain the per-post rate beside the quantity without submitting it. */}
+          <PostCreditRate id="ig-post-price" module="instagram" payload={fields} />
         </FormField>
 
-        <AnimatedSubmitButton 
+        {/* Display-only pricing follows this audit and its current settings. */}
+        <AnimatedSubmitButton
+          pricingModule="instagram"
+          pricingInput={fields}
           loading={loading}
           disabled={!fields.ig_username.trim()}
           defaultText="Generate Report"

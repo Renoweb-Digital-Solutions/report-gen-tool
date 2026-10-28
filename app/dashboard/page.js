@@ -1,28 +1,33 @@
-'use client';
-import { useAnalytics } from '@/app/components/AnalyticsProvider';
-import { analyticsSettings } from '@/app/lib/analyticsCatalog';
-import { logoutSession } from '@/app/features/auth/api';
+"use client";
+import { useAnalytics } from "@/app/components/AnalyticsProvider";
+import { analyticsSettings } from "@/app/lib/analyticsCatalog";
+import { logoutSession } from "@/app/features/auth/api";
 
-import { useState, useRef, useEffect } from 'react';
-import { useSessionState } from '@/app/hooks/useSessionState';
-import Navbar from '@/app/components/Navbar';
-import TabNav from '@/app/components/TabNav';
-import ReportPreview from '@/app/components/ReportPreview';
-import RightPanel from '@/app/components/RightPanel';
-import FullReportForm from '@/app/forms/FullReportForm';
-import WebsiteReportForm from '@/app/forms/WebsiteReportForm';
-import GmbReportForm from '@/app/forms/GmbReportForm';
-import InstagramReportForm from '@/app/forms/InstagramReportForm';
-import LinkedInReportForm from '@/app/forms/LinkedInReportForm';
-import LinkedInPersonalForm from '@/app/forms/LinkedInPersonalForm';
-import VisualBrandForm from '@/app/forms/VisualBrandForm';
-import AdsAuditForm from '@/app/forms/AdsAuditForm';
-import UiUxAuditForm from '@/app/forms/UiUxAuditForm';
+import { useState, useRef, useEffect } from "react";
+import { useSessionState } from "@/app/hooks/useSessionState";
+import Navbar from "@/app/components/Navbar";
+import TabNav from "@/app/components/TabNav";
+import ReportPreview from "@/app/components/ReportPreview";
+import RightPanel from "@/app/components/RightPanel";
+import FullReportForm from "@/app/forms/FullReportForm";
+import WebsiteReportForm from "@/app/forms/WebsiteReportForm";
+import GmbReportForm from "@/app/forms/GmbReportForm";
+import InstagramReportForm from "@/app/forms/InstagramReportForm";
+import LinkedInReportForm from "@/app/forms/LinkedInReportForm";
+import LinkedInPersonalForm from "@/app/forms/LinkedInPersonalForm";
+import VisualBrandForm from "@/app/forms/VisualBrandForm";
+import AdsAuditForm from "@/app/forms/AdsAuditForm";
+import UiUxAuditForm from "@/app/forms/UiUxAuditForm";
 // Dashboard-only feedback observes result receipt without awaiting any feedback API.
-import FeedbackWidget from '@/app/components/FeedbackWidget';
-import SupportModal from '@/app/components/SupportModal';
-import { HelpCircle } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import FeedbackWidget from "@/app/components/FeedbackWidget";
+// Wallet reads and recovery are account-cookie protected and never start a run.
+import CreditBalance from "@/app/features/credits/CreditBalance";
+// One provider fetches display pricing when this authenticated dashboard opens;
+// changing forms/tabs only recalculates locally from its shared rule snapshot.
+import PricingProvider from "@/app/features/credits/pricing/PricingProvider";
+import SupportModal from "@/app/components/SupportModal";
+import { HelpCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
 import {
   generateFullReport,
   generateWebsiteReport,
@@ -36,20 +41,23 @@ import {
   downloadBlob,
   generateUiUxAudit,
   getUserProfile,
-} from '@/app/lib/api';
+} from "@/app/lib/api";
 
 // ── Helpers ──
 
 function now() {
-  return new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  return new Date().toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 const INITIAL_REPORT_STATE = {
-  html: '',
+  html: "",
   data: null,
   loading: false,
-  error: '',
-  timestamp: '',
+  error: "",
+  timestamp: "",
 };
 
 // ── Main Dashboard ──
@@ -63,7 +71,7 @@ export default function Dashboard() {
   const { trackEvent, consented } = useAnalytics();
   const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
-  const [username, setUsername] = useState('User');
+  const [username, setUsername] = useState("User");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSupportOpen, setIsSupportOpen] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
@@ -71,48 +79,126 @@ export default function Dashboard() {
   const [feedbackCompletion, setFeedbackCompletion] = useState(null);
 
   const handleLogout = async () => {
-    try { await logoutSession(); router.push('/?login=true'); }
-    catch (error) { window.alert(error.message || 'Could not sign out. Please try again.'); }
+    try {
+      await logoutSession();
+      router.push("/?login=true");
+    } catch (error) {
+      window.alert(error.message || "Could not sign out. Please try again.");
+    }
   };
 
   useEffect(() => {
     let active = true;
-    getUserProfile().then(profile => {
-      if (!active) return;
-      setUsername(profile.username);
-      setUserProfile(profile);
-      setAuthChecked(true);
-    }).catch(() => { if (active) router.push('/?login=true'); });
-    const handleAuthExpired = () => router.push('/?login=true');
-    window.addEventListener('auth-expired', handleAuthExpired);
-    return () => { active = false; window.removeEventListener('auth-expired', handleAuthExpired); };
+    getUserProfile()
+      .then((profile) => {
+        if (!active) return;
+        setUsername(profile.username);
+        setUserProfile(profile);
+        setAuthChecked(true);
+      })
+      .catch(() => {
+        if (active) router.push("/?login=true");
+      });
+    const handleAuthExpired = () => router.push("/?login=true");
+    window.addEventListener("auth-expired", handleAuthExpired);
+    return () => {
+      active = false;
+      window.removeEventListener("auth-expired", handleAuthExpired);
+    };
   }, [router]);
 
-  const [activeTab, setActiveTab] = useSessionState('active_tab', 'full');
+  const [activeTab, setActiveTab] = useSessionState("active_tab", "full");
 
   // Record panel changes after consent, including initial/restored dashboard tabs.
   useEffect(() => {
-    if (authChecked && consented) trackEvent('module_viewed', {}, activeTab);
+    if (authChecked && consented) trackEvent("module_viewed", {}, activeTab);
   }, [activeTab, authChecked, consented, trackEvent]);
 
   // Per-tab report state (html, loading, error, timestamp) — serialisable to sessionStorage
-  const [fullReport,      setFullReport]      = useSessionState('report_full',      INITIAL_REPORT_STATE);
-  const [websiteReport,   setWebsiteReport]   = useSessionState('report_website',   INITIAL_REPORT_STATE);
-  const [gmbReport,       setGmbReport]       = useSessionState('report_gmb',       INITIAL_REPORT_STATE);
-  const [instagramReport, setInstagramReport] = useSessionState('report_instagram', INITIAL_REPORT_STATE);
-  const [linkedinReport,  setLinkedinReport]  = useSessionState('report_linkedin',  INITIAL_REPORT_STATE);
-  const [linkedinPersonalReport, setLinkedinPersonalReport] = useSessionState('report_linkedin_personal', INITIAL_REPORT_STATE);
-  const [visualReport,    setVisualReport]    = useSessionState('report_visual',    INITIAL_REPORT_STATE);
-  const [adsReport,       setAdsReport]       = useSessionState('report_ads',       INITIAL_REPORT_STATE);
-  const [uiUxReport,      setUiUxReport]      = useSessionState('report_ui_ux',     INITIAL_REPORT_STATE);
-  const [adsProgress,     setAdsProgress]     = useState('');
-  const [uiUxProgress,    setUiUxProgress]    = useState('');
+  const [fullReport, setFullReport] = useSessionState(
+    "report_full",
+    INITIAL_REPORT_STATE,
+  );
+  const [websiteReport, setWebsiteReport] = useSessionState(
+    "report_website",
+    INITIAL_REPORT_STATE,
+  );
+  const [gmbReport, setGmbReport] = useSessionState(
+    "report_gmb",
+    INITIAL_REPORT_STATE,
+  );
+  const [instagramReport, setInstagramReport] = useSessionState(
+    "report_instagram",
+    INITIAL_REPORT_STATE,
+  );
+  const [linkedinReport, setLinkedinReport] = useSessionState(
+    "report_linkedin",
+    INITIAL_REPORT_STATE,
+  );
+  const [linkedinPersonalReport, setLinkedinPersonalReport] = useSessionState(
+    "report_linkedin_personal",
+    INITIAL_REPORT_STATE,
+  );
+  const [visualReport, setVisualReport] = useSessionState(
+    "report_visual",
+    INITIAL_REPORT_STATE,
+  );
+  const [adsReport, setAdsReport] = useSessionState(
+    "report_ads",
+    INITIAL_REPORT_STATE,
+  );
+  const [uiUxReport, setUiUxReport] = useSessionState(
+    "report_ui_ux",
+    INITIAL_REPORT_STATE,
+  );
+  const [adsProgress, setAdsProgress] = useState("");
+  const [uiUxProgress, setUiUxProgress] = useState("");
 
   // PDF blobs live in refs — not serialisable, intentionally ephemeral
-  const pdfBlobs    = useRef({ full: null, website: null, gmb: null, instagram: null, linkedin: null, linkedin_personal: null, visual: null, ads: null, ui_ux: null });
-  const pdfFilenames = useRef({ full: '', website: '', gmb: '', instagram: '', linkedin: '', linkedin_personal: '', visual: '', ads: '', ui_ux: '' });
-  const [pdfReady,  setPdfReady]   = useState({ full: false, website: false, gmb: false, instagram: false, linkedin: false, linkedin_personal: false, visual: false, ads: false, ui_ux: false });
-  const [pdfLoading, setPdfLoading] = useState({ full: false, website: false, gmb: false, instagram: false, linkedin: false, linkedin_personal: false, visual: false, ads: false, ui_ux: false });
+  const pdfBlobs = useRef({
+    full: null,
+    website: null,
+    gmb: null,
+    instagram: null,
+    linkedin: null,
+    linkedin_personal: null,
+    visual: null,
+    ads: null,
+    ui_ux: null,
+  });
+  const pdfFilenames = useRef({
+    full: "",
+    website: "",
+    gmb: "",
+    instagram: "",
+    linkedin: "",
+    linkedin_personal: "",
+    visual: "",
+    ads: "",
+    ui_ux: "",
+  });
+  const [pdfReady, setPdfReady] = useState({
+    full: false,
+    website: false,
+    gmb: false,
+    instagram: false,
+    linkedin: false,
+    linkedin_personal: false,
+    visual: false,
+    ads: false,
+    ui_ux: false,
+  });
+  const [pdfLoading, setPdfLoading] = useState({
+    full: false,
+    website: false,
+    gmb: false,
+    instagram: false,
+    linkedin: false,
+    linkedin_personal: false,
+    visual: false,
+    ads: false,
+    ui_ux: false,
+  });
 
   // ── Generic report runner ──
   const runReport = async ({
@@ -123,52 +209,70 @@ export default function Dashboard() {
     fallbackFilename,
   }) => {
     if (userProfile?.is_suspended) {
-        alert('Your account is suspended. Reason: ' + (userProfile.suspension_reason || 'Contact support'));
-        return;
+      alert(
+        "Your account is suspended. Reason: " +
+          (userProfile.suspension_reason || "Contact support"),
+      );
+      return;
     }
     // Capture only approved final settings; payload contents never enter telemetry.
     const analyticsStarted = performance.now();
-    trackEvent('form_started', {}, tabKey);
-    trackEvent('audit_requested', { settings: analyticsSettings(payload) }, tabKey);
-    setReport((prev) => ({ ...prev, loading: true, error: '', html: '', data: null }));
+    trackEvent("form_started", {}, tabKey);
+    trackEvent(
+      "audit_requested",
+      { settings: analyticsSettings(payload) },
+      tabKey,
+    );
+    setReport((prev) => ({
+      ...prev,
+      loading: true,
+      error: "",
+      html: "",
+      data: null,
+    }));
     setPdfReady((p) => ({ ...p, [tabKey]: false }));
     setPdfLoading((p) => ({ ...p, [tabKey]: false }));
     pdfBlobs.current[tabKey] = null;
-    pdfFilenames.current[tabKey] = '';
+    pdfFilenames.current[tabKey] = "";
 
     // Generate dynamic filename
-    let brandName = '';
+    let brandName = "";
     if (payload && !(payload instanceof FormData)) {
-      brandName = payload.company_name || payload.ig_username || payload.gmb_company_name;
+      brandName =
+        payload.company_name || payload.ig_username || payload.gmb_company_name;
       if (!brandName && payload.domain) {
-        brandName = payload.domain.replace(/^https?:\/\//, '').split('/')[0];
+        brandName = payload.domain.replace(/^https?:\/\//, "").split("/")[0];
       } else if (!brandName && payload.linkedin_company_url) {
         const match = payload.linkedin_company_url.match(/company\/([^/]+)/);
-        brandName = match ? match[1] : '';
+        brandName = match ? match[1] : "";
       } else if (!brandName && payload.linkedin_url) {
         const match = payload.linkedin_url.match(/(?:company|in)\/([^/]+)/);
-        brandName = match ? match[1] : '';
+        brandName = match ? match[1] : "";
       }
     }
-    
+
     if (brandName) {
-      brandName = brandName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      brandName = brandName.replace(/[^a-z0-9]/gi, "_").toLowerCase();
     }
-    
-    const finalFilename = brandName 
-      ? fallbackFilename.replace('renoweb_', `${brandName}_`) 
-      : fallbackFilename.replace('renoweb_', 'audit_');
+
+    const finalFilename = brandName
+      ? fallbackFilename.replace("renoweb_", `${brandName}_`)
+      : fallbackFilename.replace("renoweb_", "audit_");
 
     try {
       const data = await apiFn(payload);
       // The browser received a response; server report history remains separate.
       // Signal only tool metadata; feedback failure cannot affect the completed audit.
       setFeedbackCompletion({ module: tabKey, at: Date.now() });
-      trackEvent('audit_received', { duration_ms: performance.now() - analyticsStarted }, tabKey);
-      const html = data.html_report || data.html || '';
-      const ts   = now();
+      trackEvent(
+        "audit_received",
+        { duration_ms: performance.now() - analyticsStarted },
+        tabKey,
+      );
+      const html = data.html_report || data.html || "";
+      const ts = now();
 
-      setReport({ html, data, loading: false, error: '', timestamp: ts });
+      setReport({ html, data, loading: false, error: "", timestamp: ts });
 
       // Kick off PDF generation
       setPdfLoading((p) => ({ ...p, [tabKey]: true }));
@@ -179,17 +283,17 @@ export default function Dashboard() {
         setPdfReady((p) => ({ ...p, [tabKey]: true }));
       } catch (pdfErr) {
         // PDF failure is non-fatal — user can still read the HTML preview
-        console.warn('PDF generation failed:', pdfErr.message);
+        console.warn("PDF generation failed:", pdfErr.message);
       } finally {
         setPdfLoading((p) => ({ ...p, [tabKey]: false }));
       }
     } catch (err) {
       // Error messages can contain customer input; record only the failure category.
-      trackEvent('audit_failed', { failure: 'request_failed' }, tabKey);
+      trackEvent("audit_failed", { failure: "request_failed" }, tabKey);
       setReport((prev) => ({
         ...prev,
         loading: false,
-        error: err.message || 'Something went wrong. Please try again.',
+        error: err.message || "Something went wrong. Please try again.",
       }));
     }
   };
@@ -198,111 +302,131 @@ export default function Dashboard() {
 
   const handleFullSubmit = (payload) =>
     runReport({
-      tabKey: 'full',
+      tabKey: "full",
       setReport: setFullReport,
       apiFn: generateFullReport,
       payload,
-      fallbackFilename: 'renoweb_full_report.pdf',
+      fallbackFilename: "renoweb_full_report.pdf",
     });
 
   const handleWebsiteSubmit = (payload) =>
     runReport({
-      tabKey: 'website',
+      tabKey: "website",
       setReport: setWebsiteReport,
       apiFn: generateWebsiteReport,
       payload,
-      fallbackFilename: 'renoweb_website_report.pdf',
+      fallbackFilename: "renoweb_website_report.pdf",
     });
 
   const handleGmbSubmit = (payload) =>
     runReport({
-      tabKey: 'gmb',
+      tabKey: "gmb",
       setReport: setGmbReport,
       apiFn: generateGmbReport,
       payload,
-      fallbackFilename: 'renoweb_gmb_audit_report.pdf',
+      fallbackFilename: "renoweb_gmb_audit_report.pdf",
     });
 
   const handleInstagramSubmit = (payload) =>
     runReport({
-      tabKey: 'instagram',
+      tabKey: "instagram",
       setReport: setInstagramReport,
       apiFn: generateInstagramReport,
       payload,
-      fallbackFilename: 'renoweb_instagram_report.pdf',
+      fallbackFilename: "renoweb_instagram_report.pdf",
     });
 
   const handleLinkedInSubmit = (payload) =>
     runReport({
-      tabKey: 'linkedin',
+      tabKey: "linkedin",
       setReport: setLinkedinReport,
       apiFn: generateLinkedInReport,
       payload,
-      fallbackFilename: 'renoweb_linkedin_report.pdf',
+      fallbackFilename: "renoweb_linkedin_report.pdf",
     });
 
   const handleLinkedInPersonalSubmit = (payload) =>
     runReport({
-      tabKey: 'linkedin_personal',
+      tabKey: "linkedin_personal",
       setReport: setLinkedinPersonalReport,
       apiFn: generateLinkedInPersonalReport,
       payload,
-      fallbackFilename: 'renoweb_linkedin_personal_report.pdf',
+      fallbackFilename: "renoweb_linkedin_personal_report.pdf",
     });
 
   const handleVisualSubmit = (formData) =>
     runReport({
-      tabKey: 'visual',
+      tabKey: "visual",
       setReport: setVisualReport,
       apiFn: generateVisualReport,
       payload: formData,
-      fallbackFilename: 'renoweb_visual_brand_report.pdf',
+      fallbackFilename: "renoweb_visual_brand_report.pdf",
     });
 
   const handleUiUxSubmit = async (payload) => {
     if (userProfile?.is_suspended) {
-        alert('Your account is suspended. Reason: ' + (userProfile.suspension_reason || 'Contact support'));
-        return;
+      alert(
+        "Your account is suspended. Reason: " +
+          (userProfile.suspension_reason || "Contact support"),
+      );
+      return;
     }
-    const tabKey = 'ui_ux';
+    const tabKey = "ui_ux";
     // Observational lifecycle only: these statements never modify the request.
-    const analyticsModule = tabKey === 'ui_ux' ? 'ui-ux' : tabKey;
+    const analyticsModule = tabKey === "ui_ux" ? "ui-ux" : tabKey;
     const analyticsStarted = performance.now();
-    trackEvent('form_started', {}, analyticsModule);
-    trackEvent('audit_requested', { settings: analyticsSettings(payload) }, analyticsModule);
-    setUiUxReport((prev) => ({ ...prev, loading: true, error: '', html: '', data: null }));
-    setUiUxProgress('Starting audit...');
+    trackEvent("form_started", {}, analyticsModule);
+    trackEvent(
+      "audit_requested",
+      { settings: analyticsSettings(payload) },
+      analyticsModule,
+    );
+    setUiUxReport((prev) => ({
+      ...prev,
+      loading: true,
+      error: "",
+      html: "",
+      data: null,
+    }));
+    setUiUxProgress("Starting audit...");
     setPdfReady((p) => ({ ...p, [tabKey]: false }));
     setPdfLoading((p) => ({ ...p, [tabKey]: false }));
     pdfBlobs.current[tabKey] = null;
-    pdfFilenames.current[tabKey] = '';
+    pdfFilenames.current[tabKey] = "";
 
-    const fallbackFilename = 'renoweb_ui_ux_report.pdf';
-    
-    let brandName = payload.url || payload.domain || '';
+    const fallbackFilename = "renoweb_ui_ux_report.pdf";
+
+    let brandName = payload.url || payload.domain || "";
     // Extract domain from url if possible
     try {
-      if (brandName.startsWith('http')) {
-        brandName = new URL(brandName).hostname.replace('www.', '');
+      if (brandName.startsWith("http")) {
+        brandName = new URL(brandName).hostname.replace("www.", "");
       }
-    } catch(e) {}
-    if (brandName) brandName = brandName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    
-    const finalFilename = brandName 
-      ? fallbackFilename.replace('renoweb_', `${brandName}_`) 
+    } catch (e) {}
+    if (brandName)
+      brandName = brandName.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+
+    const finalFilename = brandName
+      ? fallbackFilename.replace("renoweb_", `${brandName}_`)
       : fallbackFilename;
 
     try {
-      const data = await generateUiUxAudit(payload, (msg) => setUiUxProgress(msg));
+      const data = await generateUiUxAudit(payload, (msg) =>
+        setUiUxProgress(msg),
+      );
       // Labelled as a browser result, not a guaranteed server completion.
       // Signal only tool metadata; feedback failure cannot affect the completed audit.
       setFeedbackCompletion({ module: tabKey, at: Date.now() });
-      trackEvent('audit_received', { duration_ms: performance.now() - analyticsStarted }, analyticsModule);
-      const html = data.html_report || data.html || '';
+      trackEvent(
+        "audit_received",
+        { duration_ms: performance.now() - analyticsStarted },
+        analyticsModule,
+      );
+      const html = data.html_report || data.html || "";
       const ts = now();
 
-      setUiUxReport({ html, data, loading: false, error: '', timestamp: ts });
-      setUiUxProgress('');
+      setUiUxReport({ html, data, loading: false, error: "", timestamp: ts });
+      setUiUxProgress("");
 
       setPdfLoading((p) => ({ ...p, [tabKey]: true }));
       try {
@@ -311,43 +435,68 @@ export default function Dashboard() {
         pdfFilenames.current[tabKey] = finalFilename;
         setPdfReady((p) => ({ ...p, [tabKey]: true }));
       } catch (pdfErr) {
-        console.warn('PDF generation failed:', pdfErr.message);
+        console.warn("PDF generation failed:", pdfErr.message);
       } finally {
         setPdfLoading((p) => ({ ...p, [tabKey]: false }));
       }
     } catch (err) {
       // Preserve the existing pipeline error flow without sending its message.
-      trackEvent('audit_failed', { failure: 'request_failed' }, analyticsModule);
-      setUiUxReport((prev) => ({ ...prev, loading: false, error: err.message || 'Audit failed.' }));
-      setUiUxProgress('');
+      trackEvent(
+        "audit_failed",
+        { failure: "request_failed" },
+        analyticsModule,
+      );
+      setUiUxReport((prev) => ({
+        ...prev,
+        loading: false,
+        error: err.message || "Audit failed.",
+      }));
+      setUiUxProgress("");
     }
   };
 
   const handleAdsSubmit = async (platform, payload) => {
     if (userProfile?.is_suspended) {
-        alert('Your account is suspended. Reason: ' + (userProfile.suspension_reason || 'Contact support'));
-        return;
+      alert(
+        "Your account is suspended. Reason: " +
+          (userProfile.suspension_reason || "Contact support"),
+      );
+      return;
     }
-    const tabKey = 'ads';
+    const tabKey = "ads";
     // Observational lifecycle only: these statements never modify the request.
-    const analyticsModule = tabKey === 'ui_ux' ? 'ui-ux' : tabKey;
+    const analyticsModule = tabKey === "ui_ux" ? "ui-ux" : tabKey;
     const analyticsStarted = performance.now();
-    trackEvent('form_started', {}, analyticsModule);
-    trackEvent('audit_requested', { settings: analyticsSettings(payload) }, analyticsModule);
-    setAdsReport((prev) => ({ ...prev, loading: true, error: '', html: '', data: null }));
-    setAdsProgress('Starting audit...');
+    trackEvent("form_started", {}, analyticsModule);
+    trackEvent(
+      "audit_requested",
+      { settings: analyticsSettings(payload) },
+      analyticsModule,
+    );
+    setAdsReport((prev) => ({
+      ...prev,
+      loading: true,
+      error: "",
+      html: "",
+      data: null,
+    }));
+    setAdsProgress("Starting audit...");
     setPdfReady((p) => ({ ...p, [tabKey]: false }));
     setPdfLoading((p) => ({ ...p, [tabKey]: false }));
     pdfBlobs.current[tabKey] = null;
-    pdfFilenames.current[tabKey] = '';
+    pdfFilenames.current[tabKey] = "";
 
     const fallbackFilename = `renoweb_${platform}_ads_report.pdf`;
     const apiFn = generateAdsLibraryReport;
-    
-    let brandName = payload.google_domain || payload.meta_query || '';
-    if (brandName) brandName = brandName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    const finalFilename = brandName 
-      ? fallbackFilename.replace(`renoweb_${platform}`, `${brandName}_${platform}`) 
+
+    let brandName = payload.google_domain || payload.meta_query || "";
+    if (brandName)
+      brandName = brandName.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+    const finalFilename = brandName
+      ? fallbackFilename.replace(
+          `renoweb_${platform}`,
+          `${brandName}_${platform}`,
+        )
       : fallbackFilename.replace(`renoweb_${platform}`, `audit_${platform}`);
 
     try {
@@ -355,12 +504,21 @@ export default function Dashboard() {
       // Labelled as a browser result, not a guaranteed server completion.
       // Signal only tool metadata; feedback failure cannot affect the completed audit.
       setFeedbackCompletion({ module: tabKey, at: Date.now() });
-      trackEvent('audit_received', { duration_ms: performance.now() - analyticsStarted }, analyticsModule);
-      const html = data.ads_library_data?.full_html_report || data.ads_library_data?.html_report || data.html_report || data.html || '';
+      trackEvent(
+        "audit_received",
+        { duration_ms: performance.now() - analyticsStarted },
+        analyticsModule,
+      );
+      const html =
+        data.ads_library_data?.full_html_report ||
+        data.ads_library_data?.html_report ||
+        data.html_report ||
+        data.html ||
+        "";
       const ts = now();
 
-      setAdsReport({ html, data, loading: false, error: '', timestamp: ts });
-      setAdsProgress('');
+      setAdsReport({ html, data, loading: false, error: "", timestamp: ts });
+      setAdsProgress("");
 
       setPdfLoading((p) => ({ ...p, [tabKey]: true }));
       try {
@@ -369,19 +527,23 @@ export default function Dashboard() {
         pdfFilenames.current[tabKey] = finalFilename;
         setPdfReady((p) => ({ ...p, [tabKey]: true }));
       } catch (pdfErr) {
-        console.warn('PDF generation failed:', pdfErr.message);
+        console.warn("PDF generation failed:", pdfErr.message);
       } finally {
         setPdfLoading((p) => ({ ...p, [tabKey]: false }));
       }
     } catch (err) {
       // Preserve the existing pipeline error flow without sending its message.
-      trackEvent('audit_failed', { failure: 'request_failed' }, analyticsModule);
+      trackEvent(
+        "audit_failed",
+        { failure: "request_failed" },
+        analyticsModule,
+      );
       setAdsReport((prev) => ({
         ...prev,
         loading: false,
-        error: err.message || 'Something went wrong. Please try again.',
+        error: err.message || "Something went wrong. Please try again.",
       }));
-      setAdsProgress('');
+      setAdsProgress("");
     }
   };
 
@@ -389,39 +551,144 @@ export default function Dashboard() {
 
   const handleDownload = (tabKey) => {
     const blob = pdfBlobs.current[tabKey];
-    const filename = pdfFilenames.current[tabKey] || 'audit_report.pdf';
+    const filename = pdfFilenames.current[tabKey] || "audit_report.pdf";
     if (blob) {
       downloadBlob(blob, filename);
       // Record a real download invocation; preparing a PDF does not count.
-      trackEvent('export_downloaded', { control: 'download_pdf' }, tabKey === 'ui_ux' ? 'ui-ux' : tabKey);
+      trackEvent(
+        "export_downloaded",
+        { control: "download_pdf" },
+        tabKey === "ui_ux" ? "ui-ux" : tabKey,
+      );
     }
   };
 
   // ── Dismiss error handlers ──
 
   const dismissError = (setReport) =>
-    setReport((prev) => ({ ...prev, error: '' }));
+    setReport((prev) => ({ ...prev, error: "" }));
 
   // ── Active tab data resolver ──
 
   const tabData = {
-    full:      { report: fullReport,      setReport: setFullReport,      label: 'Full Report',       pdfKey: 'full',      onSubmit: handleFullSubmit },
-    website:   { report: websiteReport,   setReport: setWebsiteReport,   label: 'Website Anatomy',   pdfKey: 'website',   onSubmit: handleWebsiteSubmit },
-    gmb:       { report: gmbReport,       setReport: setGmbReport,       label: 'GMB Audit',         pdfKey: 'gmb',       onSubmit: handleGmbSubmit },
-    instagram: { report: instagramReport, setReport: setInstagramReport, label: 'Instagram Audit',   pdfKey: 'instagram', onSubmit: handleInstagramSubmit },
-    linkedin:  { report: linkedinReport,  setReport: setLinkedinReport,  label: 'LinkedIn Audit',    pdfKey: 'linkedin',  onSubmit: handleLinkedInSubmit },
-    linkedin_personal: { report: linkedinPersonalReport, setReport: setLinkedinPersonalReport, label: 'LinkedIn Personal', pdfKey: 'linkedin_personal', onSubmit: handleLinkedInPersonalSubmit },
-    visual:    { report: visualReport,    setReport: setVisualReport,    label: 'Visual Brand Match',pdfKey: 'visual',    onSubmit: handleVisualSubmit },
-    ads:       { report: adsReport,       setReport: setAdsReport,       label: 'Ads Audit',         pdfKey: 'ads',       onSubmit: handleAdsSubmit },
-    'ui-ux':   { report: uiUxReport,      setReport: setUiUxReport,      label: 'UI/UX Audit',       pdfKey: 'ui_ux',     onSubmit: handleUiUxSubmit },
+    full: {
+      report: fullReport,
+      setReport: setFullReport,
+      label: "Full Report",
+      pdfKey: "full",
+      onSubmit: handleFullSubmit,
+    },
+    website: {
+      report: websiteReport,
+      setReport: setWebsiteReport,
+      label: "Website Anatomy",
+      pdfKey: "website",
+      onSubmit: handleWebsiteSubmit,
+    },
+    gmb: {
+      report: gmbReport,
+      setReport: setGmbReport,
+      label: "GMB Audit",
+      pdfKey: "gmb",
+      onSubmit: handleGmbSubmit,
+    },
+    instagram: {
+      report: instagramReport,
+      setReport: setInstagramReport,
+      label: "Instagram Audit",
+      pdfKey: "instagram",
+      onSubmit: handleInstagramSubmit,
+    },
+    linkedin: {
+      report: linkedinReport,
+      setReport: setLinkedinReport,
+      label: "LinkedIn Audit",
+      pdfKey: "linkedin",
+      onSubmit: handleLinkedInSubmit,
+    },
+    linkedin_personal: {
+      report: linkedinPersonalReport,
+      setReport: setLinkedinPersonalReport,
+      label: "LinkedIn Personal",
+      pdfKey: "linkedin_personal",
+      onSubmit: handleLinkedInPersonalSubmit,
+    },
+    visual: {
+      report: visualReport,
+      setReport: setVisualReport,
+      label: "Visual Brand Match",
+      pdfKey: "visual",
+      onSubmit: handleVisualSubmit,
+    },
+    ads: {
+      report: adsReport,
+      setReport: setAdsReport,
+      label: "Ads Audit",
+      pdfKey: "ads",
+      onSubmit: handleAdsSubmit,
+    },
+    "ui-ux": {
+      report: uiUxReport,
+      setReport: setUiUxReport,
+      label: "UI/UX Audit",
+      pdfKey: "ui_ux",
+      onSubmit: handleUiUxSubmit,
+    },
   };
 
   const current = tabData[activeTab];
 
+  // ========================================================================
+  // EXISTING AUDIT RECOVERY
+  // Open a settled server copy in the matching existing report panel. Recovery
+  // does not invoke generation or reserve again. PDF conversion uses the already
+  // settled HTML, exactly as for a newly received report, with no extra billing.
+  // ========================================================================
+  /** Restore the existing result shape, including Ads' nested report document. */
+  const handleCreditRecovery = async (module, data) => {
+    const tab = module === "ui_ux" ? "ui-ux" : module;
+    const target = tabData[tab];
+    if (!target) return;
+    const html =
+      data.ads_library_data?.full_html_report ||
+      data.ads_library_data?.html_report ||
+      data.html_report ||
+      "";
+    // Invalidate the previous PDF before changing this module's displayed HTML;
+    // otherwise Download could export a different earlier report for the same tab.
+    const pdfKey = target.pdfKey;
+    pdfBlobs.current[pdfKey] = null;
+    pdfFilenames.current[pdfKey] = "";
+    setPdfReady((previous) => ({ ...previous, [pdfKey]: false }));
+    setPdfLoading((previous) => ({ ...previous, [pdfKey]: true }));
+    target.setReport({
+      html,
+      data,
+      loading: false,
+      error: "",
+      timestamp: now(),
+    });
+    setActiveTab(tab);
+    try {
+      const filename = `audit_${module}_report.pdf`;
+      const blob = await convertHtmlToPdf(html, filename);
+      pdfBlobs.current[pdfKey] = blob;
+      pdfFilenames.current[pdfKey] = filename;
+      setPdfReady((previous) => ({ ...previous, [pdfKey]: true }));
+    } catch (failure) {
+      // PDF availability is independent of the settled audit; preserve its HTML.
+      console.warn("Recovered report PDF generation failed:", failure.message);
+    } finally {
+      setPdfLoading((previous) => ({ ...previous, [pdfKey]: false }));
+    }
+  };
+
   // ── Determine layout phase ──
   // Phase 1: no report generated for current tab → sidebar + full-width form
   // Phase 2: report exists or loading → horizontal tabs + 2-column layout
-  const hasReport = current ? (current.report.html || current.report.data || current.report.loading) : false;
+  const hasReport = current
+    ? current.report.html || current.report.data || current.report.loading
+    : false;
 
   // ── Form renderer ──
   const renderForm = () => (
@@ -431,7 +698,7 @@ export default function Dashboard() {
       id={`tabpanel-${activeTab}`}
       aria-labelledby={`tab-${activeTab}`}
     >
-      {activeTab === 'full' && (
+      {activeTab === "full" && (
         <FullReportForm
           loading={fullReport.loading}
           error={fullReport.error}
@@ -439,7 +706,7 @@ export default function Dashboard() {
           onSubmit={handleFullSubmit}
         />
       )}
-      {activeTab === 'website' && (
+      {activeTab === "website" && (
         <WebsiteReportForm
           loading={websiteReport.loading}
           error={websiteReport.error}
@@ -447,7 +714,7 @@ export default function Dashboard() {
           onSubmit={handleWebsiteSubmit}
         />
       )}
-      {activeTab === 'gmb' && (
+      {activeTab === "gmb" && (
         <GmbReportForm
           loading={gmbReport.loading}
           error={gmbReport.error}
@@ -455,7 +722,7 @@ export default function Dashboard() {
           onSubmit={handleGmbSubmit}
         />
       )}
-      {activeTab === 'instagram' && (
+      {activeTab === "instagram" && (
         <InstagramReportForm
           loading={instagramReport.loading}
           error={instagramReport.error}
@@ -463,7 +730,7 @@ export default function Dashboard() {
           onSubmit={handleInstagramSubmit}
         />
       )}
-      {activeTab === 'linkedin' && (
+      {activeTab === "linkedin" && (
         <LinkedInReportForm
           loading={linkedinReport.loading}
           error={linkedinReport.error}
@@ -471,7 +738,7 @@ export default function Dashboard() {
           onSubmit={handleLinkedInSubmit}
         />
       )}
-      {activeTab === 'linkedin_personal' && (
+      {activeTab === "linkedin_personal" && (
         <LinkedInPersonalForm
           loading={linkedinPersonalReport.loading}
           error={linkedinPersonalReport.error}
@@ -479,7 +746,7 @@ export default function Dashboard() {
           onSubmit={handleLinkedInPersonalSubmit}
         />
       )}
-      {activeTab === 'visual' && (
+      {activeTab === "visual" && (
         <VisualBrandForm
           loading={visualReport.loading}
           error={visualReport.error}
@@ -487,7 +754,7 @@ export default function Dashboard() {
           onSubmit={handleVisualSubmit}
         />
       )}
-      {activeTab === 'ads' && (
+      {activeTab === "ads" && (
         <AdsAuditForm
           loading={adsReport.loading}
           error={adsReport.error}
@@ -496,7 +763,7 @@ export default function Dashboard() {
           onSubmit={handleAdsSubmit}
         />
       )}
-      {activeTab === 'ui-ux' && (
+      {activeTab === "ui-ux" && (
         <UiUxAuditForm
           loading={uiUxReport.loading}
           error={uiUxReport.error}
@@ -512,58 +779,92 @@ export default function Dashboard() {
   if (!authChecked) return null;
 
   return (
-    <>
-      <Navbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
+    <PricingProvider>
+      {/* A persistent header control keeps wallet state across module changes.
+          It must not be a sibling of the form inside horizontal .main-content. */}
+      <Navbar
+        onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        accountControls={<CreditBalance onRecovered={handleCreditRecovery} />}
+      />
 
       {/* Module scope lets observers resolve controls without reading their text. */}
-      <div data-analytics-module={activeTab} className={`dashboard-layout ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+      <div
+        data-analytics-module={activeTab}
+        className={`dashboard-layout ${isSidebarOpen ? "sidebar-open" : ""}`}
+      >
         {/* Overlay for mobile sidebar */}
         {isSidebarOpen && (
-          <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)} />
+          <div
+            className="sidebar-overlay"
+            onClick={() => setIsSidebarOpen(false)}
+          />
         )}
 
         {/* ── Left Sidebar Navigation ── */}
-        <TabNav 
-          activeTab={activeTab} 
+        <TabNav
+          activeTab={activeTab}
           onTabChange={(id) => {
             setActiveTab(id);
             setIsSidebarOpen(false);
-          }} 
-          onLogout={handleLogout} 
+          }}
+          onLogout={handleLogout}
         />
 
         {/* ── Main Content (Form) ── */}
         <main className="main-content" key={activeTab}>
-          <div className={`form-panel ${userProfile?.is_suspended ? 'suspended-form' : ''}`}>
+          <div
+            className={`form-panel ${userProfile?.is_suspended ? "suspended-form" : ""}`}
+          >
             {userProfile?.is_suspended && (
-                <div style={{ background: '#fef2f2', border: '1px solid #ef4444', color: '#991b1b', padding: '16px', borderRadius: '8px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '20px' }}>⚠️</span>
-                    <div>
-                        <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 600 }}>Your account has been suspended</h4>
-                        <p style={{ margin: 0, fontSize: '14px', marginTop: '4px' }}>Reason: {userProfile.suspension_reason || 'Please contact support.'}</p>
-                    </div>
+              <div
+                style={{
+                  background: "#fef2f2",
+                  border: "1px solid #ef4444",
+                  color: "#991b1b",
+                  padding: "16px",
+                  borderRadius: "8px",
+                  marginBottom: "24px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                }}
+              >
+                <span style={{ fontSize: "20px" }}>⚠️</span>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: "15px", fontWeight: 600 }}>
+                    Your account has been suspended
+                  </h4>
+                  <p style={{ margin: 0, fontSize: "14px", marginTop: "4px" }}>
+                    Reason:{" "}
+                    {userProfile.suspension_reason || "Please contact support."}
+                  </p>
                 </div>
+              </div>
             )}
             {renderForm()}
           </div>
         </main>
 
         {/* ── Right Utility Panel (Preview/Info) ── */}
-        <RightPanel 
+        <RightPanel
           activeTab={activeTab}
           hasReport={hasReport}
           loading={current?.report?.loading || false}
           htmlReport={current?.report?.html || null}
           reportData={current?.report?.data || null}
-          reportLabel={current?.label || 'Profile'}
+          reportLabel={current?.label || "Profile"}
           timestamp={current?.report?.timestamp || null}
-          pdfBlob={current && pdfReady[current.pdfKey] ? pdfBlobs.current[current.pdfKey] : null}
+          pdfBlob={
+            current && pdfReady[current.pdfKey]
+              ? pdfBlobs.current[current.pdfKey]
+              : null
+          }
           pdfLoading={current ? pdfLoading[current.pdfKey] : false}
           onDownload={() => current && handleDownload(current.pdfKey)}
         />
 
         {/* ── Support Floating Button & Modal ── */}
-        <button 
+        <button
           data-analytics-control="support_open"
           onClick={() => setIsSupportOpen(true)}
           className="fixed bottom-8 right-8 z-[100] p-4 bg-gradient-to-r from-blue-700 to-blue-600 text-white rounded-full shadow-2xl hover:shadow-[0_20px_40px_rgba(37,99,235,0.3)] transition-all hover:-translate-y-1 flex items-center justify-center group"
@@ -576,11 +877,28 @@ export default function Dashboard() {
         </button>
 
         {/* Pause reminders during any pipeline, PDF work, or an open support dialog. */}
-        <FeedbackWidget completion={feedbackCompletion}
-          busy={[fullReport, websiteReport, gmbReport, instagramReport, linkedinReport, linkedinPersonalReport, visualReport, adsReport, uiUxReport].some(report => report.loading) || Object.values(pdfLoading).some(Boolean)}
-          blocked={isSupportOpen} />
-        {isSupportOpen && <SupportModal onClose={() => setIsSupportOpen(false)} />}
+        <FeedbackWidget
+          completion={feedbackCompletion}
+          busy={
+            [
+              fullReport,
+              websiteReport,
+              gmbReport,
+              instagramReport,
+              linkedinReport,
+              linkedinPersonalReport,
+              visualReport,
+              adsReport,
+              uiUxReport,
+            ].some((report) => report.loading) ||
+            Object.values(pdfLoading).some(Boolean)
+          }
+          blocked={isSupportOpen}
+        />
+        {isSupportOpen && (
+          <SupportModal onClose={() => setIsSupportOpen(false)} />
+        )}
       </div>
-    </>
+    </PricingProvider>
   );
 }

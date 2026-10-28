@@ -9,6 +9,8 @@
 import FormField from '../components/FormField';
 import ErrorBanner from '../components/ErrorBanner';
 import AnimatedSubmitButton from '../components/AnimatedSubmitButton';
+// Company URLs use company pricing; the shared hint mirrors the button mapping.
+import PostCreditRate from '../features/credits/pricing/PostCreditRate';
 import { useSessionState } from '../hooks/useSessionState';
 
 const POSTED_OPTIONS = [
@@ -67,6 +69,7 @@ export default function LinkedInPersonalForm({ loading, error, onDismissError, o
           <FormField label="Posts to Analyze" htmlFor="lip-results-limit">
             <input
               id="lip-results-limit" data-analytics-setting="results_limit"
+              aria-describedby="lip-post-price"
               className="form-input"
               type="number"
               min={1}
@@ -74,6 +77,8 @@ export default function LinkedInPersonalForm({ loading, error, onDismissError, o
               value={fields.results_limit}
               onChange={set('results_limit')}
             />
+            {/* Explain the effective per-post rate, including the chosen window. */}
+            <PostCreditRate id="lip-post-price" module="linkedin_personal" payload={fields} />
           </FormField>
 
           <FormField label="Time Range" htmlFor="lip-posted-limit">
@@ -90,7 +95,10 @@ export default function LinkedInPersonalForm({ loading, error, onDismissError, o
           </FormField>
         </div>
 
-        <AnimatedSubmitButton 
+        {/* Display-only pricing follows this audit and its current settings. */}
+        <AnimatedSubmitButton
+          pricingModule="linkedin_personal"
+          pricingInput={fields}
           loading={loading}
           disabled={!fields.linkedin_url.trim()}
           defaultText="Generate Personal Audit"

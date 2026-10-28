@@ -13,6 +13,9 @@ import AnalyticsDashboard from './AnalyticsDashboard';
 import TicketDesk from './TicketDesk';
 // The feedback inbox owns paginated reads/errors independently of account tools.
 import FeedbackInbox from './FeedbackInbox';
+// Expanded account rows load paginated per-run consumption independently of
+// user management and keep the existing report-type count breakdown intact.
+import UserRunHistory from './UserRunHistory';
 import styles from './admin.module.css';
 import React, { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
@@ -309,6 +312,7 @@ export default function AdminPanel({ initialSection = 'users' }) {
                 </thead>
                 <tbody>
                   {users.map((user, idx) => (
+                    <React.Fragment key={user.username}>
                     <tr key={idx} style={{ borderBottom: '1px solid rgba(2,61,187,0.04)', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background='rgba(48,143,239,0.02)'} onMouseOut={e => e.currentTarget.style.background='transparent'}>
                       <td style={{ padding: '16px 24px', fontWeight: 500, color: 'var(--color-dark)' }}>{user.username}</td>
                       <td style={{ padding: '16px 24px', fontSize: '14px', color: 'rgba(25,25,25,0.7)' }}>{user.email}</td>
@@ -325,6 +329,8 @@ export default function AdminPanel({ initialSection = 'users' }) {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                           <button
                             onClick={() => toggleUserExpansion(user.username)}
+                            aria-expanded={!!expandedUsers[user.username]}
+                            aria-label={`View report history and credits consumed for ${user.username}`}
                             style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', outline: 'none' }}
                           >
                             <span className="admin-reports-label text-xs font-bold uppercase" style={{ color: 'var(--color-text-muted)' }}>TOTAL</span>
@@ -365,10 +371,14 @@ export default function AdminPanel({ initialSection = 'users' }) {
                         )}
                       </td>
                     </tr>
+                    {/* Use all five account columns so per-run history remains
+                        readable rather than squeezing into the count column. */}
+                    {expandedUsers[user.username] && <tr><td colSpan={5} style={{ padding: 0 }}><UserRunHistory key={user.username} username={user.username} /></td></tr>}
+                    </React.Fragment>
                   ))}
                   {users.length === 0 && (
                     <tr>
-                      <td colSpan="4" style={{ padding: '48px 24px', textAlign: 'center', color: 'rgba(25,25,25,0.4)', fontWeight: 500 }}>No users found.</td>
+                      <td colSpan="5" style={{ padding: '48px 24px', textAlign: 'center', color: 'rgba(25,25,25,0.4)', fontWeight: 500 }}>No users found.</td>
                     </tr>
                   )}
                 </tbody>

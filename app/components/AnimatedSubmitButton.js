@@ -3,6 +3,10 @@
 import { useState, useEffect } from 'react';
 import { Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+// Display estimates use dashboard-loaded rules only; this component never quotes
+// or supplies prices to billing. Form validation/disabled behavior stays intact.
+import { useCreditEstimate } from '@/app/features/credits/pricing/PricingProvider';
+import priceStyles from '@/app/features/credits/pricing/PriceLabel.module.css';
 
 const LOADING_PHRASES = [
   "Analyzing...",
@@ -10,8 +14,10 @@ const LOADING_PHRASES = [
   "Finishing up..."
 ];
 
-export default function AnimatedSubmitButton({ loading, disabled, defaultText = "Generate Report" }) {
+/** Render the existing audit action with an optional locally computed credit hint. */
+export default function AnimatedSubmitButton({ loading, disabled, defaultText = "Generate Report", pricingModule, pricingInput }) {
   const [phraseIndex, setPhraseIndex] = useState(0);
+  const price = useCreditEstimate(pricingModule, pricingInput);
 
   useEffect(() => {
     let interval;
@@ -50,10 +56,15 @@ export default function AnimatedSubmitButton({ loading, disabled, defaultText = 
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
-              className="btn-inner-content"
+              className={`btn-inner-content ${priceStyles.content}`}
             >
-              <Sparkles size={18} strokeWidth={2.5} />
-              {defaultText}
+              <span className={priceStyles.action}>
+                <Sparkles size={18} strokeWidth={2.5} />
+                {defaultText}
+              </span>
+              {/* The title explains display-only estimates without introducing
+                  internal billing steps into the product's normal action flow. */}
+              {price && <span className={priceStyles.price} title={price.title}>{price.label}</span>}
             </motion.div>
           ) : (
             <motion.div

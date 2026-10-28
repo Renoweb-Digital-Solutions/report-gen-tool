@@ -1,5 +1,8 @@
 /** Existing report API adapters; cookie transport is shared with features/auth/api.js. */
 import { browserFetch, clearSessionHint } from '@/app/features/auth/api';
+// Billing transports preserve one request UUID across retries and recover settled
+// reports through cookie-protected jobs; no wallet credential enters this module.
+import { creditReport, creditStream } from '@/app/features/credits/api';
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
 
 /**
@@ -125,13 +128,8 @@ export async function forgotPasswordReset(email, otp, newPassword, confirmPasswo
  * Returns { html_report, ... }
  */
 export async function generateFullReport(payload) {
-  const res = await authFetch(`${BASE_URL}/report/generate-full`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error(await extractError(res));
-  return res.json();
+  // Reserve/settle on FastAPI and recover this same audit after transport failure.
+  return creditReport('/report/generate-full', payload);
 }
 
 /**
@@ -192,81 +190,24 @@ export async function matchFaqs(query, faqs) {
  * Generate a Website Anatomy (SEO) Report.
  */
 export async function generateWebsiteReport(payload) {
-  const res = await authFetch(`${BASE_URL}/report/generate-seo`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error(await extractError(res));
-  return res.json();
+  // Reserve/settle on FastAPI and recover this same audit after transport failure.
+  return creditReport('/report/generate-seo', payload);
 }
 
 /**
  * Generate an Instagram Audit Report.
  */
-export function generateInstagramReport(payload) {
-  const MAX_RETRIES = 3;
-  let attempt = 0;
-  let settled = false;
-
-  return new Promise((resolve, reject) => {
-    const connect = () => {
-      attempt++;
-      const wsUrl = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-instagram';
-      const ws = new WebSocket(wsUrl);
-
-      ws.onopen = () => {
-        ws.send(JSON.stringify(payload));
-      };
-
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === 'result') {
-            settled = true;
-            ws.close();
-            resolve(data);
-          } else if (data.type === 'error') {
-            settled = true;
-            ws.close();
-            reject(new Error(data.message || 'Error from backend'));
-          }
-        } catch (err) {
-          console.error('WebSocket message parse error:', err);
-        }
-      };
-
-      ws.onerror = () => {
-        if (settled) return;
-        if (attempt < MAX_RETRIES) {
-          setTimeout(connect, 1000 * attempt);
-        } else {
-          reject(new Error('WebSocket connection failed after multiple retries.'));
-        }
-      };
-
-      ws.onclose = (event) => {
-        if (settled) return;
-        if (event.code !== 1000 && event.code !== 1005 && attempt < MAX_RETRIES) {
-          setTimeout(connect, 1000 * attempt);
-        }
-      };
-    };
-    connect();
-  });
+export async function generateInstagramReport(payload) {
+  // Reserve/settle on FastAPI and recover this same audit after transport failure.
+  return creditStream('/ws/report/generate-instagram', payload);
 }
 
 /**
  * Generate a LinkedIn Audit Report.
  */
 export async function generateLinkedInReport(payload) {
-  const res = await authFetch(`${BASE_URL}/report/generate-linkedin`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error(await extractError(res));
-  return res.json();
+  // Reserve/settle on FastAPI and recover this same audit after transport failure.
+  return creditReport('/report/generate-linkedin', payload);
 }
 
 /**
@@ -275,82 +216,9 @@ export async function generateLinkedInReport(payload) {
  * Step 1: POST /report/generate-linkedin-personal → { job_id }
  * Step 2: WS  /ws/report/generate-linkedin?job_id=<id> (HttpOnly cookie session) → progress + result
  */
-export function generateLinkedInPersonalReport(payload) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      // Step 1: Create the job via REST
-      const res = await authFetch(`${BASE_URL}/report/generate-linkedin-personal`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error(await extractError(res));
-      const { job_id } = await res.json();
-
-      // Step 2: Connect to the WebSocket for streaming results
-      const MAX_RETRIES = 3;
-      let attempt = 0;
-      let settled = false;
-
-      const connect = () => {
-        attempt++;
-        const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-linkedin';
-        const wsUrl = `${wsBase}?job_id=${encodeURIComponent(job_id)}`;
-        const ws = new WebSocket(wsUrl);
-
-        // Keep-alive ping every 30s to prevent idle timeouts
-        let pingInterval = null;
-
-        ws.onopen = () => {
-          pingInterval = setInterval(() => {
-            if (ws.readyState === WebSocket.OPEN) {
-              ws.send(JSON.stringify({ type: 'ping' }));
-            }
-          }, 30000);
-        };
-
-        ws.onmessage = (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            if (data.type === 'result') {
-              settled = true;
-              clearInterval(pingInterval);
-              ws.close();
-              resolve(data);
-            } else if (data.type === 'error') {
-              settled = true;
-              clearInterval(pingInterval);
-              ws.close();
-              reject(new Error(data.message || 'Error from backend'));
-            }
-          } catch (err) {
-            console.error('WebSocket message parse error:', err);
-          }
-        };
-
-        ws.onerror = () => {
-          clearInterval(pingInterval);
-          if (settled) return;
-          if (attempt < MAX_RETRIES) {
-            setTimeout(connect, 1000 * attempt);
-          } else {
-            reject(new Error('WebSocket connection failed after multiple retries.'));
-          }
-        };
-
-        ws.onclose = (event) => {
-          clearInterval(pingInterval);
-          if (settled) return;
-          if (event.code !== 1000 && event.code !== 1005 && attempt < MAX_RETRIES) {
-            setTimeout(connect, 1000 * attempt);
-          }
-        };
-      };
-      connect();
-    } catch (err) {
-      reject(err);
-    }
-  });
+export async function generateLinkedInPersonalReport(payload) {
+  // Reserve/settle on FastAPI and recover this same audit after transport failure.
+  return creditStream('/ws/report/generate-linkedin', payload, undefined, '/report/generate-linkedin-personal');
 }
 
 /**
@@ -358,16 +226,8 @@ export function generateLinkedInPersonalReport(payload) {
  * payload is a FormData object (multipart/form-data).
  */
 export async function generateVisualReport(formData) {
-  const res = await authFetch(
-    `${BASE_URL}/report/check-website-instagram-alignment`,
-    {
-      method: 'POST',
-      // Do NOT set Content-Type — browser sets it with boundary automatically
-      body: formData,
-    }
-  );
-  if (!res.ok) throw new Error(await extractError(res));
-  return res.json();
+  // Reserve/settle on FastAPI and recover this same audit after transport failure.
+  return creditReport('/report/check-website-instagram-alignment', formData);
 }
 
 /**
@@ -387,13 +247,8 @@ export async function searchGmbBusinesses(payload) {
  * Generate a GMB Audit Report.
  */
 export async function generateGmbReport(payload) {
-  const res = await authFetch(`${BASE_URL}/report/generate-gmb`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error(await extractError(res));
-  return res.json();
+  // Reserve/settle on FastAPI and recover this same audit after transport failure.
+  return creditReport('/report/generate-gmb', payload);
 }
 
 /**
@@ -433,6 +288,21 @@ export async function getAdminUsers() {
   const res = await adminAuthFetch(`${BASE_URL}/admin/users`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+}
+
+// ============================================================================
+// ADMIN ACCOUNT RUN HISTORY
+// Independent admin-cookie authorization is required on every page read. Return
+// only the server's confirmed per-run usage; never derive costs from run counts.
+// ============================================================================
+/** Load one selected user's paginated reports and actual consumed credits. */
+export async function getAdminUserReports(username, page = 1, limit = 5) {
+  const query = new URLSearchParams({ page: String(page), limit: String(limit) });
+  const res = await adminAuthFetch(`${BASE_URL}/credits/admin/users/${encodeURIComponent(username)}/reports?${query}`, {
+    cache: 'no-store', signal: AbortSignal.timeout(15000),
   });
   if (!res.ok) throw new Error(await extractError(res));
   return res.json();
@@ -597,50 +467,8 @@ export async function downloadAnalyticsPdf(filters) {
  * 2-step WebSocket flow: POST /ads-library/search/job -> WS /ws/ads-library/search
  */
 export async function generateAdsLibraryReport(payload, onProgress) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      // Step 1: Create the job via REST
-      const res = await authFetch(`${BASE_URL}/ads-library/search/job`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error(await extractError(res));
-      const { job_id } = await res.json();
-
-      // Step 2: Connect to the WebSocket for streaming results
-      const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/ads-library/search';
-      const wsUrl = `${wsBase}?job_id=${encodeURIComponent(job_id)}`;
-
-      let settled = false;
-      const ws = new WebSocket(wsUrl);
-
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === 'result') {
-            settled = true; ws.close(); resolve(data);
-          } else if (data.type === 'error') {
-            settled = true; ws.close(); reject(new Error(data.message || 'Error from backend'));
-          } else if (data.type === 'progress' && onProgress) {
-            onProgress(data.message);
-          }
-        } catch (err) {
-          console.error('WebSocket message parse error:', err);
-        }
-      };
-
-      ws.onerror = () => {
-        if (!settled) { settled = true; reject(new Error('WebSocket connection error')); }
-      };
-
-      ws.onclose = (event) => {
-        if (!settled && event.code !== 1000) { settled = true; reject(new Error('WebSocket closed unexpectedly')); }
-      };
-    } catch (err) {
-      reject(err);
-    }
-  });
+  // Reserve/settle on FastAPI and recover this same audit after transport failure.
+  return creditStream('/ws/ads-library/search', payload, onProgress, '/ads-library/search/job');
 }
 
 /**
@@ -692,34 +520,8 @@ export async function searchGoogleAdvertisers(payload) {
  * Generate a UI/UX Audit Report.
  */
 export async function generateUiUxAudit(payload, onProgress) {
-  const wsBase = BASE_URL.replace(/^http/, 'ws') + '/ws/report/generate-ui-ux';
-  const wsUrl = wsBase;
-
-  return new Promise((resolve, reject) => {
-    let settled = false;
-    const ws = new WebSocket(wsUrl);
-
-    ws.onopen = () => {
-      ws.send(JSON.stringify(payload));
-    };
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'progress') {
-        if (onProgress) onProgress(data.message);
-      } else if (data.type === 'result') {
-        settled = true; ws.close(); resolve(data);
-      } else if (data.type === 'error') {
-        settled = true; ws.close(); reject(new Error(data.message));
-      }
-    };
-    ws.onerror = () => {
-      if (!settled) { settled = true; reject(new Error('WebSocket connection error')); }
-    };
-    ws.onclose = (event) => {
-      if (!settled && event.code !== 1000) { settled = true; reject(new Error('WebSocket closed unexpectedly')); }
-    };
-  });
+  // Reserve/settle on FastAPI and recover this same audit after transport failure.
+  return creditStream('/ws/report/generate-ui-ux', payload, onProgress);
 }
 
 

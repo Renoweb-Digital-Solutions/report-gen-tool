@@ -44,7 +44,9 @@ export default function WebsiteReportForm({ loading, error, onDismissError, onSu
           />
         </FormField>
 
-        <AnimatedSubmitButton 
+        {/* Display-only pricing follows this audit and its current settings. */}
+        <AnimatedSubmitButton
+          pricingModule="website"
           loading={loading}
           disabled={!fields.domain.trim()}
           defaultText="Generate Report"

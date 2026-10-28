@@ -8,6 +8,9 @@ import AuthModal from '@/app/components/AuthModal';
 import { User, Mail, FileText, CheckCircle2, Clock, XCircle, ArrowLeft } from 'lucide-react';
 import { KeyRound, ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
+// Profile and admin history share exact confirmed-usage labels. Legacy records
+// without a billing link show Not recorded rather than an invented zero charge.
+import { creditUsageLabel } from '@/app/features/credits/usage';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -201,13 +204,14 @@ export default function ProfilePage() {
                     <tr>
                       <th className="px-6 py-4 font-bold">Report Type</th>
                       <th className="px-6 py-4 font-bold">Status</th>
+                      <th className="px-6 py-4 font-bold text-right">Credits consumed</th>
                       <th className="px-6 py-4 font-bold">Date & Time</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {reports.length === 0 ? (
                       <tr>
-                        <td colSpan="3" className="px-6 py-12 text-center text-slate-500">
+                        <td colSpan="4" className="px-6 py-12 text-center text-slate-500">
                           <FileText size={32} className="mx-auto text-slate-300 mb-3" />
                           <p>No reports generated yet.</p>
                         </td>
@@ -224,6 +228,9 @@ export default function ProfilePage() {
                               {report.status}
                             </span>
                           </td>
+                          {/* Only confirmed consumption is numeric; pending and
+                              pre-integration records retain explicit text states. */}
+                          <td className="px-6 py-4 text-right font-semibold tabular-nums whitespace-nowrap">{creditUsageLabel(report)}</td>
                           <td className="px-6 py-4 text-slate-500 font-medium">
                             {new Date(report.created_at + (report.created_at.endsWith('Z') ? '' : 'Z')).toLocaleString()}
                           </td>

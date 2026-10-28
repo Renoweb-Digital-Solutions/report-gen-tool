@@ -76,7 +76,9 @@ export default function GmbReportForm({ loading, error, onDismissError, onSubmit
           />
         </FormField>
 
-        <AnimatedSubmitButton 
+        {/* Display-only pricing follows this audit and its current settings. */}
+        <AnimatedSubmitButton
+          pricingModule="gmb"
           loading={loading}
           disabled={!fields.company_name.trim() || !fields.target_url.trim() || !fields.location_query.trim()}
           defaultText="Generate Report"

@@ -137,8 +137,8 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
     setIsSearchingCandidates(false);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  /** Build one request shape for submission and its display estimate; never send pricing amounts. */
+  function buildPricingPayload() {
     const payload = {
       platform: fields.platform,
       limit: Number(fields.limit)
@@ -164,7 +164,16 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
       if (fields.meta_end_date) payload.meta_end_date = fields.meta_end_date;
     }
 
-    onSubmit(fields.platform, payload);
+    return payload;
+  }
+
+  // Rebuilding this small object is local only; settings changes never fetch pricing.
+  const pricingPayload = buildPricingPayload();
+
+  /** Submit the same options shown by the button estimate through existing backend billing. */
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(fields.platform, pricingPayload);
   };
 
   const isGoogle = fields.platform === 'google';
@@ -427,7 +436,8 @@ export default function AdsAuditForm({ loading, error, onDismissError, onSubmit,
         )}
 
         <div className="col-span-1 sm:col-span-2 mt-2">
-          <AnimatedSubmitButton
+          {/* Display-only estimate includes exactly the submitted audit selections. */}
+        <AnimatedSubmitButton pricingModule="ads" pricingInput={pricingPayload}
             loading={loading}
             disabled={!isFormValid}
             defaultText="Generate Ads Audit"
