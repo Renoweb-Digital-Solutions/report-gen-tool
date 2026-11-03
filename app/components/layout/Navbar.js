@@ -7,6 +7,9 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { ChevronDown, Layers, Globe, MapPin, Camera, Briefcase, Palette, Sparkles, ArrowRight, Menu, X, Building2, User, Zap, ArrowRightLeft, HelpCircle, MonitorSmartphone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+// BookOpen marks the public glossary in both Resources menus; resourceItems is
+// shared by desktop dropdowns and the mobile menu, keeping the route discoverable.
+import { BookOpen } from 'lucide-react';
 
 import AuthModal from '../AuthModal';
 import { MagneticButton } from '../ui/MagneticButton';
@@ -49,6 +52,14 @@ export function Navbar() {
   ];
 
   const resourceItems = [
+    // The glossary reads bundled reference content and requires no signed-in account.
+    {
+      name: 'Glossary',
+      desc: 'Digital terms, simply explained',
+      href: '/glossary',
+      icon: BookOpen,
+      color: '#023dbb',
+    },
     { name: 'Blogs', desc: 'Latest articles and insights', href: '/blogs', icon: Globe, color: '#308fef' },
     { name: 'Press and media', desc: 'News and press releases', href: '/press', icon: Camera, color: '#9d4edd' },
     { name: 'FAQs', desc: 'Frequently asked questions', href: '/faq', icon: HelpCircle, color: '#ffc857' },

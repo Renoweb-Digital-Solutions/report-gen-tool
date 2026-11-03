@@ -162,6 +162,16 @@ export function Footer() {
                 <li>
                   <Link href="/faq" className="hover:text-white transition-colors">FAQ & Support</Link>
                 </li>
+                {/* Keep the PDF-based glossary reachable from every public page,
+                    including touch devices where dropdown navigation is closed. */}
+                <li>
+                  <Link
+                    href="/glossary"
+                    className="hover:text-white transition-colors"
+                  >
+                    Glossary
+                  </Link>
+                </li>
                 <li className="pt-2 font-bold text-white flex items-center gap-1.5">
                   <span>Renoweb+ Suite</span>
                   <span className="text-[10px] bg-brandDeep px-1.5 py-0.5 rounded text-brandCyan">Active</span>
