@@ -1,0 +1,1126 @@
+/**
+ * Scoped visual system for GlossaryClient on /glossary. An editorial index-card
+ * layout uses neutral graphite surfaces, warm ivory text, and muted brass accents.
+ * All selectors stay local so dashboard, auth, and other marketing pages retain
+ * their existing styles. Disclosure controls and focus indicators remain visible.
+ */
+
+/* ========================================================================== */
+/* PAGE FOUNDATION AND ACCESSIBILITY                                           */
+/* Reuse root typography; reserve enough top space for the shared fixed navbar. */
+/* ========================================================================== */
+.page {
+  --paper: #1c1c1b;
+  --surface: #242423;
+  --raised: #2c2c2a;
+  --accent: #d6c3a0;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ink: #eeeae2;
+  --muted: #aaa79f;
+  --line: #393936;
+  color-scheme: dark;
+  color: var(--ink);
+  background: var(--paper);
+  min-height: 100vh;
+}
+
+.container {
+  width: min(1280px, calc(100% - 96px));
+  margin-inline: auto;
+}
+.page button,
+.page input,
+.page select {
+  font: inherit;
+}
+.page button {
+  cursor: pointer;
+}
+.page button:disabled {
+  cursor: default;
+}
+.page :is(button, a, input, select, summary):focus-visible {
+  outline: 3px solid #d6c3a0;
+  outline-offset: 4px;
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ========================================================================== */
+/* EDITORIAL HERO                                                              */
+/* The rotated cards are decorative and hidden from the accessibility tree.     */
+/* Their bounded dimensions prevent horizontal overflow on narrow viewports.    */
+/* ========================================================================== */
+.hero {
+  padding-top: 142px;
+  background: #20201f;
+  overflow: hidden;
+}
+.breadcrumb {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+.breadcrumb a:hover {
+  color: var(--accent);
+}
+.heroGrid {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  align-items: center;
+  gap: 72px;
+  padding: 54px 0 70px;
+}
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+}
+.eyebrow > span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.hero h1 {
+  margin: 22px 0;
+  font-family: var(--font-primary);
+  font-size: clamp(44px, 4.9vw, 72px);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: -0.055em;
+  color: var(--ink);
+}
+.hero h1 > span {
+  color: var(--accent);
+}
+.intro {
+  max-width: 450px;
+  color: #b4b0a8;
+  font-size: 16px;
+  line-height: 1.85;
+}
+.browseLink {
+  display: inline-flex;
+  gap: 25px;
+  align-items: center;
+  margin-top: 29px;
+  font-size: 13px;
+  font-weight: 700;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--ink);
+}
+.browseLink:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.heroArt {
+  position: relative;
+  width: min(100%, 355px);
+  margin-inline: auto;
+  padding: 16px 0;
+}
+.backCard {
+  position: absolute;
+  inset: 16px 0;
+  border: 1px solid #51514a;
+  background: #30302b;
+  border-radius: 5px;
+  transform: rotate(-8deg);
+}
+.dictionaryCard {
+  position: relative;
+  padding: 28px 30px 22px;
+  border: 1px solid #55534c;
+  border-radius: 5px;
+  background: #2c2c29;
+  box-shadow: 0 18px 35px #00000030;
+  transform: rotate(4deg);
+}
+.cardTopline,
+.cardBottomline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  color: var(--accent);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+}
+.dictionaryLetters {
+  margin: 22px 0 12px;
+  font-family: Georgia, serif;
+  font-size: 78px;
+  line-height: 1.3;
+  letter-spacing: -0.06em;
+  color: var(--accent);
+}
+.dictionaryLetters > span {
+  font-size: 42px;
+  color: #89867d;
+}
+.dictionaryRule {
+  height: 1px;
+  background: #484740;
+  margin-bottom: 22px;
+}
+.dictionaryCard strong {
+  display: block;
+  font-size: 18px;
+  font-weight: 500;
+}
+.dictionaryCard p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+  margin-top: 8px;
+}
+.cardBottomline {
+  margin-top: 34px;
+  color: var(--muted);
+  font-size: 7px;
+}
+.artStamp {
+  color: #28251e;
+  position: absolute;
+  right: -28px;
+  bottom: 35px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 13px 17px;
+  border-radius: 3px;
+  background: #d6c3a0;
+  font-size: 27px;
+  font-weight: 500;
+  box-shadow: 0 4px 14px #00000030;
+  transform: rotate(-5deg);
+}
+.artStamp small {
+  font-size: 9px;
+  line-height: 1.5;
+}
+.heroFoot {
+  border-top: 1px solid #3c3c38;
+  padding: 18px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: #a4a199;
+  font-size: 11px;
+}
+.heroFoot > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+/* ========================================================================== */
+/* SEARCH AND TOPIC INDEX                                                      */
+/* Sticky positioning is limited to the desktop sidebar. Mobile uses a bounded  */
+/* scrolling topic list so all fourteen topics remain reachable without a wall  */
+/* of controls before the definitions.                                          */
+/* ========================================================================== */
+.library {
+  padding: 40px 0 75px;
+  scroll-margin-top: 120px;
+}
+.searchRow {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  padding-bottom: 34px;
+  border-bottom: 1px solid var(--line);
+}
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: min(100%, 650px);
+  border: 1px solid #45453f;
+  border-radius: 7px;
+  padding: 0 18px;
+  background: #262625;
+  color: #b1ada3;
+}
+.searchBox:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px #d6c3a014;
+}
+.searchBox input {
+  width: 100%;
+  min-width: 0;
+  height: 57px;
+  border: 0;
+  background: transparent;
+  outline: none;
+  color: var(--ink);
+  font-size: 14px;
+}
+.searchBox input:focus-visible {
+  outline: none;
+}
+.searchBox input::placeholder {
+  color: #a09c93;
+}
+.searchBox input::-webkit-search-cancel-button {
+  display: none;
+}
+.searchBox button {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  color: var(--muted);
+  border: 0;
+  border-radius: 4px;
+  background: #393935;
+}
+.searchNote {
+  font-family: Georgia, serif;
+  font-style: italic;
+  font-size: 14px;
+  color: #aaa798;
+}
+.libraryGrid {
+  display: grid;
+  grid-template-columns: 252px minmax(0, 1fr);
+  gap: 48px;
+  padding-top: 36px;
+  align-items: start;
+}
+.topicIndex {
+  position: sticky;
+  top: 120px;
+}
+.indexHeading {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 17px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+}
+.indexHeading > span:last-child {
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.topicList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.topicList button {
+  display: grid;
+  grid-template-columns: 20px 1fr 25px;
+  gap: 9px;
+  align-items: baseline;
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  padding: 10px;
+  text-align: left;
+  color: #b7b4ac;
+  background: transparent;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.topicList button:hover {
+  background: #30302d;
+}
+.topicList button[aria-pressed="true"] {
+  color: var(--accent);
+  border-color: #69614f;
+  background: #39362e;
+  font-weight: 600;
+}
+.topicNumber {
+  color: #9e9b92;
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+.topicCount {
+  text-align: right;
+  font-size: 9px;
+  color: #a7a397;
+}
+.sidebarNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+  margin-top: 28px;
+  padding: 22px 10px 0;
+}
+.noteAsterisk {
+  color: #b8b19b;
+  font-size: 30px;
+  line-height: 1;
+}
+.sidebarNote p {
+  font-family: Georgia, serif;
+  color: #aaa696;
+  font-style: italic;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+/* ========================================================================== */
+/* ALPHABET AND DEFINITION CARDS                                               */
+/* Full questions clarify compound terms; disclosure buttons expose ARIA state.  */
+/* Long labels and source answers wrap rather than forcing page overflow.       */
+/* ========================================================================== */
+.readingArea {
+  min-width: 0;
+}
+.resultsTopline {
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  align-items: end;
+}
+.resultsTopline .eyebrow {
+  font-size: 8px;
+  letter-spacing: 0.12em;
+}
+.resultsHeading {
+  font-family: var(--font-primary);
+  margin-top: 9px;
+  color: var(--ink);
+  font-size: 31px;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1.25;
+  scroll-margin-top: 125px;
+}
+.resultsHeading:focus {
+  outline: none;
+}
+.resultCount {
+  flex-shrink: 0;
+  padding: 5px 9px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.alphabet {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  border-bottom: 1px solid var(--line);
+  padding: 24px 0 20px;
+}
+.alphabet button {
+  display: grid;
+  place-items: center;
+  min-width: 25px;
+  min-height: 32px;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 4px;
+  color: #bcb7ad;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 600;
+}
+.alphabet button:first-child {
+  min-width: 37px;
+  margin-right: 5px;
+}
+.alphabet button:hover:not(:disabled) {
+  background: #39362e;
+}
+.alphabet button[aria-pressed="true"] {
+  background: var(--accent);
+  color: #211f1a;
+}
+.alphabet button:disabled {
+  color: #64635e;
+}
+.readingMeta {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 21px 0 16px;
+  font-size: 10px;
+  color: #a5a197;
+}
+.readingMeta > span:last-child {
+  font-size: 8px;
+  letter-spacing: 0.1em;
+}
+.definitionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+  align-items: start;
+}
+.definition {
+  border: 1px solid #41413c;
+  border-radius: 7px;
+  background: #262625;
+  overflow-wrap: anywhere;
+}
+.definition:hover {
+  border-color: #777061;
+}
+.definition[data-open="true"] {
+  border-color: #81735b;
+  box-shadow: 0 5px 16px #00000018;
+}
+.definitionToggle {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  color: inherit;
+  display: block;
+  padding: 22px 23px;
+  cursor: pointer;
+  list-style: none;
+}
+.definitionToggle:focus-visible {
+  outline-offset: -4px;
+  border-radius: 7px;
+}
+.definitionTopline {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: start;
+  font-size: 8px;
+  line-height: 1.6;
+  color: #b0ab9f;
+}
+.definitionTopline > span:first-child {
+  max-width: 84%;
+}
+.definitionTopline > span:last-child {
+  font-variant-numeric: tabular-nums;
+}
+.termLine {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+}
+.term {
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1.35;
+  color: var(--ink);
+}
+.termLine > svg {
+  flex-shrink: 0;
+  color: #b1a794;
+  margin-top: 4px;
+}
+.definition[data-open="true"] .termLine > svg {
+  transform: rotate(180deg);
+  color: var(--accent);
+}
+.question {
+  display: block;
+  margin-top: 10px;
+  color: #aaa69c;
+  font-size: 11px;
+  line-height: 1.75;
+}
+.readDefinition {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 20px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.definition[data-open="true"] .readDefinition > svg {
+  transform: rotate(180deg);
+}
+.answer {
+  margin: 0 23px;
+  padding: 18px 0 24px;
+  border-top: 1px solid #43413a;
+}
+.answer p {
+  color: #c9c3b7;
+  font-size: 13px;
+  line-height: 1.95;
+}
+.emptyState {
+  padding: 55px 20px;
+  border: 1px dashed #56534b;
+  border-radius: 7px;
+  text-align: center;
+}
+.emptyState > svg {
+  margin: 0 auto 16px;
+  color: #b8af9b;
+}
+.emptyState h3 {
+  font-family: var(--font-primary);
+  font-size: 23px;
+  font-weight: 500;
+}
+.emptyState p {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.emptyState button {
+  display: inline-flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 23px;
+  padding: 10px 16px;
+  background: var(--accent);
+  color: #211f1a;
+  border: 0;
+  border-radius: 5px;
+  font-size: 12px;
+}
+
+/* ========================================================================== */
+/* CONTENT-PREVIEW PAGE SHELF                                                   */
+/* A five-page moving window shows real term ranges; a direct selector keeps    */
+/* far-away pages reachable. Current-page styling uses shape, text, and colour.  */
+/* ========================================================================== */
+.pagination {
+  margin-top: 38px;
+}
+.paginationHeading {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 13px;
+  color: #aaa497;
+  font-size: 10px;
+}
+.paginationHeading > span:first-child {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+.pageShelf {
+  display: flex;
+  gap: 8px;
+  padding-top: 4px;
+}
+.pageShelf button {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 12px;
+  border: 1px solid #45433c;
+  border-top: 3px solid #45433c;
+  border-radius: 4px;
+  background: #292927;
+  text-align: left;
+  color: #b2ac9f;
+}
+.pageShelf button:hover {
+  border-color: #a19174;
+}
+.pageShelf button[aria-current="page"] {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: #38342b;
+  transform: translateY(-4px);
+  box-shadow: 0 4px 0 #494031;
+}
+.pageNumber {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 19px;
+  font-weight: 500;
+}
+.pageNumber > svg {
+  opacity: 0.5;
+}
+.pageRange {
+  display: block;
+  margin-top: 9px;
+  font-size: 9px;
+  line-height: 1.6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pageRange > span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.75;
+}
+.pageControls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+}
+.pageControls > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 0;
+  border: 0;
+  color: var(--ink);
+  background: transparent;
+  font-size: 11px;
+}
+.pageControls > button:disabled {
+  color: #6d6a63;
+}
+.pageSelect {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.pageSelect select {
+  padding: 7px;
+  border: 1px solid #45433c;
+  border-radius: 4px;
+  color: var(--ink);
+  background: #262625;
+  font-size: 10px;
+}
+
+/* ========================================================================== */
+/* NEXT STEP AND RESPONSIVE ADAPTATIONS                                        */
+/* Motion is enhanced below with a reduced-motion fallback. Topics and the     */
+/* pagination shelf reflow for touch devices while retaining visible labels.    */
+/* ========================================================================== */
+.closingNote {
+  border-top: 1px solid #444239;
+  background: #262722;
+  padding: 35px 0;
+}
+.closingNote .container {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.closingNote .container > svg {
+  color: #c1b99f;
+  flex-shrink: 0;
+}
+.closingNote h2 {
+  font-family: var(--font-primary);
+  color: var(--ink);
+  font-weight: 500;
+  font-size: 21px;
+  letter-spacing: -0.03em;
+}
+.closingNote p {
+  margin-top: 4px;
+  color: #b6b09e;
+  font-size: 12px;
+}
+.closingNote a {
+  display: inline-flex;
+  align-items: center;
+  gap: 17px;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding-bottom: 7px;
+  border-bottom: 1px solid #827960;
+  color: #dbcfb6;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+@media (min-width: 1500px) {
+  .heroGrid {
+    gap: 100px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .container {
+    width: calc(100% - 64px);
+  }
+  .heroGrid {
+    gap: 45px;
+  }
+  .heroArt {
+    width: 300px;
+  }
+  .dictionaryLetters {
+    font-size: 68px;
+  }
+  .libraryGrid {
+    grid-template-columns: 215px minmax(0, 1fr);
+    gap: 28px;
+  }
+  .searchNote {
+    font-size: 12px;
+  }
+  .alphabet {
+    gap: 1px;
+  }
+  .alphabet button {
+    min-width: 23px;
+  }
+}
+
+@media (max-width: 800px) {
+  .hero {
+    padding-top: 120px;
+  }
+  .heroGrid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 35px 0 45px;
+  }
+  .hero h1 {
+    font-size: 58px;
+  }
+  .heroArt {
+    width: 285px;
+  }
+  .dictionaryCard {
+    padding: 23px;
+  }
+  .dictionaryLetters {
+    margin-top: 12px;
+    font-size: 65px;
+  }
+  .heroFoot {
+    flex-wrap: wrap;
+    font-size: 10px;
+  }
+  .searchRow {
+    display: block;
+  }
+  .searchBox {
+    width: 100%;
+  }
+  .searchNote {
+    display: block;
+    margin-top: 13px;
+  }
+  .libraryGrid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  .topicIndex {
+    position: static;
+  }
+  .topicList {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    max-height: 175px;
+    overflow-y: auto;
+    padding-right: 8px;
+    scrollbar-width: thin;
+  }
+  .sidebarNote {
+    display: none;
+  }
+  .resultsHeading {
+    font-size: 29px;
+  }
+  .alphabet button {
+    min-width: 30px;
+    min-height: 36px;
+  }
+  .closingNote .container {
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  .closingNote .container > div {
+    flex: 1;
+  }
+  .closingNote a {
+    margin-left: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    width: calc(100% - 36px);
+  }
+  .hero h1 {
+    font-size: 46px;
+  }
+  .intro {
+    font-size: 14px;
+  }
+  .heroArt {
+    width: 250px;
+  }
+  .artStamp {
+    color: #28251e;
+    right: -15px;
+  }
+  .heroFoot > span:last-child {
+    font-size: 9px;
+  }
+  .searchBox {
+    gap: 9px;
+    padding-inline: 12px;
+  }
+  .searchBox input {
+    font-size: 12px;
+  }
+  .topicList {
+    grid-template-columns: 1fr;
+  }
+  .resultsTopline {
+    align-items: start;
+    gap: 12px;
+  }
+  .resultsTopline .eyebrow {
+    max-width: 180px;
+    font-size: 7px;
+    line-height: 1.7;
+  }
+  .resultsHeading {
+    font-size: 26px;
+  }
+  .resultCount {
+    font-size: 9px;
+    padding: 4px 6px;
+  }
+  .readingMeta > span:last-child {
+    display: none;
+  }
+  .definitionGrid {
+    grid-template-columns: 1fr;
+  }
+  .pageShelf {
+    overflow-x: auto;
+    padding-bottom: 7px;
+    scroll-snap-type: x proximity;
+  }
+  .pageShelf button {
+    min-width: 92px;
+    scroll-snap-align: start;
+  }
+  .pageControls {
+    flex-wrap: wrap;
+  }
+  .pageSelect {
+    order: 3;
+    justify-content: center;
+    width: 100%;
+  }
+  .closingNote h2 {
+    font-size: 18px;
+  }
+}
+
+/* ========================================================================== */
+/* GLOSSARY-LOCAL SITE CHROME                                                   */
+/* The shared components still own their links and auth behavior. These scoped  */
+/* selectors theme their existing utility classes only beneath this page; modal */
+/* internals and other routes retain their own palettes. Brand artwork is kept. */
+/* ========================================================================== */
+.page :global(header) > div:first-child {
+  background: #30302c;
+  color: #c6c0b3;
+}
+.page :global(header) > div:first-child svg {
+  color: var(--accent);
+  animation: none;
+}
+.page :global(header) nav {
+  background: #20201ff0;
+  border-color: var(--line);
+}
+.page :global(header) nav :global([class*="text-brandInk"]),
+.page :global(header) nav :global([class*="text-brandDeep"]),
+.page :global(header) nav :global([class*="text-brandCyan"]) {
+  color: var(--ink);
+}
+.page :global(header) nav :global([class*="text-brandInk/50"]) {
+  color: var(--muted);
+}
+.page :global(header) nav :global([class*="bg-white"]),
+.page :global(header) nav :global([class*="bg-slate-"]) {
+  background: var(--raised);
+  border-color: var(--line);
+}
+.page :global(header) nav :global([class*="bg-blue-"]) {
+  background: #454034;
+  border-color: #75694f;
+}
+.page :global(header) nav a:hover,
+.page :global(header) nav button:hover {
+  color: var(--accent);
+}
+.page :global(header) nav a[href="/glossary"] {
+  background: #454034;
+  border-color: #75694f;
+}
+.page :global(header) nav :global([class*="bg-gradient-to-r"]) {
+  background: var(--accent);
+  color: #211f1a;
+  box-shadow: 0 4px 12px #00000025;
+}
+/* Dropdown icon tiles carry inline brand colours in Navbar; neutralize just
+   those tiles, rather than changing logos or unrelated inline motion styles. */
+.page :global(header) nav a > div[style] {
+  background-color: #d6c3a012 !important;
+  color: var(--accent) !important;
+}
+.page > :global(div.fixed[class*="top-28"]) {
+  background: #20201f;
+}
+.page :global(footer) {
+  background: #181817;
+  border-color: var(--line);
+}
+.page :global(footer) > :global(div.absolute) {
+  display: none;
+}
+.page :global(footer) :global([class*="text-brandCyan"]),
+.page :global(footer) :global([class*="text-brandAmber"]) {
+  color: var(--accent);
+}
+.page :global(footer) :global([class*="bg-brandDeep"]) {
+  background: #454034;
+}
+
+/* ========================================================================== */
+/* MOTION AND TACTILE FEEDBACK                                                  */
+/* Framer Motion owns result entrances and answer heights. CSS owns hover and   */
+/* focus feedback only, avoiding competing transforms on animated cards. There */
+/* are no perpetual floating loops; movement settles and leaves reading quiet. */
+/* ========================================================================== */
+.page ::selection {
+  color: #f4eee2;
+  background: #726448;
+}
+.definitionHeading {
+  margin: 0;
+  font: inherit;
+  color: inherit;
+}
+.answerReveal {
+  overflow: hidden;
+}
+.definition,
+.searchBox,
+.topicList button,
+.alphabet button,
+.pageShelf button,
+.pageControls > button,
+.pageSelect select,
+.browseLink,
+.closingNote a {
+  transition:
+    background-color 350ms var(--ease),
+    border-color 350ms var(--ease),
+    color 300ms var(--ease),
+    box-shadow 500ms var(--ease);
+}
+.pageShelf button,
+.alphabet button,
+.topicList button,
+.browseLink > svg,
+.closingNote a > svg,
+.termLine > svg,
+.readDefinition > svg {
+  transition:
+    transform 550ms var(--ease),
+    background-color 350ms var(--ease),
+    border-color 350ms var(--ease),
+    color 300ms var(--ease),
+    box-shadow 500ms var(--ease);
+}
+.heroGrid > div:first-child {
+  animation: glossary-arrive 900ms var(--ease) both;
+}
+.heroArt {
+  animation: glossary-arrive 1100ms var(--ease) 100ms both;
+}
+.backCard,
+.dictionaryCard,
+.artStamp {
+  transition:
+    transform 900ms var(--ease),
+    box-shadow 900ms var(--ease);
+}
+@keyframes glossary-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .heroArt:hover .backCard {
+    transform: rotate(-11deg) translateX(-4px);
+  }
+  .heroArt:hover .dictionaryCard {
+    transform: rotate(1deg) translateY(-5px);
+    box-shadow: 0 24px 40px #00000035;
+  }
+  .heroArt:hover .artStamp {
+    transform: rotate(-2deg) translateY(-3px);
+  }
+  .topicList button:hover {
+    transform: translateX(3px);
+  }
+  .alphabet button:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+  .pageShelf button:hover {
+    transform: translateY(-4px);
+  }
+  .browseLink:hover > svg {
+    transform: translateY(4px);
+  }
+  .closingNote a:hover > svg {
+    transform: translate(3px, -3px);
+  }
+}
+/* CSS and Framer Motion both honor the same OS preference. Smooth scrolling
+   from the global stylesheet is also neutralized inside this page's anchors. */
+@media (prefers-reduced-motion: reduce) {
+  /* The root owns the existing global smooth-scroll rule. Scope this exception
+     through :has so leaving the glossary restores other routes' behavior. */
+  :global(html):has(.page) {
+    scroll-behavior: auto;
+  }
+
+  .page *,
+  .page *::before,
+  .page *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
