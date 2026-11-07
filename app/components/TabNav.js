@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { BarChart, Globe, MapPin, Camera, Briefcase, UserCircle, Palette, LogOut, Megaphone, MonitorSmartphone, Info } from 'lucide-react';
+import { BarChart, Globe, MapPin, Camera, Briefcase, UserCircle, Palette, LogOut, Megaphone, MonitorSmartphone, Info, Sparkles } from 'lucide-react';
 
 const TABS = [
+  // The conversational entry sits first; every existing form remains selectable.
+  // This ID matches Dashboard's initial tab and its accessible tabpanel label.
+  { id: 'agent', label: 'Agentic', icon: Sparkles, desc: 'Your goal. A conversation.' },
   { id: 'full', label: 'Full Report', icon: BarChart, desc: 'SEO, social & brand' },
   { id: 'website', label: 'Website Anatomy', icon: Globe, desc: 'Performance & health' },
   { id: 'gmb', label: 'GMB Audit', icon: MapPin, desc: 'Google Business Profile' },

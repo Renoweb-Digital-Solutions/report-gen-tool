@@ -21,6 +21,13 @@ import UiUxAuditForm from '@/app/forms/UiUxAuditForm';
 // Dashboard-only feedback observes result receipt without awaiting any feedback API.
 import FeedbackWidget from '@/app/components/FeedbackWidget';
 import SupportModal from '@/app/components/SupportModal';
+// ============================================================================
+// CONVERSATIONAL DASHBOARD ENTRY
+// AgentWorkspace owns agent requests and artifacts. Its scoped layout replaces
+// the form/utility columns only while the primary Agentic tab is selected.
+// ============================================================================
+import AgentWorkspace from '@/app/components/agent/AgentWorkspace';
+import agentStyles from '@/app/components/agent/agent.module.css';
 import { HelpCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
@@ -88,11 +95,17 @@ export default function Dashboard() {
     return () => { active = false; window.removeEventListener('auth-expired', handleAuthExpired); };
   }, [router]);
 
-  const [activeTab, setActiveTab] = useSessionState('active_tab', 'full');
+  // Always enter on Agentic, including browsers with a stored legacy Full Report
+  // selection. Manual module selection lasts until page exit; report state still
+  // uses the existing per-module session persistence below.
+  const [activeTab, setActiveTab] = useState('agent');
+  // Agent work pauses optional feedback reminders alongside manual pipelines.
+  const [agentBusy, setAgentBusy] = useState(false);
 
-  // Record panel changes after consent, including initial/restored dashboard tabs.
+  // Record supported audit panels after consent. Agentic has no server analytics
+  // module yet; skip it so the provider does not relabel its visits as 'site'.
   useEffect(() => {
-    if (authChecked && consented) trackEvent('module_viewed', {}, activeTab);
+    if (authChecked && consented && activeTab !== 'agent') trackEvent('module_viewed', {}, activeTab);
   }, [activeTab, authChecked, consented, trackEvent]);
 
   // Per-tab report state (html, loading, error, timestamp) — serialisable to sessionStorage
@@ -516,70 +529,147 @@ export default function Dashboard() {
       <Navbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
 
       {/* Module scope lets observers resolve controls without reading their text. */}
-      <div data-analytics-module={activeTab} className={`dashboard-layout ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+      <div
+        data-analytics-module={activeTab}
+        className={`dashboard-layout ${activeTab === 'agent' ? agentStyles.dashboard : ''} ${isSidebarOpen ? 'sidebar-open' : ''}`}
+      >
         {/* Overlay for mobile sidebar */}
         {isSidebarOpen && (
-          <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)} />
+          <div
+            className="sidebar-overlay"
+            onClick={() => setIsSidebarOpen(false)}
+          />
         )}
 
         {/* ── Left Sidebar Navigation ── */}
-        <TabNav 
-          activeTab={activeTab} 
+        <TabNav
+          activeTab={activeTab}
           onTabChange={(id) => {
             setActiveTab(id);
             setIsSidebarOpen(false);
-          }} 
-          onLogout={handleLogout} 
+          }}
+          onLogout={handleLogout}
         />
 
         {/* ── Main Content (Form) ── */}
-        <main className="main-content" key={activeTab}>
-          <div className={`form-panel ${userProfile?.is_suspended ? 'suspended-form' : ''}`}>
-            {userProfile?.is_suspended && (
-                <div style={{ background: '#fef2f2', border: '1px solid #ef4444', color: '#991b1b', padding: '16px', borderRadius: '8px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '20px' }}>⚠️</span>
-                    <div>
-                        <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 600 }}>Your account has been suspended</h4>
-                        <p style={{ margin: 0, fontSize: '14px', marginTop: '4px' }}>Reason: {userProfile.suspension_reason || 'Please contact support.'}</p>
-                    </div>
-                </div>
-            )}
-            {renderForm()}
-          </div>
+        {/* Keep chat mounted across module changes: drafts, requests and artifacts
+            survive switching tabs without writing customer text to browser storage.
+            Hidden excludes inactive chat controls from keyboard navigation. */}
+        <main
+          className={agentStyles.main}
+          hidden={activeTab !== 'agent'}
+          role="tabpanel"
+          id="tabpanel-agent"
+          aria-labelledby="tab-agent"
+        >
+          <AgentWorkspace
+            username={username}
+            disabled={userProfile?.is_suspended}
+            active={activeTab === 'agent'}
+            onBusyChange={setAgentBusy}
+            onOpenSupport={() => setIsSupportOpen(true)}
+          />
         </main>
+        {activeTab !== 'agent' && (
+          <main className="main-content" key={activeTab}>
+            <div
+              className={`form-panel ${userProfile?.is_suspended ? 'suspended-form' : ''}`}
+            >
+              {userProfile?.is_suspended && (
+                <div
+                  style={{
+                    background: '#fef2f2',
+                    border: '1px solid #ef4444',
+                    color: '#991b1b',
+                    padding: '16px',
+                    borderRadius: '8px',
+                    marginBottom: '24px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                  }}
+                >
+                  <span style={{ fontSize: '20px' }}>⚠️</span>
+                  <div>
+                    <h4
+                      style={{ margin: 0, fontSize: '15px', fontWeight: 600 }}
+                    >
+                      Your account has been suspended
+                    </h4>
+                    <p
+                      style={{ margin: 0, fontSize: '14px', marginTop: '4px' }}
+                    >
+                      Reason:{' '}
+                      {userProfile.suspension_reason ||
+                        'Please contact support.'}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {renderForm()}
+            </div>
+          </main>
+        )}
 
         {/* ── Right Utility Panel (Preview/Info) ── */}
-        <RightPanel 
-          activeTab={activeTab}
-          hasReport={hasReport}
-          loading={current?.report?.loading || false}
-          htmlReport={current?.report?.html || null}
-          reportData={current?.report?.data || null}
-          reportLabel={current?.label || 'Profile'}
-          timestamp={current?.report?.timestamp || null}
-          pdfBlob={current && pdfReady[current.pdfKey] ? pdfBlobs.current[current.pdfKey] : null}
-          pdfLoading={current ? pdfLoading[current.pdfKey] : false}
-          onDownload={() => current && handleDownload(current.pdfKey)}
-        />
+        {activeTab !== 'agent' && (
+          <RightPanel
+            activeTab={activeTab}
+            hasReport={hasReport}
+            loading={current?.report?.loading || false}
+            htmlReport={current?.report?.html || null}
+            reportData={current?.report?.data || null}
+            reportLabel={current?.label || 'Profile'}
+            timestamp={current?.report?.timestamp || null}
+            pdfBlob={
+              current && pdfReady[current.pdfKey]
+                ? pdfBlobs.current[current.pdfKey]
+                : null
+            }
+            pdfLoading={current ? pdfLoading[current.pdfKey] : false}
+            onDownload={() => current && handleDownload(current.pdfKey)}
+          />
+        )}
 
         {/* ── Support Floating Button & Modal ── */}
-        <button 
-          data-analytics-control="support_open"
-          onClick={() => setIsSupportOpen(true)}
-          className="fixed bottom-8 right-8 z-[100] p-4 bg-gradient-to-r from-blue-700 to-blue-600 text-white rounded-full shadow-2xl hover:shadow-[0_20px_40px_rgba(37,99,235,0.3)] transition-all hover:-translate-y-1 flex items-center justify-center group"
-          title="Help & Support"
-        >
-          <HelpCircle size={24} />
-          <span className="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 ease-in-out font-bold group-hover:pl-2 group-hover:pr-1">
-            Support
-          </span>
-        </button>
+        {/* Agentic provides a header launcher, keeping mobile input unobstructed. */}
+        {activeTab !== 'agent' && (
+          <button
+            data-analytics-control="support_open"
+            onClick={() => setIsSupportOpen(true)}
+            className="fixed bottom-8 right-8 z-[100] p-4 bg-gradient-to-r from-blue-700 to-blue-600 text-white rounded-full shadow-2xl hover:shadow-[0_20px_40px_rgba(37,99,235,0.3)] transition-all hover:-translate-y-1 flex items-center justify-center group"
+            title="Help & Support"
+          >
+            <HelpCircle size={24} />
+            <span className="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 ease-in-out font-bold group-hover:pl-2 group-hover:pr-1">
+              Support
+            </span>
+          </button>
+        )}
 
         {/* Pause reminders during any pipeline, PDF work, or an open support dialog. */}
-        <FeedbackWidget completion={feedbackCompletion}
-          busy={[fullReport, websiteReport, gmbReport, instagramReport, linkedinReport, linkedinPersonalReport, visualReport, adsReport, uiUxReport].some(report => report.loading) || Object.values(pdfLoading).some(Boolean)}
-          blocked={isSupportOpen} />
-        {isSupportOpen && <SupportModal onClose={() => setIsSupportOpen(false)} />}
+        <FeedbackWidget
+          completion={feedbackCompletion}
+          busy={
+            agentBusy ||
+            [
+              fullReport,
+              websiteReport,
+              gmbReport,
+              instagramReport,
+              linkedinReport,
+              linkedinPersonalReport,
+              visualReport,
+              adsReport,
+              uiUxReport,
+            ].some((report) => report.loading) ||
+            Object.values(pdfLoading).some(Boolean)
+          }
+          blocked={isSupportOpen}
+        />
+        {isSupportOpen && (
+          <SupportModal onClose={() => setIsSupportOpen(false)} />
+        )}
       </div>
     </>
   );

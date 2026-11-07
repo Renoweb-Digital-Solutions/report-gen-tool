@@ -1,0 +1,1108 @@
+/* ========================================================================== */
+/* AGENTIC WORKSPACE                                                           */
+/* Consumed by Dashboard, AgentWorkspace, AgentText and AgentReportPanel.        */
+/* Scoped colors preserve the existing audit modules. The dashboard modifier   */
+/* replaces its legacy three-column grid only while the Agentic tab is active. */
+/* ========================================================================== */
+
+.dashboard:global(.dashboard-layout) {
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+}
+
+.main {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.main[hidden] {
+  display: none;
+}
+
+.workspace {
+  --agent-bg: #fafaf9;
+  --agent-surface: #ffffff;
+  --agent-text: #282a34;
+  --agent-muted: #858591;
+  --agent-line: #e8e7ed;
+  --agent-soft: #f2f1f5;
+  --agent-accent: #7464cf;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--agent-bg);
+  color: var(--agent-text);
+  font-size: 14px;
+}
+
+.withReport {
+  grid-template-columns: minmax(300px, 1fr) minmax(360px, 0.95fr);
+}
+
+.ambient {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.6;
+  background:
+    radial-gradient(ellipse at 38% 23%, #e7dfff70, transparent 43%),
+    radial-gradient(ellipse at 78% 62%, #ffe5d64d, transparent 42%),
+    radial-gradient(ellipse at 13% 74%, #d9eaff60, transparent 46%);
+}
+
+/* A single 1.8-second bloom responds to the first send, then returns to rest.
+   No progress semantics are attached to decoration or elapsed animation time. */
+.firstSend .ambient {
+  animation: firstBloom 1800ms ease-out both;
+}
+
+@keyframes firstBloom {
+  0% {
+    opacity: 0.4;
+    transform: scale(0.92);
+    filter: hue-rotate(0deg);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.18);
+    filter: hue-rotate(25deg);
+  }
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+    filter: hue-rotate(0deg);
+  }
+}
+
+.chatColumn {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.workspaceHeader {
+  min-height: 76px;
+  padding: 20px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.workspaceIdentity {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.workspaceIdentity strong {
+  font-weight: 650;
+}
+.smallMark {
+  display: grid;
+  place-items: center;
+  color: var(--agent-accent);
+}
+.beta {
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: var(--agent-muted);
+  border: 1px solid var(--agent-line);
+  border-radius: 5px;
+  padding: 3px 5px;
+}
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.quietButton,
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: var(--agent-muted);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.quietButton:hover,
+.iconButton:hover {
+  background: var(--agent-soft);
+  color: var(--agent-text);
+}
+.count {
+  border: 1px solid var(--agent-line);
+  border-radius: 4px;
+  padding: 0 4px;
+  font-size: 10px;
+}
+.workspace button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.workspace button:focus-visible,
+.workspace a:focus-visible,
+.workspace summary:focus-visible,
+.transcript:focus-visible {
+  outline: 2px solid var(--agent-accent);
+  outline-offset: 4px;
+}
+
+/* ========================================================================== */
+/* WELCOME AND COMPOSER                                                        */
+/* The empty state centers the task, with starter cards that only prefill text. */
+/* Once a message exists the same composer rests below a separately scrolling   */
+/* transcript, so long conversations cannot push the input out of view.         */
+/* ========================================================================== */
+
+.chatStage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 16px 48px 38px;
+  overflow-y: auto;
+}
+.welcome {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  text-align: center;
+}
+.heroMark {
+  display: grid;
+  place-items: center;
+  width: 67px;
+  height: 67px;
+  margin: 0 auto 26px;
+  border-radius: 23px;
+  border: 1px solid #ffffff;
+  background: linear-gradient(140deg, #e9e0ff, #e6edff 55%, #ffe7df);
+  box-shadow:
+    0 5px 30px #a9a0db22,
+    inset 0 0 18px #ffffff80;
+  color: #7963bf;
+  transform: rotate(-8deg);
+}
+.heroMark svg {
+  transform: rotate(8deg);
+}
+.eyebrow {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2.1px;
+  color: var(--agent-muted);
+  margin-bottom: 16px;
+}
+.welcome h1 {
+  font-size: clamp(32px, 3.35vw, 52px);
+  font-weight: 500;
+  line-height: 1.17;
+  letter-spacing: -2px;
+  margin: 0;
+}
+.welcome h1 span {
+  background: linear-gradient(110deg, #7d6bb8 8%, #7b93c5 55%, #bf8eaa);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+.welcomeCopy {
+  font-size: 13px;
+  line-height: 1.9;
+  color: var(--agent-muted);
+  margin: 20px 0 32px;
+}
+.starters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  text-align: left;
+  margin-bottom: 24px;
+}
+.starter {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 17px;
+  border: 1px solid var(--agent-line);
+  border-radius: 14px;
+  background: var(--agent-surface);
+  text-align: left;
+  color: var(--agent-text);
+  cursor: pointer;
+  transition:
+    transform 180ms,
+    border-color 180ms,
+    box-shadow 180ms;
+}
+.starter:hover {
+  transform: translateY(-3px);
+  border-color: #bcb0e0;
+  box-shadow: 0 6px 20px #6b5da610;
+}
+.starter strong {
+  font-weight: 550;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.starter > span:not(.starterIcon) {
+  color: var(--agent-muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+.starterIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 9px;
+}
+.blue {
+  background: #edf3ff;
+  color: #6c8fc4;
+}
+.purple {
+  background: #f2edfc;
+  color: #a080c7;
+}
+.peach {
+  background: #fff1e8;
+  color: #c69774;
+}
+.starterArrow {
+  position: absolute;
+  top: 19px;
+  right: 14px;
+  color: var(--agent-muted);
+}
+.composerArea {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  flex-shrink: 0;
+}
+.composer {
+  padding: 19px 19px 13px;
+  border: 1px solid #dedce8;
+  border-radius: 20px;
+  background: var(--agent-surface);
+  box-shadow:
+    0 5px 9px #29253703,
+    0 12px 44px #776a9f0a;
+  transition:
+    border-color 200ms,
+    box-shadow 200ms;
+}
+.composer:focus-within {
+  border-color: #b3a4d6;
+  box-shadow:
+    0 0 0 3px #a995db12,
+    0 12px 44px #776a9f0a;
+}
+.composer textarea {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  max-height: 160px;
+  padding: 0;
+  resize: none;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  background: transparent;
+  color: var(--agent-text);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.composer textarea::placeholder {
+  color: #a19da9;
+}
+.composerFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+}
+.composerHint {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  color: var(--agent-muted);
+}
+.composerHint svg {
+  color: #9c8bbf;
+}
+.sendControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.characterCount {
+  font-size: 10px;
+  color: var(--agent-muted);
+}
+.sendButton {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  border: 0;
+  background: linear-gradient(145deg, #9b8ac9, #766ba9);
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 3px 9px #8370b322;
+}
+.sendButton:hover {
+  filter: brightness(1.08);
+}
+.composerDisclaimer {
+  margin: 13px 0 0;
+  color: var(--agent-muted);
+  font-size: 10px;
+  line-height: 1.7;
+  text-align: center;
+}
+.composerDisclaimer span {
+  display: block;
+  margin-top: 3px;
+  opacity: 0.75;
+  font-size: 9px;
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ========================================================================== */
+/* CHAT MESSAGES AND REAL REQUEST STATE                                        */
+/* Pending UI is intentionally indeterminate: the endpoint exposes no live      */
+/* tool events. Status labels preserve failures and verification boundaries.    */
+/* ========================================================================== */
+
+.conversationStage {
+  justify-content: flex-start;
+  padding-top: 0;
+  padding-bottom: 24px;
+  overflow: hidden;
+}
+.transcript {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--agent-line) transparent;
+  margin: 0 -20px 24px;
+  padding: 16px 20px 24px;
+}
+.messageList {
+  width: min(100%, 760px);
+  margin: 0 auto;
+}
+.message {
+  margin-bottom: 28px;
+  overflow-wrap: anywhere;
+}
+.userMessage {
+  width: fit-content;
+  max-width: 88%;
+  margin-left: auto;
+  background: var(--agent-soft);
+  border: 1px solid var(--agent-line);
+  border-radius: 18px 18px 5px 18px;
+  padding: 13px 18px;
+}
+.assistantMessage {
+  padding: 4px 0;
+}
+.assistantLabel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--agent-accent);
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.statusLabel {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--agent-muted);
+  border-left: 1px solid var(--agent-line);
+  margin-left: 4px;
+  padding-left: 10px;
+}
+.prose {
+  font-size: 13px;
+  line-height: 1.9;
+}
+.prose p {
+  margin: 0 0 12px;
+  white-space: pre-wrap;
+}
+.prose p:last-child {
+  margin-bottom: 0;
+}
+.prose ul {
+  list-style: disc;
+  padding-left: 20px;
+  margin: 10px 0;
+}
+.prose li {
+  margin: 5px 0;
+}
+.textHeading {
+  font-weight: 650;
+}
+.artifactCard {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 15px;
+  margin-top: 18px;
+  border: 1px solid var(--agent-line);
+  border-radius: 13px;
+  background: var(--agent-surface);
+  color: var(--agent-text);
+  text-align: left;
+  cursor: pointer;
+}
+.artifactCard:hover {
+  border-color: var(--agent-accent);
+}
+.artifactIcon {
+  display: grid;
+  place-items: center;
+  width: 41px;
+  height: 44px;
+  background: var(--agent-soft);
+  border-radius: 9px;
+  color: var(--agent-accent);
+}
+.artifactCard > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+.artifactCard strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+}
+.artifactCard small {
+  display: block;
+  font-size: 10px;
+  color: var(--agent-muted);
+  margin-top: 5px;
+}
+.artifactCard > svg {
+  color: var(--agent-muted);
+}
+.working {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  color: var(--agent-accent);
+}
+.workingMark {
+  display: grid;
+  place-items: center;
+  width: 35px;
+  height: 35px;
+  border-radius: 11px;
+  background: var(--agent-soft);
+}
+.working strong {
+  font-size: 12px;
+  font-weight: 500;
+}
+.working div > span {
+  display: block;
+  color: var(--agent-muted);
+  font-size: 11px;
+  margin-top: 5px;
+}
+.dots {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 2px;
+}
+.dots i {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--agent-accent);
+  animation: thinkingDot 1400ms ease-in-out infinite;
+}
+.dots i:nth-child(2) {
+  animation-delay: 150ms;
+}
+.dots i:nth-child(3) {
+  animation-delay: 300ms;
+}
+@keyframes thinkingDot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+.error {
+  background: var(--agent-surface);
+  border: 1px solid #d5a7a74d;
+  border-radius: 10px;
+  padding: 12px 15px;
+  color: #af6262;
+  font-size: 12px;
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+.error p {
+  margin: 0;
+}
+.error button {
+  color: inherit;
+  text-decoration: underline;
+  padding-top: 4px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+}
+.failedLabel {
+  display: block;
+  font-size: 10px;
+  color: #af6262;
+  margin-top: 8px;
+}
+
+/* ========================================================================== */
+/* ARTIFACT PANEL                                                             */
+/* A bordered document surface appears alongside chat on roomy screens. The     */
+/* panel owns its scroll and exposes raw data when a future schema is unknown. */
+/* ========================================================================== */
+
+.reportPanel {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin: 12px 12px 12px 0;
+  border: 1px solid var(--agent-line);
+  border-radius: 16px;
+  background: var(--agent-surface);
+  box-shadow: -6px 0 32px #40305205;
+  animation: reportEnter 300ms ease-out;
+  overflow: hidden;
+}
+@keyframes reportEnter {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.reportToolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--agent-line);
+}
+.reportToolbar > span {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12px;
+  font-weight: 550;
+}
+.reportToolbar > div {
+  display: flex;
+  gap: 4px;
+}
+.reportBody {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  min-height: 0;
+  padding: 28px;
+  overflow-wrap: anywhere;
+  scrollbar-width: thin;
+}
+.reportBody h2 {
+  font-size: 27px;
+  line-height: 1.3;
+  letter-spacing: -0.8px;
+  font-weight: 600;
+  margin: 14px 0 10px;
+}
+.reportBody h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 26px 0 14px;
+}
+.reportBody h4 {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 8px 0;
+}
+.reportBody p {
+  font-size: 12px;
+  line-height: 1.85;
+}
+.reportBody a {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  font-size: 11px;
+  color: var(--agent-accent);
+  text-decoration: none;
+}
+.reportBody a:hover {
+  text-decoration: underline;
+}
+.reportEyebrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--agent-muted);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  margin-top: 27px;
+}
+.resultStatus {
+  display: inline-block;
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 10px;
+}
+.verified {
+  background: #46a18212;
+  color: #409277;
+}
+.unverified {
+  background: #c99b2e14;
+  color: #a48034;
+}
+.metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 26px 0 30px;
+}
+.metrics > div {
+  background: var(--agent-soft);
+  border: 1px solid var(--agent-line);
+  border-radius: 10px;
+  padding: 15px;
+}
+.metrics strong {
+  display: block;
+  font-size: 23px;
+  font-weight: 550;
+  letter-spacing: -0.6px;
+}
+.metrics span {
+  display: block;
+  color: var(--agent-muted);
+  font-size: 10px;
+  margin-top: 5px;
+}
+.finding,
+.pageCard {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--agent-line);
+}
+.severity {
+  color: var(--agent-accent);
+  text-transform: uppercase;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+.pageCard p {
+  color: var(--agent-muted);
+  margin: 8px 0;
+}
+.pageCard h3 {
+  margin-top: 0;
+}
+.muted {
+  color: var(--agent-muted);
+  font-size: 11px;
+}
+.reportNote {
+  color: var(--agent-muted);
+  padding-top: 16px;
+  font-size: 10px !important;
+}
+.reportSummary {
+  border-top: 1px solid var(--agent-line);
+  margin-top: 24px;
+}
+.warnings {
+  background: #c99b2e0a;
+  padding: 0 14px 14px;
+  border: 1px solid #c99b2e22;
+  border-radius: 10px;
+  margin-top: 24px;
+}
+.warnings h3 {
+  margin-top: 15px;
+}
+.warnings p {
+  color: var(--agent-muted);
+}
+.evidence > div {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--agent-line);
+}
+.rawData {
+  margin-top: 14px;
+  font-size: 11px;
+  color: var(--agent-muted);
+}
+.rawData summary {
+  cursor: pointer;
+}
+.rawData pre,
+.json {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 10px;
+  line-height: 1.8;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--agent-soft);
+}
+.emptyReport {
+  margin-top: 25px;
+  padding: 22px;
+  background: var(--agent-soft);
+  border: 1px dashed var(--agent-line);
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--agent-muted);
+}
+
+/* ========================================================================== */
+/* REAL WEBSITE ANATOMY DOCUMENT                                               */
+/* The report keeps its own branded colors in an isolated iframe. Flex sizing   */
+/* gives the complete document a scrollable viewport below its PDF controls.    */
+/* ========================================================================== */
+
+.documentArtifact {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+.documentActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 15px 18px;
+  border-bottom: 1px solid var(--agent-line);
+}
+.documentActions > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.documentActions strong {
+  font-size: 12px;
+  font-weight: 600;
+}
+.pdfButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 12px;
+  border-radius: 9px;
+  border: 1px solid var(--agent-accent);
+  color: var(--agent-accent);
+  background: transparent;
+  cursor: pointer;
+  font-size: 11px;
+}
+.documentFrame {
+  display: block;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  border: 0;
+  background: white;
+}
+
+/* ========================================================================== */
+/* DARK THEME, SMALL SCREENS AND ACCESSIBILITY                                  */
+/* The theme attribute comes from the existing ThemeToggle. On narrow screens   */
+/* the selected artifact replaces the chat surface so hidden chat controls do   */
+/* not receive focus. Closing restores the opener after React reveals chat.     */
+/* ========================================================================== */
+
+:global([data-theme='dark']) .workspace {
+  --agent-bg: #1b1a20;
+  --agent-surface: #242329;
+  --agent-text: #e6e3ec;
+  --agent-muted: #9d98a9;
+  --agent-line: #37343f;
+  --agent-soft: #2d2a34;
+  --agent-accent: #b3a0e5;
+}
+:global([data-theme='dark']) .ambient {
+  opacity: 0.18;
+  background:
+    radial-gradient(ellipse at 38% 23%, #6d4f99, transparent 50%),
+    radial-gradient(ellipse at 78% 78%, #42647580, transparent 50%);
+}
+:global([data-theme='dark']) .heroMark {
+  border-color: #625a73;
+  background: linear-gradient(140deg, #40324f, #333b57, #4e3741);
+  color: #d1b7ee;
+  box-shadow: 0 6px 32px #00000020;
+}
+:global([data-theme='dark']) .composer {
+  border-color: #45404f;
+}
+:global([data-theme='dark']) .blue {
+  background: #2d3549;
+  color: #a1b9e0;
+}
+:global([data-theme='dark']) .purple {
+  background: #3e304d;
+  color: #c5a2e2;
+}
+:global([data-theme='dark']) .peach {
+  background: #49382e;
+  color: #dcbaa0;
+}
+
+@media (max-width: 1400px) {
+  .withReport .chatStage {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  .withReport .workspaceHeader {
+    padding-left: 22px;
+    padding-right: 16px;
+  }
+  .withReport .workspaceIdentity {
+    gap: 6px;
+  }
+  .withReport .beta {
+    display: none;
+  }
+  .withReport .headerActions {
+    gap: 2px;
+  }
+  .withReport .quietButton {
+    gap: 4px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 1150px) {
+  .withReport {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .withReport .chatColumn {
+    display: none;
+  }
+  .reportPanel {
+    margin: 12px;
+  }
+}
+
+@media (max-width: 900px) {
+  .dashboard:global(.dashboard-layout) {
+    grid-template-columns: minmax(0, 1fr);
+    height: 100dvh;
+  }
+  .workspaceHeader {
+    padding: 16px 22px;
+    min-height: 64px;
+  }
+  .chatStage {
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+  .welcome h1 {
+    font-size: 42px;
+  }
+}
+
+@media (max-height: 780px) and (min-width: 701px) {
+  .heroMark {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 15px;
+    border-radius: 16px;
+  }
+  .welcome h1 {
+    font-size: 36px;
+  }
+  .welcomeCopy {
+    margin: 14px 0 20px;
+  }
+  .starter {
+    padding: 12px;
+  }
+  .starterIcon {
+    margin-bottom: 3px;
+  }
+  .chatStage {
+    padding-bottom: 22px;
+  }
+}
+
+@media (max-width: 600px) {
+  .workspaceHeader {
+    padding: 14px 16px;
+  }
+  .workspaceIdentity {
+    font-size: 12px;
+    gap: 6px;
+  }
+  .headerActions {
+    gap: 0;
+  }
+  .headerActions .quietButton span:not(.count) {
+    display: none;
+  }
+  .chatStage {
+    padding: 18px 18px 22px;
+    justify-content: flex-start;
+  }
+  .welcome {
+    margin-top: auto;
+    padding-top: 14px;
+  }
+  .heroMark {
+    width: 53px;
+    height: 53px;
+    border-radius: 18px;
+    margin-bottom: 22px;
+  }
+  .eyebrow {
+    font-size: 7px;
+    letter-spacing: 1.5px;
+  }
+  .welcome h1 {
+    font-size: 35px;
+    letter-spacing: -1.4px;
+  }
+  .welcomeCopy {
+    font-size: 12px;
+    margin: 16px 0 24px;
+  }
+  .starters {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .starter {
+    display: grid;
+    grid-template-columns: 29px 1fr;
+    column-gap: 10px;
+    row-gap: 0;
+    padding: 11px 14px;
+  }
+  .starterIcon {
+    grid-row: span 2;
+    width: 29px;
+    height: 29px;
+    margin: 0;
+  }
+  .starter strong {
+    font-size: 11px;
+    padding-right: 14px;
+  }
+  .starter > span:not(.starterIcon) {
+    font-size: 9px;
+  }
+  .starterArrow {
+    top: 16px;
+  }
+  .composer {
+    border-radius: 16px;
+    padding: 16px 15px 12px;
+  }
+  .composerArea {
+    margin-bottom: auto;
+  }
+  .conversationStage {
+    padding-top: 0;
+  }
+  .conversationStage .composerArea {
+    margin-bottom: 0;
+  }
+  .composerDisclaimer span {
+    display: none;
+  }
+  .reportBody {
+    padding: 22px;
+  }
+  .reportPanel {
+    margin: 8px;
+  }
+  .transcript {
+    padding-top: 12px;
+    margin-bottom: 14px;
+  }
+  .working {
+    gap: 8px;
+  }
+  .working div > span {
+    font-size: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace *,
+  .workspace *::before,
+  .workspace *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
