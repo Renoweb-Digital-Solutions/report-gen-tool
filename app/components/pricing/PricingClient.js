@@ -27,7 +27,9 @@ export default function PricingClient() {
     e.preventDefault();
     const token = hasSessionHint();
     if (token) {
-      router.push('/dashboard');
+      // Public pricing sends signed-in customers to the live payment catalog;
+      // checkout prices and availability are owned by the payment microservice.
+      router.push('/dashboard/settings#plans');
     } else {
       setShowAuthModal(true);
     }
@@ -141,7 +143,9 @@ export default function PricingClient() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 text-brandInk font-sans overflow-x-hidden">
-      {showAuthModal && <AuthModal onSuccess={() => router.push('/dashboard')} onClose={() => setShowAuthModal(false)} />}
+      {/* Password sign-in resumes billing after verification. Google sign-in
+          retains its existing provider handoff; Settings is also in the sidebar. */}
+      {showAuthModal && <AuthModal onSuccess={() => router.push('/dashboard/settings#plans')} onClose={() => setShowAuthModal(false)} />}
       <Script id="pricing-faq-schema" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
 
       <Navbar />

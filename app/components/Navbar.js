@@ -4,8 +4,11 @@ import Image from "next/image";
 import { Menu } from "lucide-react";
 import ApiHealthBadge from "./ApiHealthBadge";
 import ThemeToggle from "./ThemeToggle";
+// One shared account dropdown serves dashboard, profile, and billing pages.
+// Keep it after every other control so it is always the navbar's rightmost item.
+import AccountMenu from "./AccountMenu";
 
-/** Dashboard callers may supply an account control without adding form columns. */
+/** Shared dashboard header with an optional wallet slot and rightmost account menu. */
 export default function Navbar({ onMenuClick, accountControls }) {
   return (
     <>
@@ -19,7 +22,7 @@ export default function Navbar({ onMenuClick, accountControls }) {
         className="navbar"
         role="navigation"
         aria-label="Main navigation"
-        data-has-account-controls={accountControls ? "true" : undefined}
+        data-has-account-controls="true"
       >
         <div className="flex items-center gap-2 md:gap-6 navbar-left">
           {onMenuClick && (
@@ -60,6 +63,7 @@ export default function Navbar({ onMenuClick, accountControls }) {
             Session data clears on tab close
           </div>
           <ThemeToggle />
+          <AccountMenu />
         </div>
       </nav>
     </>

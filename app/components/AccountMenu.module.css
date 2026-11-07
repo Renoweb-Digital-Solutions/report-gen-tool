@@ -1,0 +1,211 @@
+/* ========================================================================== */
+/* NAVBAR ACCOUNT DISCLOSURE                                                   */
+/* AccountMenu is the rightmost control in the shared fixed dashboard navbar.  */
+/* Keep the popup inside the viewport and above page content. JS provides a     */
+/* short pointer-leave delay for the small gap between trigger and panel.       */
+/* ========================================================================== */
+.root {
+  position: relative;
+  flex-shrink: 0;
+}
+.trigger {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid #023dbb22;
+  background: #023dbb0b;
+  color: #023dbb;
+  cursor: pointer;
+  transition:
+    background 150ms,
+    border-color 150ms;
+}
+.trigger:hover,
+.trigger[aria-expanded="true"] {
+  background: #4460ef18;
+  border-color: #4460ef60;
+}
+.panel {
+  position: absolute;
+  top: calc(100% + 13px);
+  right: 0;
+  width: min(310px, calc(100vw - 32px));
+  max-height: calc(100dvh - 120px);
+  overflow-y: auto;
+  padding: 8px;
+  border: 1px solid #e1e6f0;
+  border-radius: 17px;
+  color: #191919;
+  background: #fff;
+  box-shadow:
+    0 16px 48px #09112426,
+    0 2px 8px #0911240a;
+}
+.identity {
+  display: flex;
+  gap: 11px;
+  align-items: center;
+  padding: 13px 9px 17px;
+  border-bottom: 1px solid #e9edf5;
+  margin-bottom: 6px;
+}
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 13px;
+  background: #4460ef0e;
+  color: #4460ef;
+}
+.identity > div {
+  min-width: 0;
+}
+.identity strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+.identity p {
+  color: #697286;
+  font-size: 10px;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+  margin-top: 2px;
+}
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.links a,
+.actions button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 11px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  text-decoration: none;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.links a > svg:first-child {
+  color: #4460ef;
+  flex-shrink: 0;
+}
+.links a > svg:last-child {
+  margin-left: auto;
+  color: #8c96a8;
+}
+.links a:hover,
+.links a[aria-current="page"],
+.actions button:hover:not(:disabled) {
+  background: #4460ef0b;
+}
+.actions {
+  margin-top: 7px;
+  padding-top: 7px;
+  border-top: 1px solid #e9edf5;
+}
+.actions button {
+  font-size: 11px;
+  color: #697286;
+}
+.actions .logout {
+  color: #c5364b;
+  font-size: 12px;
+}
+.actions button > svg {
+  flex-shrink: 0;
+}
+.actions button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+.error {
+  margin: 6px 5px 4px;
+  padding: 10px;
+  border-radius: 8px;
+  background: #ef444411;
+  color: #b7283e;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.root :is(button, a):focus-visible {
+  outline: 3px solid #4ec8ef;
+  outline-offset: 2px;
+}
+.spinner {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ========================================================================== */
+/* DARK THEME AND REDUCED MOTION                                               */
+/* Follow the existing dashboard ThemeProvider. Maintain readable danger/focus */
+/* colors, and remove motion when the user's operating system requests it.     */
+/* ========================================================================== */
+:global([data-theme="dark"]) .trigger {
+  color: #e5eaff;
+  border-color: #ffffff24;
+  background: #ffffff0a;
+}
+:global([data-theme="dark"]) .trigger:hover,
+:global([data-theme="dark"]) .trigger[aria-expanded="true"] {
+  background: #4460ef32;
+  border-color: #7b90ff80;
+}
+:global([data-theme="dark"]) .panel {
+  background: #191f2b;
+  color: #f2f4fb;
+  border-color: #303a4f;
+  box-shadow: 0 18px 50px #0006;
+}
+:global([data-theme="dark"]) .identity,
+:global([data-theme="dark"]) .actions {
+  border-color: #303a4f;
+}
+:global([data-theme="dark"]) .avatar {
+  color: #a9b8ff;
+  background: #4460ef25;
+}
+:global([data-theme="dark"]) .identity p,
+:global([data-theme="dark"]) .actions button {
+  color: #a5b0c3;
+}
+:global([data-theme="dark"]) .links a > svg:first-child {
+  color: #a9b8ff;
+}
+:global([data-theme="dark"]) .links a:hover,
+:global([data-theme="dark"]) .links a[aria-current="page"],
+:global([data-theme="dark"]) .actions button:hover:not(:disabled) {
+  background: #4460ef25;
+}
+:global([data-theme="dark"]) .actions .logout,
+:global([data-theme="dark"]) .error {
+  color: #ff9baa;
+}
+@media (prefers-reduced-motion: reduce) {
+  .trigger {
+    transition: none;
+  }
+  .spinner {
+    animation: none;
+  }
+}

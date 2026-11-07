@@ -1,7 +1,6 @@
 "use client";
 import { useAnalytics } from "@/app/components/AnalyticsProvider";
 import { analyticsSettings } from "@/app/lib/analyticsCatalog";
-import { logoutSession } from "@/app/features/auth/api";
 
 import { useState, useRef, useEffect } from "react";
 import { useSessionState } from "@/app/hooks/useSessionState";
@@ -77,15 +76,6 @@ export default function Dashboard() {
   const [userProfile, setUserProfile] = useState(null);
   // Each fresh result reschedules the optional card, independent of analytics consent.
   const [feedbackCompletion, setFeedbackCompletion] = useState(null);
-
-  const handleLogout = async () => {
-    try {
-      await logoutSession();
-      router.push("/?login=true");
-    } catch (error) {
-      window.alert(error.message || "Could not sign out. Please try again.");
-    }
-  };
 
   useEffect(() => {
     let active = true;
@@ -807,7 +797,6 @@ export default function Dashboard() {
             setActiveTab(id);
             setIsSidebarOpen(false);
           }}
-          onLogout={handleLogout}
         />
 
         {/* ── Main Content (Form) ── */}

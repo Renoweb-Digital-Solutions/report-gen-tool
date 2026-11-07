@@ -2,7 +2,7 @@
 import { getUserProfile } from '@/app/lib/api';
 import { logoutSession, revokeAllDevices } from '@/app/features/auth/api';
 import { useState, useEffect } from 'react';
-import { X, LogOut, User as UserIcon } from 'lucide-react';
+import { X, LogOut, User as UserIcon, CreditCard } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function ProfileModal({ onClose }) {
@@ -44,6 +44,15 @@ export default function ProfileModal({ onClose }) {
         </div>
 
         <div className="profile-actions" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {/* Keep the legacy modal's destination consistent with the navbar.
+              Close the modal before navigation so its overlay cannot persist. */}
+          <button className="profile-logout-btn" onClick={() => {
+            onClose();
+            router.push('/dashboard/settings');
+          }}>
+            <CreditCard size={18} />
+            <span>Settings & billing</span>
+          </button>
           <button 
             className="profile-logout-btn" 
             style={{ background: '#e0e7ff', color: '#4338ca', borderColor: '#c7d2fe' }}

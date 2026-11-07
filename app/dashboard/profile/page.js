@@ -11,6 +11,8 @@ import { motion } from 'framer-motion';
 // Profile and admin history share exact confirmed-usage labels. Legacy records
 // without a billing link show Not recorded rather than an invented zero charge.
 import { creditUsageLabel } from '@/app/features/credits/usage';
+// Cross-link account/security and billing without merging their responsibilities.
+import Link from 'next/link';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -124,6 +126,9 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 w-full">
+                  {/* Billing stays on its own themed settings page; this link
+                      leaves the existing profile/security controls intact. */}
+                  <Link href="/dashboard/settings" className="w-full py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl text-center">Settings & billing</Link>
                   <button onClick={() => setShowAuthModal(true)} className="flex items-center justify-center gap-2 w-full py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-all">
                     <KeyRound size={16} className="text-slate-500" /> Change Password
                   </button>
@@ -139,7 +144,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Right Col: Tickets List */}
-          <div className="md:col-span-2">
+          <div id="support" className="md:col-span-2">
             <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
               <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/50">
                 <h2 className="text-lg font-bold text-slate-900">Your Support Tickets</h2>
