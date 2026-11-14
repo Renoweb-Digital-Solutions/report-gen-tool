@@ -2,6 +2,7 @@ import { FULL_REPORT } from './fullReport';
 import { INSTAGRAM_AUDIT } from './instagramAudit';
 import { AI_VISIBILITY_DETAILS } from './aiVisibilityDetails';
 import { GMB_AUDIT_CONTENT } from './gmbAudit';
+import { WEBSITE_ANATOMY_CONTENT } from './websiteAnatomy';
 
 export const FEATURES = {
   // # Longer Full Report copy lives separately; every module uses the same template.
@@ -14,67 +15,11 @@ export const FEATURES = {
     seo: {
       url: 'https://flawdits.com/website-anatomy',
       metaTitle: 'Website Anatomy: SEO & Technical Health Audit Tool | Flawdits',
-      metaDescription: 'Run a deep website audit covering keyword rankings, Core Web Vitals, backlinks, technical SEO health, and AI search visibility in one grade.',
+      metaDescription: 'Run a website audit covering authority, technical health grades, backlinks, organic keywords, traffic estimates and AI visibility in one client-ready report.',
       primaryKeyword: 'website SEO audit tool',
     },
-    hero: {
-      h1: 'Website Anatomy: The SEO Audit Tool',
-      subtitle: "Website Anatomy is Flawdits' website SEO audit tool — a deep technical scan that turns raw crawl data into a single, readable grade. Enter a domain and get back authority, health and AI visibility scores, backed by the specific issues holding the site back.",
-      badge: "Grade your site's technical health in minutes",
-      ctaText: 'Run Website Anatomy →',
-    },
-    contentBlocks: [
-      {
-        h2: 'A Website Health Check Tool That Grades, Not Just Lists',
-        body: 'Most crawlers dump a wall of warnings. Website Anatomy works as a website health check tool that grades HTTP, SSL, DNS, security headers, metadata and performance individually so you know at a glance whether a B-grade site has one fixable gap or ten.'
-      },
-      {
-        h2: 'Core Web Vitals Audit Tool Built Into Every Scan',
-        body: 'Speed and stability matter as much as content, which is why every scan doubles as a Core Web Vitals audit tool — response time, page weight and performance grade are pulled automatically, no separate PageSpeed check required.'
-      },
-      {
-        h2: 'A Technical SEO Audit Report With Specific Fixes',
-        body: 'Rather than a generic checklist, the technical SEO audit report lists each problem by severity — notice, warning or error — with the exact impact and the recommended fix. Missing a canonical tag or a Content-Security-Policy header shows up as a specific, actionable line item, not a vague score.'
-      }
-    ],
-    featureGrid: {
-      h2: 'What Website Anatomy Covers',
-      items: [
-        { title: 'Keyword Ranking Audit', desc: 'Current organic keyword coverage and intent mix.' },
-        { title: 'Backlink Profile Checker', desc: 'Referring domains, follow/nofollow split, total backlinks.' },
-        { title: 'Organic Traffic Audit', desc: 'Visibility by country and estimated traffic.' },
-        { title: 'Site Speed & Performance', desc: 'Response time, page weight, Core Web Vitals grade.' },
-        { title: 'SSL & Security Headers', desc: 'SSL grade plus missing security headers.' },
-        { title: 'Metadata & Canonicals', desc: 'Meta grade and duplicate URL risks.' },
-        { title: 'Robots.txt & Sitemap', desc: 'Crawlability and llms.txt readiness.' }
-      ]
-    },
-    ctaBand: {
-      headline: "Find out what's really holding your rankings back",
-      btnText: 'Audit My Website →'
-    },
-    faqs: [
-      {
-        q: "What tool checks my website's technical SEO health and Core Web Vitals?",
-        a: 'Website Anatomy audits HTTP, SSL, DNS, security headers, metadata and Core Web Vitals in one scan and returns a single health grade.'
-      },
-      {
-        q: 'How do I audit my site for missing meta tags and security headers?',
-        a: 'The technical SEO audit report flags missing canonical tags and security headers like Content-Security-Policy and X-Frame-Options with severity ratings.'
-      },
-      {
-        q: "What's a good tool to check my backlink profile and referring domains?",
-        a: 'Website Anatomy includes a backlink profile checker showing total backlinks, referring domains, and the follow/nofollow split.'
-      },
-      {
-        q: 'How can I see if my website is optimized for AI search visibility?',
-        a: 'Website Anatomy checks robots.txt, sitemap.xml, and llms.txt as part of its AI search visibility for websites assessment.'
-      },
-      {
-        q: 'Is there a free website health checker that also shows keyword rankings?',
-        a: 'Yes — the free tier of Website Anatomy includes both a health grade and a sample of current organic keyword rankings.'
-      }
-    ]
+    // # Supplied coverage and definitions stay together for editorial review.
+    ...WEBSITE_ANATOMY_CONTENT,
   },
 
   'gmb-audit': {

@@ -71,7 +71,6 @@ export function Navbar() {
     { name: 'Blogs', desc: 'Latest articles and insights', href: '/blogs', icon: Globe, color: '#308fef' },
     { name: 'Press and media', desc: 'News and press releases', href: '/press', icon: Camera, color: '#9d4edd' },
     { name: 'FAQs', desc: 'Frequently asked questions', href: '/faq', icon: HelpCircle, color: '#ffc857' },
-    { name: 'Technical Documentation', desc: 'Guides and API docs', href: '/docs', icon: Layers, color: '#4460ef' },
     { name: 'Contact Us', desc: 'Get in touch with support', href: '/contact', icon: MapPin, color: '#10b981' },
   ];
 

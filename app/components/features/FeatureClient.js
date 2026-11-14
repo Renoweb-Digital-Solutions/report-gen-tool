@@ -39,6 +39,20 @@ import InstagramStory, { InstagramPreview } from "./InstagramStory";
 import ModuleNavigation from "./ModuleNavigation";
 import AiVisibilityStory, { AiVisibilityPreview } from "./AiVisibilityStory";
 import GmbStory, { GmbPreview } from "./GmbStory";
+import WebsiteAnatomyStory, {
+  WebsiteAnatomyPreview,
+} from "./WebsiteAnatomyStory";
+import FeatureHero from "./FeatureHero";
+
+// # Scope the new presentation to the five manuscript pages. Other module heroes
+// keep their current layout; all copy continues to come from the same catalog.
+const EDITORIAL_HERO_MODULES = new Set([
+  "full-report",
+  "instagram-audit",
+  "ai-visibility-audit",
+  "gmb-audit",
+  "website-anatomy",
+]);
 
 export default function FeatureClient({ initialSlug = "full-report" }) {
   const router = useRouter();
@@ -53,6 +67,10 @@ export default function FeatureClient({ initialSlug = "full-report" }) {
     if (typeof window !== "undefined") {
       const targetPath = slug === "full-report" ? "/full-report" : `/${slug}`;
       window.history.pushState(null, "", targetPath);
+      // # Module heroes have different heights. Start the newly selected module
+      // at the top instead of carrying an offset that clips its hero under the
+      // sticky bar. Instant scrolling overrides the global smooth-scroll rule.
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     }
   };
 
@@ -141,7 +159,9 @@ export default function FeatureClient({ initialSlug = "full-report" }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 text-brandInk font-sans overflow-x-hidden pt-28">
+    // # Clip horizontal decoration without creating a scroll container: hidden
+    // overflow would make the module bar stick to this wrapper, not the viewport.
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 text-brandInk font-sans overflow-x-clip pt-28">
       {showAuthModal && (
         <AuthModal
           onSuccess={() => router.push("/dashboard")}
@@ -155,7 +175,9 @@ export default function FeatureClient({ initialSlug = "full-report" }) {
       />
 
       {isModule && (
-        <div className="sticky top-20 z-30 bg-white/90 backdrop-blur-md border-b border-brandDeep/10 py-3 shadow-sm">
+        // # The fixed public header is 7rem: a 2rem banner plus 5rem navigation.
+        // Match the page's pt-28 so the module bar always sits below both rows.
+        <div className="sticky top-28 z-30 bg-white/90 backdrop-blur-md border-b border-brandDeep/10 py-3 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-3">
             {/* Label (Desktop Only) */}
             <div className="hidden sm:flex items-center gap-2 text-xs font-bold text-brandInk/60 uppercase tracking-widest shrink-0">
@@ -206,118 +228,12 @@ export default function FeatureClient({ initialSlug = "full-report" }) {
           transition={{ duration: 0.35 }}
         >
           {/* HERO SECTION */}
-          <section className="pt-12 pb-16 relative overflow-hidden">
-            <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
-              <span className="inline-block px-4 py-1.5 mb-6 rounded-full bg-gradient-to-r from-brandAmber/20 to-amber-300/30 text-brandDark border border-brandAmber/40 text-xs font-bold shadow-sm">
-                {data.eyebrow}
-              </span>
-
-              <TextReveal
-                as="h1"
-                text={data.hero.h1}
-                className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-brandDeep tracking-tight mb-6 max-w-4xl mx-auto leading-tight"
-              />
-
-              <p className="text-base sm:text-lg text-brandInk/70 leading-relaxed max-w-3xl mx-auto mb-8">
-                {data.hero.subtitle}
-              </p>
-
-              {/* # Optional introduction keeps Full Report within the shared hero. */}
-              {data.hero.summary && (
-                <>
-                  <p className="text-sm sm:text-base font-bold text-brandDeep mb-4">
-                    {data.hero.badge}
-                  </p>
-                  {data.hero.summaryTitle && (
-                    <h3 className="text-xl sm:text-2xl font-bold text-brandDeep mb-4">
-                      {data.hero.summaryTitle}
-                    </h3>
-                  )}
-                  <p className="text-sm sm:text-base text-brandInk/70 leading-relaxed max-w-3xl mx-auto mb-8">
-                    {data.hero.summary}
-                  </p>
-                </>
-              )}
-
-              {data.roadmapNotice && (
-                <div className="max-w-2xl mx-auto mb-8 p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center gap-3 text-xs text-amber-900 font-semibold text-left">
-                  <Info size={18} className="text-amber-600 shrink-0" />
-                  <span>{data.roadmapNotice}</span>
-                </div>
-              )}
-
-              <div className="flex flex-wrap justify-center items-center gap-4 mb-12">
-                <MagneticButton
-                  onClick={handleCtaClick}
-                  className="px-8 py-4 bg-gradient-to-r from-brandDeep to-brandIndigo text-white rounded-full text-base font-bold shadow-glow-blue hover:shadow-xl transition-all flex items-center gap-3"
-                >
-                  <span>{data.hero.ctaText}</span>
-                  {!data.hero.ctaText.endsWith("→") && <ArrowRight size={18} />}
-                </MagneticButton>
-              </div>
-
-              {/* MOCKUP / UI SCREENSHOT PANEL */}
-              {isModule &&
-                !data.preview &&
-                !data.screenshot &&
-                !data.aiPreview &&
-                !data.gmbPreview && (
-                  <div className="max-w-5xl mx-auto bg-gradient-to-br from-brandDark via-[#0b1329] to-brandDeep p-6 sm:p-10 rounded-3xl shadow-2xl border-4 border-brandCyan/40 text-left relative overflow-hidden">
-                    <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-3 h-3 rounded-full bg-red-400" />
-                        <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                        <div className="w-3 h-3 rounded-full bg-green-400" />
-                        <span className="text-xs font-mono text-white/50 ml-2">
-                          flawdits.com/app/report-{activeSlug}
-                        </span>
-                      </div>
-                      <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                        Live Audit engine
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10">
-                        <div className="text-xs text-white/50 uppercase font-bold mb-1">
-                          Overall Health
-                        </div>
-                        <div className="text-4xl font-extrabold text-emerald-400 mb-2">
-                          92 / 100
-                        </div>
-                        <div className="text-xs text-white/70 font-medium">
-                          Grade A+ • Client Ready PDF
-                        </div>
-                      </div>
-
-                      <div className="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10">
-                        <div className="text-xs text-white/50 uppercase font-bold mb-1">
-                          Audit Coverage
-                        </div>
-                        <div className="text-2xl font-extrabold text-brandCyan mb-2">
-                          6 Active Modules
-                        </div>
-                        <div className="text-xs text-white/70 font-medium">
-                          SEO • GMB • Social • AI • Brand
-                        </div>
-                      </div>
-
-                      <div className="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10">
-                        <div className="text-xs text-white/50 uppercase font-bold mb-1">
-                          Export Speed
-                        </div>
-                        <div className="text-2xl font-extrabold text-brandAmber mb-2">
-                          60 Seconds
-                        </div>
-                        <div className="text-xs text-white/70 font-medium">
-                          Automated PDF Generator
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-              {/* # A source-to-document schematic replaces the generic preview tiles. */}
+          {EDITORIAL_HERO_MODULES.has(activeSlug) ? (
+            <FeatureHero
+              data={data}
+              icon={currentModule.icon}
+              onStart={handleCtaClick}
+            >
               {data.preview && <FullReportPreview />}
               {data.screenshot && (
                 <InstagramPreview screenshot={data.screenshot} />
@@ -328,8 +244,144 @@ export default function FeatureClient({ initialSlug = "full-report" }) {
               {data.gmbPreview && (
                 <GmbPreview caption={data.gmbPreview.caption} />
               )}
-            </div>
-          </section>
+              {data.websitePreview && (
+                <WebsiteAnatomyPreview caption={data.websitePreview.caption} />
+              )}
+            </FeatureHero>
+          ) : (
+            <section className="pt-12 pb-16 relative overflow-hidden">
+              <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
+                <span className="inline-block px-4 py-1.5 mb-6 rounded-full bg-gradient-to-r from-brandAmber/20 to-amber-300/30 text-brandDark border border-brandAmber/40 text-xs font-bold shadow-sm">
+                  {data.eyebrow}
+                </span>
+
+                <TextReveal
+                  as="h1"
+                  text={data.hero.h1}
+                  className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-brandDeep tracking-tight mb-6 max-w-4xl mx-auto leading-tight"
+                />
+
+                <p className="text-base sm:text-lg text-brandInk/70 leading-relaxed max-w-3xl mx-auto mb-8">
+                  {data.hero.subtitle}
+                </p>
+
+                {/* # Optional introduction keeps Full Report within the shared hero. */}
+                {data.hero.summary && (
+                  <>
+                    <p className="text-sm sm:text-base font-bold text-brandDeep mb-4">
+                      {data.hero.badge}
+                    </p>
+                    {data.hero.summaryTitle && (
+                      <h3 className="text-xl sm:text-2xl font-bold text-brandDeep mb-4">
+                        {data.hero.summaryTitle}
+                      </h3>
+                    )}
+                    <p className="text-sm sm:text-base text-brandInk/70 leading-relaxed max-w-3xl mx-auto mb-8">
+                      {data.hero.summary}
+                    </p>
+                  </>
+                )}
+
+                {data.roadmapNotice && (
+                  <div className="max-w-2xl mx-auto mb-8 p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center gap-3 text-xs text-amber-900 font-semibold text-left">
+                    <Info size={18} className="text-amber-600 shrink-0" />
+                    <span>{data.roadmapNotice}</span>
+                  </div>
+                )}
+
+                <div className="flex flex-wrap justify-center items-center gap-4 mb-12">
+                  <MagneticButton
+                    onClick={handleCtaClick}
+                    className="px-8 py-4 bg-gradient-to-r from-brandDeep to-brandIndigo text-white rounded-full text-base font-bold shadow-glow-blue hover:shadow-xl transition-all flex items-center gap-3"
+                  >
+                    <span>{data.hero.ctaText}</span>
+                    {!data.hero.ctaText.endsWith("→") && (
+                      <ArrowRight size={18} />
+                    )}
+                  </MagneticButton>
+                </div>
+
+                {/* MOCKUP / UI SCREENSHOT PANEL */}
+                {isModule &&
+                  !data.preview &&
+                  !data.screenshot &&
+                  !data.aiPreview &&
+                  !data.gmbPreview &&
+                  !data.websitePreview && (
+                    <div className="max-w-5xl mx-auto bg-gradient-to-br from-brandDark via-[#0b1329] to-brandDeep p-6 sm:p-10 rounded-3xl shadow-2xl border-4 border-brandCyan/40 text-left relative overflow-hidden">
+                      <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-3 h-3 rounded-full bg-red-400" />
+                          <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                          <div className="w-3 h-3 rounded-full bg-green-400" />
+                          <span className="text-xs font-mono text-white/50 ml-2">
+                            flawdits.com/app/report-{activeSlug}
+                          </span>
+                        </div>
+                        <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                          Live Audit engine
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10">
+                          <div className="text-xs text-white/50 uppercase font-bold mb-1">
+                            Overall Health
+                          </div>
+                          <div className="text-4xl font-extrabold text-emerald-400 mb-2">
+                            92 / 100
+                          </div>
+                          <div className="text-xs text-white/70 font-medium">
+                            Grade A+ • Client Ready PDF
+                          </div>
+                        </div>
+
+                        <div className="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10">
+                          <div className="text-xs text-white/50 uppercase font-bold mb-1">
+                            Audit Coverage
+                          </div>
+                          <div className="text-2xl font-extrabold text-brandCyan mb-2">
+                            6 Active Modules
+                          </div>
+                          <div className="text-xs text-white/70 font-medium">
+                            SEO • GMB • Social • AI • Brand
+                          </div>
+                        </div>
+
+                        <div className="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10">
+                          <div className="text-xs text-white/50 uppercase font-bold mb-1">
+                            Export Speed
+                          </div>
+                          <div className="text-2xl font-extrabold text-brandAmber mb-2">
+                            60 Seconds
+                          </div>
+                          <div className="text-xs text-white/70 font-medium">
+                            Automated PDF Generator
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                {/* # A source-to-document schematic replaces the generic preview tiles. */}
+                {data.preview && <FullReportPreview />}
+                {data.screenshot && (
+                  <InstagramPreview screenshot={data.screenshot} />
+                )}
+                {data.aiPreview && (
+                  <AiVisibilityPreview caption={data.aiPreview.caption} />
+                )}
+                {data.gmbPreview && (
+                  <GmbPreview caption={data.gmbPreview.caption} />
+                )}
+                {data.websitePreview && (
+                  <WebsiteAnatomyPreview
+                    caption={data.websitePreview.caption}
+                  />
+                )}
+              </div>
+            </section>
+          )}
 
           {/* # Full Report reads as one continuous document; its copy is never hidden in tabs. */}
           {activeSlug === "full-report" ? (
@@ -340,6 +392,8 @@ export default function FeatureClient({ initialSlug = "full-report" }) {
             <AiVisibilityStory data={data} />
           ) : activeSlug === "gmb-audit" ? (
             <GmbStory data={data} />
+          ) : activeSlug === "website-anatomy" ? (
+            <WebsiteAnatomyStory data={data} />
           ) : (
             <>
               {/* CONTENT BLOCKS TABS (CLICKUP STYLE) */}
