@@ -1,72 +1,8 @@
+import { FULL_REPORT } from './fullReport';
+
 export const FEATURES = {
-  'full-report': {
-    slug: 'full-report',
-    title: 'Full Report',
-    eyebrow: 'Flagship Module',
-    seo: {
-      url: 'https://flawdits.com/full-report',
-      metaTitle: 'Full Digital Presence Report | Flawdits',
-      metaDescription: 'Combine website, SEO, Instagram, LinkedIn, GMB and brand consistency data into one comprehensive, gradeable digital presence report.',
-      primaryKeyword: 'complete digital presence report',
-    },
-    hero: {
-      h1: 'Get a Complete Digital Presence Report in One Run',
-      subtitle: "The Full Report is Flawdits' flagship module — a complete digital presence report that combines every audit into a single, gradeable document. Instead of running six separate checks and manually stitching the findings together, you enter a website, Instagram handle, LinkedIn page and Google Business Profile once, and Flawdits builds the whole picture for you.",
-      badge: 'One config, six audits, one export',
-      ctaText: 'Start My Full Report →',
-    },
-    contentBlocks: [
-      {
-        h2: 'An All-in-One Digital Audit Report, Not Six Separate Ones',
-        body: 'This is the all-in-one digital audit report agencies use when a prospect needs to see the whole picture — not just an isolated SEO score or a single social media snapshot. Website health, Instagram engagement, LinkedIn activity, GMB completeness and brand consistency all appear side by side in the same export.'
-      },
-      {
-        h2: 'SEO, Social Media and Brand Audit in One Report',
-        body: "Because it's an SEO, social media and brand audit in one report, the Full Report is designed to answer a single question at a glance: where is this brand strong, and where is it leaking opportunity? Each section carries its own grade, so a reader can jump straight to the weakest area without digging through raw data."
-      },
-      {
-        h2: 'A Digital Presence Score Report Clients Actually Understand',
-        body: "Every Full Report opens with a digital presence score report summary: a top-line website health score, authority score audit, Instagram audit, LinkedIn Page audit, LinkedIn personal profile audit, and AI visibility score, so non-technical stakeholders get the headline before the details. It's the same format used in Flawdits' own downloadable PDF audit report examples: clear grades first, evidence and recommendations after."
-      },
-      {
-        h2: 'An Executive Summary Built for Agency Client Audit Reports',
-        body: "For agencies, this doubles as an agency client audit report ready to attach to a proposal. For in-house teams, it works as an executive summary digital audit for leadership — the kind of document that turns 'we should look into our online presence' into a prioritized action list."
-      }
-    ],
-    featureGrid: {
-      h2: 'What the Full Report Covers',
-      items: [
-        { title: 'Website Technical Health', desc: 'Core Web Vitals, HTTP/SSL, security headers and backlink profile.' },
-        { title: 'Google Business Profile', desc: 'Local search visibility score vs category benchmarks.' },
-        { title: 'Instagram Engagement', desc: 'Engagement rate calculation and post-by-post funnel breakdown.' },
-        { title: 'LinkedIn Performance', desc: 'Posting consistency, media format mix and proof content share.' },
-        { title: 'Visual Brand Match', desc: 'Cross-platform color, typography and visual identity alignment.' },
-        { title: 'AI Search Visibility', desc: 'ChatGPT citations, AI mentions count and llms.txt readiness.' }
-      ]
-    },
-    ctaBand: {
-      headline: 'See every channel graded in a single document',
-      btnText: 'Generate My Full Report →'
-    },
-    faqs: [
-      {
-        q: 'How can I get one report that scores my entire online presence?',
-        a: 'Run the Full Report module — it combines Website Anatomy, GMB, Instagram, LinkedIn and Visual Brand Match into a single digital marketing report card.'
-      },
-      {
-        q: 'What does a complete digital presence report include?',
-        a: 'Website health score, authority score, AI visibility score, social engagement metrics, GMB completeness, and a brand consistency rating, all in one PDF.'
-      },
-      {
-        q: 'Is there a tool that grades my website health and social media together?',
-        a: "Yes — Flawdits' Full Report grades both in the same document, so you don't need to compare separate tools manually."
-      },
-      {
-        q: 'What is a digital presence score and how is it calculated?',
-        a: "It's a composite grade built from website health, authority, AI visibility, social engagement and brand consistency signals collected across each audit module."
-      }
-    ]
-  },
+  // # Longer Full Report copy lives separately; every module uses the same template.
+  'full-report': FULL_REPORT,
 
   'website-anatomy': {
     slug: 'website-anatomy',

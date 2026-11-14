@@ -1,11 +1,11 @@
-'use client';
-import { hasSessionHint } from '@/app/features/auth/api';
+"use client";
+import { hasSessionHint } from "@/app/features/auth/api";
 
-import Image from 'next/image';
-import { ArrowRight } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { ScrollReveal } from '../home/ScrollReveal';
-import { MagneticButton } from './MagneticButton';
+import Image from "next/image";
+import { ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ScrollReveal } from "../home/ScrollReveal";
+import { MagneticButton } from "./MagneticButton";
 
 export function CtaBanner({
   title,
@@ -13,7 +13,8 @@ export function CtaBanner({
   buttonText = "Generate My Free Report",
   badge,
   secondaryButtonText,
-  secondaryButtonHref
+  secondaryButtonHref,
+  onCtaClick,
 }) {
   const router = useRouter();
 
@@ -21,11 +22,11 @@ export function CtaBanner({
     e.preventDefault();
     const token = hasSessionHint();
     if (token) {
-      router.push('/dashboard');
+      router.push("/dashboard");
     } else {
       // If there is an auth modal logic, typically it's handled at the page level.
       // But we can route to /login or append query param
-      router.push('/?login=true');
+      router.push("/?login=true");
     }
   };
 
@@ -33,7 +34,6 @@ export function CtaBanner({
     <section className="py-20 relative overflow-hidden bg-transparent">
       <div className="max-w-[85rem] mx-auto px-6 relative z-10">
         <ScrollReveal className="relative mx-auto w-full bg-gradient-to-br from-sky-400 via-indigo-300 to-cyan-300 rounded-[3rem] overflow-hidden shadow-2xl pt-16 px-8 sm:px-16 border border-white/40">
-
           {/* Top Section */}
           <div className="flex flex-col lg:flex-row items-center justify-between gap-10 mb-16 relative z-20 text-white">
             <div className="lg:w-3/5 text-center lg:text-left">
@@ -53,7 +53,8 @@ export function CtaBanner({
             </div>
             <div className="lg:w-2/5 flex flex-wrap justify-center lg:justify-end gap-4">
               <MagneticButton
-                onClick={handleCtaClick}
+                // # Feature pages reuse their own auth modal; other callers keep the default flow.
+                onClick={onCtaClick || handleCtaClick}
                 className="px-8 sm:px-10 py-4 bg-white text-brandDeep rounded-full text-base sm:text-lg font-extrabold shadow-xl hover:shadow-2xl transition-all inline-flex items-center justify-center gap-3"
               >
                 <span>{buttonText}</span>

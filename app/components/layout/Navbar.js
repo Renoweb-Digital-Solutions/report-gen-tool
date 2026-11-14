@@ -34,6 +34,14 @@ export function Navbar() {
   };
 
   const featureItems = [
+    // # Shared feature entry: desktop and mobile both render this collection.
+    {
+      name: 'Full Report',
+      desc: 'Every channel, one graded PDF',
+      href: '/full-report',
+      icon: Layers,
+      color: '#308fef',
+    },
     { name: 'Website Anatomy', desc: 'Technical SEO & Core Web Vitals', href: '/website-anatomy', icon: Globe, color: '#4460ef' },
     { name: 'GMB Audit', desc: 'Local search & GBP completeness', href: '/gmb-audit', icon: MapPin, color: '#4ec8ef' },
     { name: 'Instagram Audit', desc: 'Engagement & content funnel', href: '/instagram-audit', icon: Camera, color: '#ffc857' },

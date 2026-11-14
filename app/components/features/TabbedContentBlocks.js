@@ -1,22 +1,48 @@
-'use client';
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, ArrowRight, Layers, Layout, Target, Compass, Sparkles, Workflow, Fingerprint } from 'lucide-react';
+"use client";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  CheckCircle2,
+  ArrowRight,
+  Layers,
+  Layout,
+  Target,
+  Compass,
+  Sparkles,
+  Workflow,
+  Fingerprint,
+} from "lucide-react";
 
-const ICONS = [Target, Layers, Layout, Compass, Sparkles, Workflow, Fingerprint];
+const ICONS = [
+  Target,
+  Layers,
+  Layout,
+  Compass,
+  Sparkles,
+  Workflow,
+  Fingerprint,
+];
 
-export default function TabbedContentBlocks({ blocks }) {
+// # The page supplies its existing authentication flow for the exploration CTA.
+// FeatureClient keys this component by module so switching modules resets the
+// selected block rather than carrying an index into a shorter block collection.
+export default function TabbedContentBlocks({
+  blocks,
+  onExplore,
+  exploreLabel = "Explore solution",
+}) {
   const [activeIndex, setActiveIndex] = useState(0);
 
   if (!blocks || blocks.length === 0) return null;
 
   const activeBlock = blocks[activeIndex];
-  const paragraphs = activeBlock.body.split('\n\n').filter(p => p.trim() !== '');
+  const paragraphs = activeBlock.body
+    .split("\n\n")
+    .filter((p) => p.trim() !== "");
 
   return (
     <section className="py-24 bg-white border-y border-brandDeep/5">
       <div className="max-w-7xl mx-auto px-6">
-        
         {/* Tabs Row */}
         <div className="flex flex-wrap items-center justify-center gap-2 mb-12">
           {blocks.map((block, idx) => {
@@ -26,7 +52,9 @@ export default function TabbedContentBlocks({ blocks }) {
                 key={idx}
                 onClick={() => setActiveIndex(idx)}
                 className={`relative px-5 py-2.5 rounded-full text-sm font-bold transition-all ${
-                  isActive ? 'text-brandDeep' : 'text-brandInk/60 hover:text-brandDeep hover:bg-slate-50 border border-transparent hover:border-slate-200'
+                  isActive
+                    ? "text-brandDeep"
+                    : "text-brandInk/60 hover:text-brandDeep hover:bg-slate-50 border border-transparent hover:border-slate-200"
                 }`}
               >
                 {isActive && (
@@ -53,15 +81,21 @@ export default function TabbedContentBlocks({ blocks }) {
               transition={{ duration: 0.25 }}
               className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center relative z-10"
             >
-              
               {/* Left Side */}
               <div>
                 <h3 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-brandDeep mb-12 tracking-tight leading-tight">
                   {activeBlock.h2}
                 </h3>
 
-                <button className="px-6 py-3.5 bg-brandDeep text-white rounded-xl text-sm font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2 group">
-                  Explore solution <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                <button
+                  onClick={onExplore}
+                  className="px-6 py-3.5 bg-brandDeep text-white rounded-xl text-sm font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2 group"
+                >
+                  {exploreLabel}{" "}
+                  <ArrowRight
+                    size={16}
+                    className="group-hover:translate-x-1 transition-transform"
+                  />
                 </button>
               </div>
 
@@ -73,7 +107,7 @@ export default function TabbedContentBlocks({ blocks }) {
                     <motion.div
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.1 + (idx * 0.1) }}
+                      transition={{ delay: 0.1 + idx * 0.1 }}
                       key={idx}
                       className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-start gap-4 hover:shadow-md hover:border-brandCyan/30 transition-all group"
                     >
@@ -84,14 +118,12 @@ export default function TabbedContentBlocks({ blocks }) {
                         {p}
                       </p>
                     </motion.div>
-                  )
+                  );
                 })}
               </div>
-
             </motion.div>
           </AnimatePresence>
         </div>
-
       </div>
     </section>
   );
