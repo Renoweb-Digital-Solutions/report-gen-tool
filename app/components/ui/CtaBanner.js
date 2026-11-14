@@ -58,7 +58,8 @@ export function CtaBanner({
                 className="px-8 sm:px-10 py-4 bg-white text-brandDeep rounded-full text-base sm:text-lg font-extrabold shadow-xl hover:shadow-2xl transition-all inline-flex items-center justify-center gap-3"
               >
                 <span>{buttonText}</span>
-                <ArrowRight size={20} />
+                {/* # Preserve supplied CTA arrows without drawing a second one. */}
+                {!buttonText.endsWith("→") && <ArrowRight size={20} />}
               </MagneticButton>
               {secondaryButtonText && secondaryButtonHref && (
                 <a

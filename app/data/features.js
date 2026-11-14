@@ -1,4 +1,7 @@
 import { FULL_REPORT } from './fullReport';
+import { INSTAGRAM_AUDIT } from './instagramAudit';
+import { AI_VISIBILITY_DETAILS } from './aiVisibilityDetails';
+import { GMB_AUDIT_CONTENT } from './gmbAudit';
 
 export const FEATURES = {
   // # Longer Full Report copy lives separately; every module uses the same template.
@@ -84,132 +87,12 @@ export const FEATURES = {
       metaDescription: 'Audit any Google Business Profile listing for completeness, reviews, local search visibility and competitor benchmarks in one report.',
       primaryKeyword: 'Google Business Profile audit tool',
     },
-    hero: {
-      h1: 'GMB Audit: The Google Business Profile Audit Tool for Local SEO',
-      subtitle: "The GMB Audit is Flawdits' Google Business Profile audit tool, built to answer one question fast: is this listing pulling its weight in local search? Enter a business name, Maps URL and neighborhood, and get back a completeness score, competitor benchmark, and a prioritized action list.",
-      badge: 'Check your local search standing',
-      ctaText: 'Run a GMB Audit →',
-    },
-    contentBlocks: [
-      {
-        h2: 'A GMB Audit Tool for Agencies, Not Just Solo Owners',
-        body: 'Local SEO agencies use this as a GMB audit tool for agencies to open new business conversations — the estimated-impact framing (for example, the visibility lift from a fully completed profile) is designed to be dropped straight into a sales pitch, not just an internal checklist.'
-      },
-      {
-        h2: 'A Local SEO Audit Report With Market Context',
-        body: "Every scan produces a local SEO audit report that includes a visibility score against an industry benchmark and a market capture comparison so a business owner or agency can see not just 'what's missing' but 'how far behind competitors we actually are.'"
-      },
-      {
-        h2: 'A Google My Business Listing Checker With a Priority List',
-        body: 'As a Google My Business listing checker, the audit ends with a ranked list of critical blind spots — claiming the listing, completing the profile, responding to reviews, optimizing for local search, and monitoring rankings over time — rather than a raw data dump.'
-      }
-    ],
-    featureGrid: {
-      h2: 'What the GMB Audit Covers',
-      items: [
-        { title: 'Local Search Visibility', desc: 'Visibility score vs. category benchmark.' },
-        { title: 'Review & Rating Audit', desc: 'Response rate and reputation signals.' },
-        { title: 'NAP Consistency Checker', desc: 'Name, address and phone accuracy across listings.' },
-        { title: 'Listing Completeness', desc: 'Local business profile completeness scoring.' },
-        { title: 'Competitor GMB Comparison', desc: 'Market capture vs. industry standard.' }
-      ]
-    },
-    ctaBand: {
-      headline: 'See exactly where your listing is losing local visibility',
-      btnText: 'Audit My GMB Listing →'
-    },
-    faqs: [
-      {
-        q: "How do I audit a business's Google Business Profile before pitching local SEO services?",
-        a: 'Run the GMB Audit with the business name and Maps URL — it returns a visibility score, competitor benchmark and prioritized fixes ready to use in a pitch.'
-      },
-      {
-        q: 'What tool checks Google Business Profile completeness and review quality?',
-        a: "Flawdits' GMB Audit scores both listing completeness and review/reputation signals in the same report."
-      },
-      {
-        q: 'How can I compare my GMB listing to local competitors?',
-        a: 'The report includes a market capture comparison showing your visibility score against the local industry standard.'
-      },
-      {
-        q: "What's the estimated impact of completing my Google Business Profile?",
-        a: 'The audit surfaces a category-level estimated impact figure — typically a significant increase in local visits for fully completed listings.'
-      },
-      {
-        q: 'Is there a tool to check NAP consistency across local listings?',
-        a: 'Yes, NAP (name, address, phone) consistency is checked as part of the local business listing audit.'
-      }
-    ]
+    // # Revised manuscript preserves the headings and limits claims to documented outputs.
+    ...GMB_AUDIT_CONTENT,
   },
 
-  'instagram-audit': {
-    slug: 'instagram-audit',
-    title: 'Instagram Audit',
-    eyebrow: 'Social Media & Funnel Intelligence',
-    seo: {
-      url: 'https://flawdits.com/instagram-audit',
-      metaTitle: 'Instagram Audit Tool: Engagement & Content Funnel Analysis | Flawdits',
-      metaDescription: 'Analyze Instagram engagement rate, posting consistency, audience quality and TOFU/MOFU/BOFU content mix with post-by-post insights.',
-      primaryKeyword: 'Instagram audit tool',
-    },
-    hero: {
-      h1: 'Instagram Audit Tool: Engagement, Funnel & Content Insights',
-      subtitle: "Flawdits' Instagram audit tool goes past follower counts and looks at whether the content is actually working — engagement rate, posting consistency, audience quality, and how balanced the content mix is across the buyer journey.",
-      badge: 'Find out if your feed is actually converting',
-      ctaText: 'Run an Instagram Audit →',
-    },
-    contentBlocks: [
-      {
-        h2: 'An Instagram Engagement Audit Built for Agencies',
-        body: 'As an Instagram engagement audit for agencies, the module compares actual engagement against follower-weighted benchmarks — a 646-follower account earning 27% engagement per post tells a very different story than raw follower count alone, and the audit is built to surface exactly that gap.'
-      },
-      {
-        h2: 'Instagram Content Strategy Audit, Post by Post',
-        body: 'The Instagram content strategy audit reviews up to 25 recent posts individually — captions, video transcripts and available visuals — scoring each for hook strength, CTA presence, and comment-hook usage, not just aggregate numbers.'
-      },
-      {
-        h2: 'Instagram Profile Analysis Across TOFU, MOFU and BOFU',
-        body: "This Instagram profile analysis tool classifies every post into TOFU, MOFU or BOFU against an ideal 60/20/20 split. A feed that's 36% bottom-funnel sales content — well above the 20% target — gets flagged as 'too sales heavy,' with a specific recommendation to rebalance."
-      }
-    ],
-    featureGrid: {
-      h2: 'What the Instagram Audit Covers',
-      items: [
-        { title: 'Engagement Rate Calculator', desc: 'Actual vs. 1%/2% follower benchmarks.' },
-        { title: 'Post-by-Post Content Audit', desc: 'Hook, body and CTA breakdown per post.' },
-        { title: 'TOFU / MOFU / BOFU Analysis', desc: 'Ideal vs. actual content funnel mix.' },
-        { title: 'Posting Consistency Checker', desc: 'Average gap between posts.' },
-        { title: 'Audience Risk Audit', desc: 'Estimated low-quality audience %.' },
-        { title: 'Client-Ready Report', desc: 'Exportable, agency-ready findings.' }
-      ]
-    },
-    ctaBand: {
-      headline: "See what's really working and what's too sales-heavy",
-      btnText: 'Audit My Instagram →'
-    },
-    faqs: [
-      {
-        q: 'What tool analyzes my Instagram engagement rate and content mix?',
-        a: 'The Instagram Audit calculates engagement rate against follower benchmarks and classifies your content into a TOFU/MOFU/BOFU funnel.'
-      },
-      {
-        q: 'How do I know if my Instagram content is too sales-heavy?',
-        a: "The audit flags a 'too sales heavy' mix status whenever BOFU content exceeds roughly 20% of your recent posts, with specific rebalancing advice."
-      },
-      {
-        q: 'Is there a tool that checks TOFU, MOFU and BOFU balance on Instagram?',
-        a: "Yes — this is a core part of the Instagram Audit's post-by-post content intelligence."
-      },
-      {
-        q: "What's a good way to audit an Instagram account before a marketing pitch?",
-        a: 'Run the Instagram Audit for an agency-ready report covering engagement, consistency and funnel mix you can attach directly to a proposal.'
-      },
-      {
-        q: 'How can I tell if my Instagram followers are low quality or inactive?',
-        a: 'The audit includes an audience quality risk score based on engagement-vs-follower ratios, flagging accounts as low, medium or high risk.'
-      }
-    ]
-  },
+  // # Instagram's manuscript is separate to keep long-form copy intact.
+  'instagram-audit': INSTAGRAM_AUDIT,
 
   'linkedin-audit': {
     slug: 'linkedin-audit',
@@ -361,61 +244,45 @@ export const FEATURES = {
     },
     hero: {
       h1: 'AI Visibility Audit Tool: How Discoverable Is Your Brand in AI Search?',
-      subtitle: "Search didn't stop at Google. Flawdits' AI visibility audit tool measures how discoverable a brand actually is inside ChatGPT and other AI-powered search experiences — a signal traditional SEO tools don't track at all.",
+      subtitle: 'Search didn’t stop at Google. Flawdits’ AI visibility audit tool shows how often AI-powered search and chat tools mention a brand and which of its pages they use as sources, alongside the traditional SEO scores in the same report.',
       badge: 'Find your AI Visibility Score',
       ctaText: 'Check My AI Visibility →',
+      summaryTitle: 'What is an AI visibility audit?',
+      summary: 'An AI visibility audit checks whether a business appears in AI-generated answers and which of its web pages those answers cite. Flawdits reports an AI Visibility Score, a count of AI mentions and a count of cited pages, and shows them next to authority and traffic figures so you can see where AI results and regular search results differ. Each result is a snapshot of the day it was checked.',
     },
-    roadmapNotice: 'AI Search Visibility is a newly introduced module in active rollout alongside traditional SEO & social scanning.',
+    // # Build-status warning is an editor note, as requested in the supplied structure.
+    // AI Search Visibility is a newly introduced module in active rollout alongside traditional SEO & social scanning.
+    // D-04: engines and prompts are not documented in the supplied sources.
+    // The method statement still awaits verified product-team information.
+    aiPreview: {
+      caption: '[Product screenshot placeholder] Single-purpose domain field on the left, results panel on the right, following the Website Anatomy layout. Replace with a real capture of the AI visibility results.',
+    },
     contentBlocks: [
       {
         h2: 'An AI Search Visibility Checker With a Single Score',
-        body: 'As an AI search visibility checker, the audit returns one clear number — an AI Visibility Score, alongside AI mention count and cited-page count — so it\'s immediately obvious whether a brand is showing up in AI-generated answers at all.'
+        body: 'As an AI search visibility checker, the audit returns one clear number, an AI Visibility Score from 0 to 100, alongside the AI mention count and the cited-page count. Together, they immediately show whether a brand appears in AI-generated answers at all.'
       },
       {
         h2: 'Tracking Brand Mentions in ChatGPT and AI Search',
-        body: 'The audit tracks brand mentions in ChatGPT and AI search directly, distinguishing between zero visibility (a common finding for smaller, local or newer brands) and meaningful presence backed by cited source pages.'
+        body: 'The audit counts the times AI answers name your brand and the pages of your site they point to. ChatGPT is the example named across Flawdits documentation; the method section below lists the tools and questions checked. The result separates zero visibility, which is common for smaller, local, or newer brands, from a meaningful presence backed by cited source pages.'
       },
       {
         h2: 'A Generative Engine Optimization Audit Beyond Traditional SEO',
-        body: 'This is a genuine generative engine optimization audit, not a repackaged SEO report — it checks llms.txt readiness, robots.txt and sitemap accessibility, and cross-references AI Visibility against traditional authority and traffic scores to show where the two diverge.'
+        body: 'Generative engine optimization (GEO) means making information about your business clear and helpful so AI tools can understand it and may use it in answers. This audit goes beyond a standard SEO report: it checks whether llms.txt, robots.txt, and sitemap.xml are found, and sets your AI visibility next to your authority and traffic figures to show where the two diverge. It does not guarantee that you will be named.'
       }
     ],
     featureGrid: {
       h2: 'What the AI Visibility Audit Covers',
       items: [
-        { title: 'Mentions & Citations Tracker', desc: 'Count of mentions and cited source pages.' },
-        { title: 'AI Discoverability Score', desc: '0–100 scale visibility rating.' },
-        { title: 'llms.txt & AI Readiness', desc: 'Technical AI-crawlability audit.' },
-        { title: 'AI vs. Traditional SEO', desc: 'Side-by-side comparison of both scores.' },
-        { title: 'AI-Driven Audit Report', desc: 'Exportable findings for client delivery.' }
+        { title: 'Mentions and Citations Tracker', desc: 'how many AI mentions and cited pages were found.' },
+        { title: 'AI Visibility Score', desc: 'a 0 to 100 rating of how often and how clearly the brand is mentioned or cited. Some reports label it AI Discoverability Score (D-05).' },
+        { title: 'llms.txt and AI Readiness', desc: 'whether llms.txt, robots.txt and sitemap.xml are found.' },
+        { title: 'AI vs. Traditional SEO', desc: 'your AI visibility next to your authority and traffic figures.' },
+        { title: 'Client-Ready Report', desc: 'exportable findings for client delivery.' }
       ]
     },
-    ctaBand: {
-      headline: 'Know if ChatGPT even knows your brand exists',
-      btnText: 'Run My AI Visibility Audit →'
-    },
-    faqs: [
-      {
-        q: 'How do I check if my brand shows up in ChatGPT or AI search results?',
-        a: 'Run the AI Visibility Audit — it returns an AI Visibility Score plus a count of actual AI mentions and cited pages for your domain.'
-      },
-      {
-        q: 'What is an AI visibility score and how is it measured?',
-        a: "It's a 0–100 rating based on how often and how prominently a brand is referenced or cited across AI-powered search and chat experiences."
-      },
-      {
-        q: 'Is there a tool to audit AI search readiness like llms.txt?',
-        a: 'Yes — Flawdits checks for the presence and structure of llms.txt alongside robots.txt and sitemap.xml as part of AI readiness.'
-      },
-      {
-        q: 'How is AI search visibility different from normal SEO rankings?',
-        a: 'A site can rank well in Google yet have an AI Visibility Score of zero, since AI answer engines cite differently than traditional search results — the audit surfaces that gap.'
-      },
-      {
-        q: 'What tool tracks brand mentions across AI-powered search engines?',
-        a: "Flawdits' AI Visibility Audit is purpose-built to track and score this, alongside the traditional SEO metrics most other tools stop at."
-      }
-    ]
+    // # Shared second-half manuscript adds tables, interpretation, audiences and FAQs.
+    ...AI_VISIBILITY_DETAILS,
   },
   'linkedin-personal-audit': {
     slug: 'linkedin-personal-audit',

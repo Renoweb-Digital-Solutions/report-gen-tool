@@ -1,0 +1,60 @@
+/* # Hide only the module scrollbar; the scroller itself remains native.
+   min-width: 0 lets this row shrink beside the fixed Select Module label. */
+.navigation {
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: 8px;
+}
+.viewport {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.viewport::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: max-content;
+  padding: 4px;
+}
+.arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgb(2 61 187 / 15%);
+  border-radius: 50%;
+  color: var(--brand-deep);
+  background: #fff;
+  transition:
+    background 150ms,
+    opacity 150ms;
+}
+.arrow:hover:not(:disabled) {
+  background: rgb(48 143 239 / 8%);
+}
+.arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.arrow:focus-visible,
+.row > button:focus-visible {
+  outline: 2px solid var(--brand-blue);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .arrow {
+    transition: none;
+  }
+}

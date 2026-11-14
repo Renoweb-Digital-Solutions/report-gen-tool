@@ -35,6 +35,10 @@ import { CtaBanner } from "../ui/CtaBanner";
 import { ScrollReveal } from "../home/ScrollReveal";
 import TabbedContentBlocks from "./TabbedContentBlocks";
 import FullReportStory, { FullReportPreview } from "./FullReportStory";
+import InstagramStory, { InstagramPreview } from "./InstagramStory";
+import ModuleNavigation from "./ModuleNavigation";
+import AiVisibilityStory, { AiVisibilityPreview } from "./AiVisibilityStory";
+import GmbStory, { GmbPreview } from "./GmbStory";
 
 export default function FeatureClient({ initialSlug = "full-report" }) {
   const router = useRouter();
@@ -54,6 +58,12 @@ export default function FeatureClient({ initialSlug = "full-report" }) {
 
   const handleCtaClick = (e) => {
     e.preventDefault();
+    // # Use a verified feature landing page when the manuscript specifies a
+    // fallback. AI Visibility currently has no standalone dashboard module.
+    if (data.ctaBand.href) {
+      router.push(data.ctaBand.href);
+      return;
+    }
     const token = hasSessionHint();
     if (token) {
       router.push("/dashboard");
@@ -177,41 +187,12 @@ export default function FeatureClient({ initialSlug = "full-report" }) {
               </div>
             </div>
 
-            {/* Desktop Horizontal Tabs (>= md) */}
-            <div className="hidden md:flex items-center gap-2 overflow-x-auto pb-1 max-w-full">
-              {modules.map((mod) => {
-                const isActive = activeSlug === mod.slug;
-                const Icon = mod.icon;
-                return (
-                  <button
-                    key={mod.slug}
-                    onClick={() => handleTabChange(mod.slug)}
-                    className={`relative px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap flex items-center gap-2 ${
-                      isActive
-                        ? "text-white shadow-md"
-                        : "text-brandInk/70 hover:text-brandDeep bg-slate-100 hover:bg-slate-200/80 border border-brandDeep/5"
-                    }`}
-                  >
-                    {isActive && (
-                      <motion.div
-                        layoutId="activeFeatureTab"
-                        className="absolute inset-0 bg-gradient-to-r from-brandDeep to-brandIndigo rounded-full"
-                        transition={{
-                          type: "spring",
-                          stiffness: 300,
-                          damping: 30,
-                        }}
-                      />
-                    )}
-                    <Icon
-                      size={14}
-                      className={`relative z-10 ${isActive ? "text-brandCyan" : "text-brandInk/60"}`}
-                    />
-                    <span className="relative z-10">{mod.name}</span>
-                  </button>
-                );
-              })}
-            </div>
+            {/* # Arrow controls replace the visible desktop scrollbar. */}
+            <ModuleNavigation
+              modules={modules}
+              activeSlug={activeSlug}
+              onSelect={handleTabChange}
+            />
           </div>
         </div>
       )}
@@ -247,6 +228,11 @@ export default function FeatureClient({ initialSlug = "full-report" }) {
                   <p className="text-sm sm:text-base font-bold text-brandDeep mb-4">
                     {data.hero.badge}
                   </p>
+                  {data.hero.summaryTitle && (
+                    <h3 className="text-xl sm:text-2xl font-bold text-brandDeep mb-4">
+                      {data.hero.summaryTitle}
+                    </h3>
+                  )}
                   <p className="text-sm sm:text-base text-brandInk/70 leading-relaxed max-w-3xl mx-auto mb-8">
                     {data.hero.summary}
                   </p>
@@ -266,75 +252,94 @@ export default function FeatureClient({ initialSlug = "full-report" }) {
                   className="px-8 py-4 bg-gradient-to-r from-brandDeep to-brandIndigo text-white rounded-full text-base font-bold shadow-glow-blue hover:shadow-xl transition-all flex items-center gap-3"
                 >
                   <span>{data.hero.ctaText}</span>
-                  <ArrowRight size={18} />
+                  {!data.hero.ctaText.endsWith("→") && <ArrowRight size={18} />}
                 </MagneticButton>
               </div>
 
               {/* MOCKUP / UI SCREENSHOT PANEL */}
-              {isModule && !data.preview && (
-                <div className="max-w-5xl mx-auto bg-gradient-to-br from-brandDark via-[#0b1329] to-brandDeep p-6 sm:p-10 rounded-3xl shadow-2xl border-4 border-brandCyan/40 text-left relative overflow-hidden">
-                  <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 rounded-full bg-red-400" />
-                      <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                      <div className="w-3 h-3 rounded-full bg-green-400" />
-                      <span className="text-xs font-mono text-white/50 ml-2">
-                        flawdits.com/app/report-{activeSlug}
+              {isModule &&
+                !data.preview &&
+                !data.screenshot &&
+                !data.aiPreview &&
+                !data.gmbPreview && (
+                  <div className="max-w-5xl mx-auto bg-gradient-to-br from-brandDark via-[#0b1329] to-brandDeep p-6 sm:p-10 rounded-3xl shadow-2xl border-4 border-brandCyan/40 text-left relative overflow-hidden">
+                    <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 rounded-full bg-red-400" />
+                        <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                        <div className="w-3 h-3 rounded-full bg-green-400" />
+                        <span className="text-xs font-mono text-white/50 ml-2">
+                          flawdits.com/app/report-{activeSlug}
+                        </span>
+                      </div>
+                      <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        Live Audit engine
                       </span>
                     </div>
-                    <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                      Live Audit engine
-                    </span>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10">
-                      <div className="text-xs text-white/50 uppercase font-bold mb-1">
-                        Overall Health
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10">
+                        <div className="text-xs text-white/50 uppercase font-bold mb-1">
+                          Overall Health
+                        </div>
+                        <div className="text-4xl font-extrabold text-emerald-400 mb-2">
+                          92 / 100
+                        </div>
+                        <div className="text-xs text-white/70 font-medium">
+                          Grade A+ • Client Ready PDF
+                        </div>
                       </div>
-                      <div className="text-4xl font-extrabold text-emerald-400 mb-2">
-                        92 / 100
-                      </div>
-                      <div className="text-xs text-white/70 font-medium">
-                        Grade A+ • Client Ready PDF
-                      </div>
-                    </div>
 
-                    <div className="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10">
-                      <div className="text-xs text-white/50 uppercase font-bold mb-1">
-                        Audit Coverage
+                      <div className="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10">
+                        <div className="text-xs text-white/50 uppercase font-bold mb-1">
+                          Audit Coverage
+                        </div>
+                        <div className="text-2xl font-extrabold text-brandCyan mb-2">
+                          6 Active Modules
+                        </div>
+                        <div className="text-xs text-white/70 font-medium">
+                          SEO • GMB • Social • AI • Brand
+                        </div>
                       </div>
-                      <div className="text-2xl font-extrabold text-brandCyan mb-2">
-                        6 Active Modules
-                      </div>
-                      <div className="text-xs text-white/70 font-medium">
-                        SEO • GMB • Social • AI • Brand
-                      </div>
-                    </div>
 
-                    <div className="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10">
-                      <div className="text-xs text-white/50 uppercase font-bold mb-1">
-                        Export Speed
-                      </div>
-                      <div className="text-2xl font-extrabold text-brandAmber mb-2">
-                        60 Seconds
-                      </div>
-                      <div className="text-xs text-white/70 font-medium">
-                        Automated PDF Generator
+                      <div className="bg-white/5 backdrop-blur-md p-5 rounded-2xl border border-white/10">
+                        <div className="text-xs text-white/50 uppercase font-bold mb-1">
+                          Export Speed
+                        </div>
+                        <div className="text-2xl font-extrabold text-brandAmber mb-2">
+                          60 Seconds
+                        </div>
+                        <div className="text-xs text-white/70 font-medium">
+                          Automated PDF Generator
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {/* # A source-to-document schematic replaces the generic preview tiles. */}
               {data.preview && <FullReportPreview />}
+              {data.screenshot && (
+                <InstagramPreview screenshot={data.screenshot} />
+              )}
+              {data.aiPreview && (
+                <AiVisibilityPreview caption={data.aiPreview.caption} />
+              )}
+              {data.gmbPreview && (
+                <GmbPreview caption={data.gmbPreview.caption} />
+              )}
             </div>
           </section>
 
           {/* # Full Report reads as one continuous document; its copy is never hidden in tabs. */}
           {activeSlug === "full-report" ? (
             <FullReportStory data={data} onStart={handleCtaClick} />
+          ) : activeSlug === "instagram-audit" ? (
+            <InstagramStory data={data} />
+          ) : activeSlug === "ai-visibility-audit" ? (
+            <AiVisibilityStory data={data} />
+          ) : activeSlug === "gmb-audit" ? (
+            <GmbStory data={data} />
           ) : (
             <>
               {/* CONTENT BLOCKS TABS (CLICKUP STYLE) */}
@@ -460,7 +465,7 @@ export default function FeatureClient({ initialSlug = "full-report" }) {
             <div className="max-w-7xl mx-auto px-6">
               <div className="text-center mb-16">
                 <h2 className="text-3xl font-extrabold text-brandDeep mb-4">
-                  Frequently Asked Questions
+                  {data.faqTitle || "Frequently Asked Questions"}
                 </h2>
                 <p className="text-sm text-brandInk/60">
                   Common questions about the {data.title} module.
@@ -529,7 +534,7 @@ export default function FeatureClient({ initialSlug = "full-report" }) {
           <CtaBanner
             title={data.ctaBand.headline}
             subtitle={
-              data.ctaBand.subtitle ||
+              data.ctaBand.subtitle ??
               "Run a complete digital presence report covering SEO, social, local, and visual brand consistency in minutes."
             }
             buttonText={data.ctaBand.btnText}
