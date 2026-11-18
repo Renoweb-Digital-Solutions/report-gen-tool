@@ -8,6 +8,7 @@
 // ============================================================================
 
 import { useState, useEffect } from "react";
+import FileUploadZone from "../components/FileUploadZone";
 import FormField from "../components/FormField";
 import ErrorBanner from "../components/ErrorBanner";
 import { useSessionState } from "../hooks/useSessionState";
@@ -19,6 +20,8 @@ import {
   MapPin,
   ChevronDown,
   Sparkles,
+  User,
+  Palette,
 } from "lucide-react";
 import AnimatedSubmitButton from "../components/AnimatedSubmitButton";
 // Composite social sections explain their own rates; the button sums all modules.
@@ -40,6 +43,11 @@ const DEFAULTS = {
   linkedin_company_url: "",
   linkedin_results_limit: 25,
   linkedin_posted_limit: "3months",
+  // Personal settings persist with the existing form, independently of company
+  // settings. Older saved sessions omit these keys, so consumers supply defaults.
+  linkedin_personal_url: "",
+  linkedin_personal_results_limit: 20,
+  linkedin_personal_posted_limit: "3months",
   gmb_company_name: "",
   gmb_target_url: "",
   gmb_location_query: "",
@@ -58,6 +66,37 @@ const DEFAULTS = {
   ads_limit: 20,
 };
 
+// ============================================================================
+// EPHEMERAL VISUAL UPLOADS
+// Full Report uses JSON, while the standalone visual form uses multipart uploads.
+// Convert files to the backend's existing data-URL fields only during submission;
+// never place image bytes in the session-persisted fields object. The 8 MiB limit
+// matches the backend upload limit and is enforced again by request validation.
+// ============================================================================
+/** Read one selected image for handleSubmit; reject invalid or unreadable files. */
+function readVisualImage(file) {
+  return new Promise((resolve, reject) => {
+    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      reject(new Error("Please upload PNG, JPG or WEBP images."));
+      return;
+    }
+    if (!file.size || file.size > 8 * 1024 * 1024) {
+      reject(new Error("Each image must contain data and be 8 MB or smaller."));
+      return;
+    }
+    const reader = new FileReader();
+    // These handlers belong to this single read and settle the promise once.
+    // Fail before onSubmit so incomplete images never start a paid audit.
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () =>
+      reject(new Error("An image could not be read. Please select it again."));
+    reader.onabort = () =>
+      reject(new Error("Image loading was cancelled. Please try again."));
+    reader.readAsDataURL(file);
+  });
+}
+
+/** Collect optional audit inputs for the dashboard's existing Full Report runner. */
 export default function FullReportForm({
   loading,
   error,
@@ -65,6 +104,16 @@ export default function FullReportForm({
   onSubmit,
 }) {
   const [fields, setFields] = useSessionState("form_full", DEFAULTS);
+
+  // Files live only in this mounted form, avoiding sessionStorage quota and privacy
+  // issues. Resetting the key also clears FileUploadZone's displayed filenames.
+  const [visualFiles, setVisualFiles] = useState({
+    website: null,
+    instagram: null,
+  });
+  const [uploadKey, setUploadKey] = useState(0);
+  const [preparingImages, setPreparingImages] = useState(false);
+  const [formError, setFormError] = useState("");
 
   const [metaCountries, setMetaCountries] = useState([]);
   const [googleRegions, setGoogleRegions] = useState([]);
@@ -101,6 +150,8 @@ export default function FullReportForm({
   const [openSections, setOpenSections] = useState({
     ig: false,
     li: false,
+    li_personal: false,
+    visual: false,
     gmb: false,
     ui_ux: false,
     ads: false,
@@ -110,10 +161,37 @@ export default function FullReportForm({
     setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
+  /** Let keyboard users open the two added optional accordion sections. */
+  const handleSectionKey = (event, section) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      toggleSection(section);
+    }
+  };
+
+  /** Store a selected File locally; actual reading waits until form submission. */
+  const selectVisualFile = (field) => (file) => {
+    // Disabled inputs do not suppress custom drop handlers; guard this callback
+    // while files are being read or the report is running as well.
+    if (loading || preparingImages) return;
+    setVisualFiles((previous) => ({ ...previous, [field]: file }));
+    setFormError("");
+  };
+
+  /** Remove both optional images and reset the upload controls together. */
+  const clearVisualFiles = () => {
+    setVisualFiles({ website: null, instagram: null });
+    setUploadKey((previous) => previous + 1);
+    setFormError("");
+  };
+
   const set = (key) => (e) =>
     setFields((prev) => ({ ...prev, [key]: e.target.value }));
 
-  /** Build one request shape for submission and its display estimate; never send pricing amounts. */
+  /** Build shared audit selections for submission and estimation; never send prices.
+   * Image bytes are added only in handleSubmit. The local visual-selection hint
+   * below is used for pricing display and is never submitted to the server.
+   */
   function buildPricingPayload() {
     const payload = {
       domain: fields.domain.trim(),
@@ -125,6 +203,16 @@ export default function FullReportForm({
         linkedin_company_url: fields.linkedin_company_url.trim(),
         linkedin_results_limit: Number(fields.linkedin_results_limit),
         linkedin_posted_limit: fields.linkedin_posted_limit,
+      }),
+      // Use optional access because pre-existing saved form sessions have none
+      // of these new keys. Company and personal profiles can both be submitted.
+      ...(fields.linkedin_personal_url?.trim() && {
+        linkedin_personal_url: fields.linkedin_personal_url.trim(),
+        linkedin_personal_results_limit: Number(
+          fields.linkedin_personal_results_limit ?? 20,
+        ),
+        linkedin_personal_posted_limit:
+          fields.linkedin_personal_posted_limit || "3months",
       }),
     };
 
@@ -172,10 +260,50 @@ export default function FullReportForm({
   // Rebuilding this small object is local only; settings changes never fetch pricing.
   const pricingPayload = buildPricingPayload();
 
-  /** Submit the same options shown by the button estimate through existing backend billing. */
-  const handleSubmit = (e) => {
+  // Estimate visual matching when both references are selected without reading
+  // images on every render. Server pricing uses actual submitted images instead
+  // of trusting this display-only flag; amounts never enter the request payload.
+  const pricingInput = {
+    ...pricingPayload,
+    visual_images_selected: Boolean(
+      visualFiles.website && visualFiles.instagram,
+    ),
+  };
+
+  /** Submit the estimated selections, adding image bytes before server billing. */
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit(pricingPayload);
+    if (loading || preparingImages) return;
+    setFormError("");
+    // Clone selections so image preparation cannot mutate the render-time
+    // estimate or accidentally submit the local visual-selection flag.
+    const payload = { ...pricingPayload };
+    // The comparison requires both references. Leaving both blank omits the
+    // module; a partially filled pair needs feedback instead of a silent skip.
+    if (Boolean(visualFiles.website) !== Boolean(visualFiles.instagram)) {
+      setFormError(
+        "Upload both the website screenshot and Instagram moodboard for Visual Brand Match.",
+      );
+      setOpenSections((previous) => ({ ...previous, visual: true }));
+      return;
+    }
+    if (visualFiles.website && visualFiles.instagram) {
+      setPreparingImages(true);
+      try {
+        const [websiteImage, instagramImage] = await Promise.all([
+          readVisualImage(visualFiles.website),
+          readVisualImage(visualFiles.instagram),
+        ]);
+        payload.website_image_base64 = websiteImage;
+        payload.ig_moodboard_base64 = instagramImage;
+      } catch (readError) {
+        setFormError(readError.message);
+        return;
+      } finally {
+        setPreparingImages(false);
+      }
+    }
+    onSubmit(payload);
   };
 
   return (
@@ -186,6 +314,10 @@ export default function FullReportForm({
       </p>
 
       {error && <ErrorBanner message={error} onDismiss={onDismissError} />}
+      {/* Local image errors are separate from the dashboard's request errors. */}
+      {formError && (
+        <ErrorBanner message={formError} onDismiss={() => setFormError("")} />
+      )}
 
       <div className="form-grid" style={{ marginTop: error ? 16 : 0 }}>
         {/* ── Website ── */}
@@ -272,7 +404,11 @@ export default function FullReportForm({
                 onChange={set("ig_results_limit")}
               />
               {/* Per-component help stays available before optional target entry. */}
-              <PostCreditRate id="full-ig-post-price" module="instagram" payload={fields} />
+              <PostCreditRate
+                id="full-ig-post-price"
+                module="instagram"
+                payload={fields}
+              />
             </FormField>
           </div>
         </div>
@@ -288,7 +424,7 @@ export default function FullReportForm({
             <Briefcase size={16} strokeWidth={2.5} />
           </div>
           <div className="form-section-title">
-            LinkedIn
+            LinkedIn Company
             <span className="optional-badge">Optional</span>
           </div>
           <ChevronDown
@@ -331,7 +467,14 @@ export default function FullReportForm({
                   onChange={set("linkedin_results_limit")}
                 />
                 {/* Map the Full Report window field to standalone pricing keys. */}
-                <PostCreditRate id="full-li-post-price" module="linkedin" payload={{ ...fields, posted_limit: fields.linkedin_posted_limit }} />
+                <PostCreditRate
+                  id="full-li-post-price"
+                  module="linkedin"
+                  payload={{
+                    ...fields,
+                    posted_limit: fields.linkedin_posted_limit,
+                  }}
+                />
               </FormField>
               <FormField label="Time Range" htmlFor="full-li-posted">
                 <select
@@ -350,6 +493,162 @@ export default function FullReportForm({
               </FormField>
             </div>
           </div>
+        </div>
+
+        {/* ==================================================================
+            PERSONAL LINKEDIN: independent URL, limit and period are forwarded to
+            the shared personal-profile pipeline in the combined backend request.
+            ================================================================== */}
+        <div
+          className="form-section-header clickable"
+          role="button"
+          tabIndex={0}
+          aria-expanded={openSections.li_personal}
+          aria-controls="full-personal-section"
+          onClick={() => toggleSection("li_personal")}
+          onKeyDown={(event) => handleSectionKey(event, "li_personal")}
+        >
+          <div className="section-icon-chip">
+            <User size={16} strokeWidth={2.5} />
+          </div>
+          <div className="form-section-title">
+            LinkedIn Personal<span className="optional-badge">Optional</span>
+          </div>
+          <ChevronDown
+            size={18}
+            className="accordion-chevron"
+            style={{
+              transform: openSections.li_personal ? "rotate(180deg)" : "none",
+            }}
+          />
+        </div>
+        <div
+          id="full-personal-section"
+          className={`accordion-content ${openSections.li_personal ? "open" : ""}`}
+        >
+          <div className="form-grid">
+            <FormField
+              label="LinkedIn Personal Profile URL"
+              htmlFor="full-personal-url"
+              tooltip="Full URL to the personal profile to audit"
+            >
+              <input
+                id="full-personal-url"
+                className="form-input"
+                type="url"
+                placeholder="https://linkedin.com/in/username"
+                value={fields.linkedin_personal_url || ""}
+                onChange={set("linkedin_personal_url")}
+              />
+            </FormField>
+            <div className="form-grid-2">
+              <FormField label="Results Limit" htmlFor="full-personal-limit">
+                <input
+                  id="full-personal-limit"
+                  aria-describedby="full-personal-post-price"
+                  className="form-input"
+                  type="number"
+                  min={1}
+                  max={50}
+                  value={fields.linkedin_personal_results_limit ?? 20}
+                  onChange={set("linkedin_personal_results_limit")}
+                />
+                {/* Reuse Credits' dynamic per-post rate with the personal field
+                    aliases; this hint and the total share the same rule catalog. */}
+                <PostCreditRate
+                  id="full-personal-post-price"
+                  module="linkedin_personal"
+                  payload={{
+                    linkedin_url: fields.linkedin_personal_url || "",
+                    results_limit: fields.linkedin_personal_results_limit ?? 20,
+                    posted_limit:
+                      fields.linkedin_personal_posted_limit || "3months",
+                  }}
+                />
+              </FormField>
+              <FormField label="Time Range" htmlFor="full-personal-posted">
+                <select
+                  id="full-personal-posted"
+                  className="form-select"
+                  value={fields.linkedin_personal_posted_limit || "3months"}
+                  onChange={set("linkedin_personal_posted_limit")}
+                >
+                  {POSTED_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </FormField>
+            </div>
+          </div>
+        </div>
+
+        {/* ==================================================================
+            VISUAL BRAND MATCH: the existing shared upload controls collect the
+            same two reference images used by the standalone visual audit.
+            ================================================================== */}
+        <div
+          className="form-section-header clickable"
+          role="button"
+          tabIndex={0}
+          aria-expanded={openSections.visual}
+          aria-controls="full-visual-section"
+          onClick={() => toggleSection("visual")}
+          onKeyDown={(event) => handleSectionKey(event, "visual")}
+        >
+          <div className="section-icon-chip">
+            <Palette size={16} strokeWidth={2.5} />
+          </div>
+          <div className="form-section-title">
+            Visual Brand Match<span className="optional-badge">Optional</span>
+          </div>
+          <ChevronDown
+            size={18}
+            className="accordion-chevron"
+            style={{
+              transform: openSections.visual ? "rotate(180deg)" : "none",
+            }}
+          />
+        </div>
+        <div
+          id="full-visual-section"
+          className={`accordion-content ${openSections.visual ? "open" : ""}`}
+        >
+          <fieldset
+            className="form-grid"
+            disabled={loading || preparingImages}
+            style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}
+          >
+            <p className="form-panel-subtitle">
+              Compare a website screenshot with an Instagram moodboard. Upload
+              both images to include this section. PNG, JPG or WEBP, up to 8 MB
+              each.
+            </p>
+            <FileUploadZone
+              key={`website-${uploadKey}`}
+              label="Website Screenshot"
+              id="full-visual-website"
+              accept="image/png,image/jpeg,image/webp"
+              onFileSelect={selectVisualFile("website")}
+            />
+            <FileUploadZone
+              key={`instagram-${uploadKey}`}
+              label="Instagram Moodboard"
+              id="full-visual-instagram"
+              accept="image/png,image/jpeg,image/webp"
+              onFileSelect={selectVisualFile("instagram")}
+            />
+            {(visualFiles.website || visualFiles.instagram) && (
+              <button
+                type="button"
+                className="form-input"
+                onClick={clearVisualFiles}
+              >
+                Clear images
+              </button>
+            )}
+          </fieldset>
         </div>
 
         {/* ── GMB ── */}
@@ -688,7 +987,12 @@ export default function FullReportForm({
         </div>
 
         {/* Display-only estimate includes exactly the submitted audit selections. */}
-        <AnimatedSubmitButton pricingModule="full" pricingInput={pricingPayload} loading={loading} defaultText="Generate Report" />
+        <AnimatedSubmitButton
+          pricingModule="full"
+          pricingInput={pricingInput}
+          loading={loading || preparingImages}
+          defaultText="Generate Report"
+        />
       </div>
     </form>
   );

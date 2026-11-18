@@ -1,0 +1,691 @@
+/* # Full Report document system
+   A shared 1120px rail aligns headings, long coverage rows, process and pricing.
+   Keep the styling local: global marketing overrides must not recolour the
+   report sheet or change the layout of the other audit modules. */
+.preview {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px 32px;
+  text-align: left;
+  background: linear-gradient(135deg, var(--brand-ink), var(--brand-deep));
+  border: 1px solid var(--brand-deep);
+  border-radius: 12px;
+  color: #fff;
+}
+.previewTop {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid #ffffff20;
+  font:
+    10px ui-monospace,
+    monospace;
+  letter-spacing: 0.07em;
+  color: rgb(255 255 255 / 75%);
+}
+.previewFlow {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 28px 0;
+}
+.sourceNames {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  flex-shrink: 0;
+}
+.sourceNames > span {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+.sourceNames svg {
+  color: var(--brand-cyan);
+}
+.connector {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  color: var(--brand-cyan);
+}
+.connector > span {
+  height: 70px;
+  flex: 1;
+  border: 1px solid rgb(78 200 239 / 40%);
+  border-left: 0;
+  border-radius: 0 12px 12px 0;
+}
+.connector svg {
+  margin-left: 8px;
+}
+.export {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 22px;
+  background: #ffffff08;
+  border: 1px solid rgb(78 200 239 / 30%);
+  border-radius: 5px;
+}
+.export > svg {
+  color: var(--brand-cyan);
+  flex-shrink: 0;
+}
+.export strong {
+  display: block;
+  font-size: 19px;
+  font-weight: 650;
+}
+.export div > span {
+  display: block;
+  font-size: 11px;
+  color: rgb(255 255 255 / 75%);
+  margin-top: 7px;
+}
+.pdf {
+  align-self: flex-start;
+  margin-left: 18px;
+  padding: 4px 6px;
+  border: 1px solid rgb(78 200 239 / 30%);
+  font:
+    9px ui-monospace,
+    monospace;
+  color: var(--brand-cyan);
+}
+.previewFoot {
+  border-top: 1px solid #ffffff20;
+  padding-top: 17px;
+  color: rgb(255 255 255 / 70%);
+  font-size: 11px;
+  line-height: 1.7;
+}
+@media (max-width: 760px) {
+  .preview {
+    padding: 22px;
+  }
+  .previewFlow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 20px;
+  }
+  .sourceNames {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+  .sourceNames > span {
+    font-size: 11px;
+  }
+  .connector {
+    align-self: center;
+    transform: rotate(90deg);
+  }
+  .connector > span {
+    display: none;
+  }
+  .export {
+    justify-content: center;
+  }
+  .pdf {
+    margin-left: auto;
+  }
+}
+.story {
+  /* # Reuse global brand tokens so this section follows the application's palette.
+     Supporting surfaces and rules use transparent versions of those same blues. */
+  --ink: var(--brand-ink);
+  --heading: var(--brand-deep);
+  --muted: rgb(9 17 36 / 70%);
+  --rule: rgb(2 61 187 / 12%);
+  --accent: var(--brand-deep);
+  background: #fff;
+  color: var(--ink);
+}
+.shell {
+  max-width: 1200px;
+  margin: auto;
+  padding: 0 40px;
+}
+.story h2 {
+  color: var(--heading);
+  font-size: clamp(27px, 3.1vw, 42px);
+  line-height: 1.16;
+  font-weight: 750;
+  letter-spacing: -0.035em;
+  margin: 0;
+  text-wrap: balance;
+}
+.story h3 {
+  color: var(--heading);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.4;
+  margin: 0;
+}
+.story p {
+  font-size: 15px;
+  line-height: 1.85;
+  color: var(--muted);
+  margin: 0;
+}
+.index {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 22px 0;
+}
+.index a,
+.indexLabel {
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+}
+.index a {
+  color: var(--muted);
+  text-decoration: none;
+}
+.index a:hover {
+  color: var(--accent);
+}
+.indexLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-right: auto;
+  color: var(--ink);
+}
+.intro {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 80px;
+  padding: 80px 0;
+}
+.introCopy h3 {
+  margin: 28px 0 12px;
+}
+.story .chapter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font:
+    600 10px/1.5 ui-monospace,
+    monospace;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  color: var(--accent);
+}
+.chapter > span {
+  display: inline-flex;
+  min-width: 29px;
+  min-height: 24px;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid rgb(48 143 239 / 30%);
+  border-radius: 4px;
+  letter-spacing: 0;
+}
+.start {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 14px 20px;
+  margin-top: 28px;
+  border: 1px solid var(--brand-deep);
+  border-radius: 7px;
+  background: var(--brand-deep);
+  color: white;
+  font-size: 13px;
+  font-weight: 650;
+  transition: background 0.2s;
+}
+.start:hover {
+  background: var(--brand-indigo);
+}
+.section {
+  border-top: 1px solid var(--rule);
+  padding: 68px 0;
+  scroll-margin-top: 200px;
+}
+.sectionHeading {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: end;
+  gap: 70px;
+  margin-bottom: 38px;
+}
+.coverage {
+  border-top: 1px solid var(--ink);
+}
+.channel {
+  display: grid;
+  grid-template-columns: 34px minmax(190px, 0.75fr) minmax(0, 1.4fr);
+  gap: 26px;
+  padding: 30px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.rowNumber {
+  font:
+    11px/1.7 ui-monospace,
+    monospace;
+  color: rgb(9 17 36 / 50%);
+  padding-top: 3px;
+}
+.channel h3 {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.channel h3 svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--accent);
+}
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin-top: 14px;
+}
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--accent);
+  font-size: 12px;
+  line-height: 1.6;
+  font-weight: 650;
+  text-decoration: none;
+}
+.link:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.note {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  gap: 24px;
+  margin-top: 28px;
+  border-left: 2px solid var(--brand-blue);
+  padding: 4px 0 4px 20px;
+}
+.note > span {
+  font:
+    600 10px/1.7 ui-monospace,
+    monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding-top: 5px;
+  color: var(--brand-deep);
+}
+.note p {
+  font-size: 13px;
+}
+
+/* # The report sheet shows the actual reading hierarchy without inventing scores.
+   Its linework echoes a printed document, with no nested decorative card grid. */
+.scoreSection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 70px;
+  padding: 64px 48px;
+  margin: 8px -48px 68px;
+  border: 1px solid rgb(78 200 239 / 30%);
+  border-radius: 14px;
+  background:
+    radial-gradient(ellipse at 100% 0%, rgb(78 200 239 / 12%), transparent 65%),
+    #f8faff;
+  scroll-margin-top: 200px;
+}
+.scoreSection h2 {
+  margin-bottom: 22px;
+}
+.scoreSheet {
+  background: white;
+  padding: 28px;
+  border: 1px solid rgb(2 61 187 / 12%);
+  border-radius: 3px;
+  box-shadow:
+    7px 7px 0 rgb(48 143 239 / 10%),
+    0 18px 36px rgb(2 61 187 / 6%);
+}
+.sheetHeader {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding-bottom: 23px;
+  border-bottom: 1px solid var(--ink);
+  color: var(--accent);
+  font:
+    10px/1.5 ui-monospace,
+    monospace;
+  letter-spacing: 0.06em;
+}
+.scoreList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.scoreList li {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  padding: 23px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.scoreList li > span:first-child {
+  font:
+    10px ui-monospace,
+    monospace;
+  color: var(--muted);
+}
+.scoreList strong {
+  font-size: 17px;
+  font-weight: 650;
+}
+.scoreMark {
+  margin-left: auto;
+  color: var(--accent);
+  font-size: 22px;
+}
+.evidenceFlow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 0 12px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.story .caption {
+  font:
+    10px/1.7 ui-monospace,
+    monospace;
+  color: rgb(9 17 36 / 50%);
+}
+.useCases {
+  border-top: 1px solid var(--ink);
+}
+.useCases article {
+  display: grid;
+  grid-template-columns: 34px minmax(190px, 0.75fr) minmax(0, 1.4fr);
+  gap: 26px;
+  border-bottom: 1px solid var(--rule);
+  padding: 25px 0;
+}
+.workflow {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 90px;
+}
+.route {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  margin-top: 32px;
+  padding: 28px 0;
+  border-top: 1px dashed rgb(48 143 239 / 30%);
+  border-bottom: 1px dashed rgb(48 143 239 / 30%);
+  color: var(--accent);
+}
+.route span,
+.route strong {
+  font:
+    10px ui-monospace,
+    monospace;
+  letter-spacing: 0.12em;
+}
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.steps li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 24px;
+  padding-bottom: 32px;
+}
+.steps li:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  width: 1px;
+  top: 36px;
+  bottom: 0;
+  left: 17px;
+  background: rgb(48 143 239 / 30%);
+}
+.stepNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  border: 1px solid rgb(48 143 239 / 30%);
+  background: rgb(48 143 239 / 6%);
+  border-radius: 50%;
+  font:
+    11px ui-monospace,
+    monospace;
+  color: var(--accent);
+}
+.steps h3 {
+  padding: 5px 0 10px;
+}
+.story .screenLink {
+  border-top: 1px solid var(--rule);
+  padding-top: 20px;
+  font-size: 13px;
+}
+.screenLink a {
+  margin-left: 8px;
+}
+.executive {
+  border-top: 2px solid var(--ink);
+  padding: 48px 0;
+}
+.executiveBody {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 80px;
+}
+.executiveBody p + p {
+  margin-top: 18px;
+}
+.executiveBody .link {
+  margin-top: 18px;
+}
+.handoff {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  margin-top: 36px;
+  padding: 20px 0;
+  color: var(--accent);
+  font:
+    11px ui-monospace,
+    monospace;
+}
+
+/* # Pricing keeps a real table with row/column headers. Horizontal scrolling is
+   contained here so long allowances never widen the document on small screens. */
+.tableScroll {
+  overflow-x: auto;
+  border-top: 2px solid var(--ink);
+}
+.plans {
+  width: 100%;
+  min-width: 610px;
+  border-collapse: collapse;
+  text-align: left;
+}
+.plans caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.plans th,
+.plans td {
+  padding: 23px 18px;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+.plans thead th {
+  font:
+    600 10px ui-monospace,
+    monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  background: #f8faff;
+}
+.plans tbody th {
+  width: 25%;
+  font-size: 15px;
+  color: var(--ink);
+  font-weight: 650;
+}
+.plans td {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+.plans td:nth-child(2) {
+  width: 25%;
+  color: var(--ink);
+}
+.whiteLabel {
+  display: block;
+  color: var(--accent);
+  font-size: 12px;
+  margin-top: 6px;
+}
+.planFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  padding-top: 22px;
+}
+.planFooter p {
+  font-size: 13px;
+}
+.story a:focus-visible,
+.story button:focus-visible,
+.tableScroll:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 5px;
+}
+
+/* # Reflow every chapter on the same mobile gutter. Content remains fully visible;
+   the workflow retains its numbered rail and the table retains header semantics. */
+@media (max-width: 900px) {
+  .shell {
+    padding: 0 26px;
+  }
+  .intro,
+  .sectionHeading,
+  .workflow,
+  .executiveBody {
+    gap: 32px;
+  }
+  .scoreSection {
+    margin-left: 0;
+    margin-right: 0;
+    padding: 32px;
+    gap: 32px;
+  }
+  .channel,
+  .useCases article {
+    grid-template-columns: 24px 180px minmax(0, 1fr);
+    gap: 16px;
+  }
+  .index {
+    gap: 18px;
+  }
+  .indexLabel {
+    width: 100%;
+  }
+}
+@media (max-width: 640px) {
+  .shell {
+    padding: 0 22px;
+  }
+  .index {
+    gap: 15px 22px;
+  }
+  .intro,
+  .scoreSection,
+  .sectionHeading,
+  .workflow,
+  .executiveBody {
+    grid-template-columns: 1fr;
+  }
+  .intro {
+    padding: 48px 0;
+  }
+  .section {
+    padding: 45px 0;
+  }
+  .sectionHeading {
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .channel,
+  .useCases article {
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 12px;
+    padding: 24px 0;
+  }
+  .channel > div,
+  .useCases article > p {
+    grid-column: 2;
+  }
+  .note {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+  .scoreSection {
+    margin-bottom: 44px;
+    padding: 28px 20px;
+  }
+  .scoreSheet {
+    padding: 20px;
+  }
+  .route {
+    display: none;
+  }
+  .steps li {
+    gap: 18px;
+  }
+  .handoff {
+    font-size: 9px;
+    gap: 8px;
+  }
+  .handoff svg {
+    flex-shrink: 0;
+    width: 12px;
+  }
+  .planFooter {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

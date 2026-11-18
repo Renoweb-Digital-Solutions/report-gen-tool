@@ -1,0 +1,237 @@
+/* # Listing schematic uses existing brand colors and shows report structure,
+   without presenting invented customer scores or competitor results. */
+.preview {
+  max-width: 1000px;
+  margin: auto;
+  overflow: hidden;
+  text-align: left;
+  border: 1px solid rgb(48 143 239 / 25%);
+  border-radius: 12px;
+  background: white;
+}
+.previewHeader {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 15px;
+  padding: 22px 28px;
+  background: linear-gradient(120deg, var(--brand-deep), var(--brand-indigo));
+  color: white;
+  font:
+    10px ui-monospace,
+    monospace;
+  letter-spacing: 0.06em;
+}
+.previewHeader > span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.previewBody {
+  display: grid;
+  grid-template-columns: 0.85fr 25px 1.15fr;
+  align-items: center;
+  gap: 32px;
+  padding: 32px;
+}
+.inputs > div {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 0;
+  border-bottom: 1px solid rgb(48 143 239 / 15%);
+  color: var(--brand-deep);
+  font-size: 13px;
+}
+.inputs svg,
+.flowArrow {
+  color: var(--brand-blue);
+}
+.listing {
+  background: #f8faff;
+  border: 1px solid rgb(48 143 239 / 20%);
+  border-radius: 8px;
+  padding: 25px;
+}
+.listingHeader {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  color: var(--brand-deep);
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgb(48 143 239 / 20%);
+}
+.listingHeader strong {
+  display: block;
+  font-size: 20px;
+  line-height: 1.35;
+  font-weight: 700;
+}
+.listingHeader div > span {
+  display: block;
+  font-size: 11px;
+  margin-top: 7px;
+  color: rgb(9 17 36 / 60%);
+}
+.subscores {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 20px 0;
+}
+.subscores > span {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--brand-deep);
+}
+.subscores svg {
+  color: var(--brand-blue);
+}
+.listingFooter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-top: 1px solid rgb(48 143 239 / 15%);
+  padding-top: 15px;
+  font:
+    10px/1.6 ui-monospace,
+    monospace;
+  color: rgb(9 17 36 / 60%);
+}
+.preview figcaption {
+  border-top: 1px solid rgb(48 143 239 / 15%);
+  padding: 18px 28px;
+  font-size: 11px;
+  line-height: 1.8;
+  color: rgb(9 17 36 / 65%);
+}
+
+/* # Natural row heights retain the three headings in order without empty tiles. */
+.overview {
+  border-top: 1px solid rgb(2 61 187 / 12%);
+}
+.overview article {
+  display: grid;
+  grid-template-columns: 30px 0.9fr 1.1fr;
+  align-items: baseline;
+  gap: 26px;
+  padding: 30px 0;
+  border-bottom: 1px solid rgb(2 61 187 / 12%);
+}
+.overview article h2 {
+  font-size: clamp(23px, 2.4vw, 31px);
+  margin-bottom: 0;
+}
+.entered {
+  display: grid;
+  grid-template-columns: 0.6fr 1.4fr;
+  gap: 40px;
+  padding: 27px 0;
+  border-top: 1px solid rgb(2 61 187 / 12%);
+  border-bottom: 1px solid rgb(2 61 187 / 12%);
+  margin: 30px 0;
+}
+.entered h3,
+.reportTitle {
+  color: var(--brand-deep);
+  font-size: 19px;
+  line-height: 1.4;
+  font-weight: 700;
+  margin: 0;
+}
+.scoringTable th:first-child {
+  width: 32%;
+}
+/* # The report matrix retains all three businesses at every width. Fixed column
+   proportions and wrapped labels avoid an additional horizontal scrollbar. */
+.examples {
+  padding: 48px 32px;
+  margin: 20px -32px;
+  background: linear-gradient(135deg, #f8faff, rgb(78 200 239 / 6%));
+  border: 1px solid rgb(48 143 239 / 20%);
+  border-radius: 12px;
+  scroll-margin-top: 200px;
+}
+.examplesTable th:first-child {
+  width: 28%;
+}
+.examplesTable thead th:nth-child(2) {
+  background: var(--brand-deep);
+  color: white;
+}
+.examplesTable thead th:nth-child(3) {
+  background: var(--brand-indigo);
+  color: white;
+}
+.examplesTable thead th:nth-child(4) {
+  background: rgb(48 143 239 / 12%);
+  color: var(--brand-deep);
+}
+.examplesTable tbody tr:first-child td {
+  color: var(--brand-deep);
+  font-weight: 700;
+  font-size: clamp(13px, 1.8vw, 22px);
+}
+.examples .takeawayHeading {
+  margin-top: 32px;
+  color: var(--brand-deep);
+}
+.takeaways {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  border-top: 1px solid rgb(2 61 187 / 12%);
+}
+.takeaways li {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 20px;
+  align-items: baseline;
+  padding: 22px 0;
+  border-bottom: 1px solid rgb(2 61 187 / 12%);
+}
+.takeaways strong {
+  color: var(--brand-deep);
+}
+@media (max-width: 850px) {
+  .previewBody {
+    gap: 20px;
+    padding: 24px;
+  }
+  .overview article {
+    gap: 20px;
+  }
+}
+@media (max-width: 640px) {
+  .examples {
+    padding: 28px 12px;
+    margin: 15px 0;
+  }
+  .examplesTable th,
+  .examplesTable td {
+    padding: 14px 6px;
+    font-size: 11px;
+    line-height: 1.7;
+  }
+  .previewBody,
+  .entered {
+    grid-template-columns: 1fr;
+  }
+  .flowArrow {
+    transform: rotate(90deg);
+    justify-self: center;
+  }
+  .overview article {
+    grid-template-columns: 22px minmax(0, 1fr);
+    gap: 13px;
+  }
+  .overview article > p {
+    grid-column: 2;
+  }
+  .entered {
+    gap: 15px;
+  }
+}
