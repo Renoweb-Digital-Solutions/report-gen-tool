@@ -1,0 +1,540 @@
+/* # AI Visibility uses the shared brand palette and document alignment.
+   Scope all styling here so the existing audit and FAQ designs stay intact. */
+.story {
+  --muted: rgb(9 17 36 / 70%);
+  --rule: rgb(2 61 187 / 12%);
+  background: white;
+  color: var(--brand-ink);
+}
+.shell {
+  max-width: 1200px;
+  margin: auto;
+  padding: 0 40px;
+}
+.story h2,
+.coverageHeading {
+  color: var(--brand-deep);
+  font-size: clamp(27px, 3vw, 40px);
+  line-height: 1.18;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+  margin: 0 0 24px;
+}
+.story p {
+  font-size: 15px;
+  line-height: 1.85;
+  color: var(--muted);
+  margin: 0;
+}
+.index {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 22px 0;
+}
+.index > span {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-right: auto;
+  font-size: 12px;
+  font-weight: 650;
+}
+.index a {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.index a:hover {
+  color: var(--brand-deep);
+}
+.section {
+  padding: 64px 0;
+  border-bottom: 1px solid var(--rule);
+  scroll-margin-top: 200px;
+}
+.story .chapter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--brand-deep);
+  font:
+    600 10px/1.5 ui-monospace,
+    monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 26px;
+}
+.chapter > span {
+  border: 1px solid rgb(48 143 239 / 30%);
+  padding: 4px 7px;
+  border-radius: 4px;
+  letter-spacing: 0;
+}
+.scoreSection {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  align-items: center;
+  gap: 80px;
+  padding: 70px 0;
+  border-bottom: 1px solid var(--rule);
+  scroll-margin-top: 200px;
+}
+.scoreInstrument {
+  border: 1px solid rgb(48 143 239 / 25%);
+  border-radius: 10px;
+  background:
+    radial-gradient(ellipse at 50% 0, rgb(78 200 239 / 12%), transparent 70%),
+    #f8faff;
+  padding: 28px;
+}
+.dial {
+  position: relative;
+  max-width: 260px;
+  margin: auto;
+  padding-top: 55px;
+  padding-bottom: 26px;
+  text-align: center;
+}
+.dial svg {
+  position: absolute;
+  inset: 0 0 auto;
+  width: 100%;
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.dial svg path:first-child {
+  stroke: rgb(48 143 239 / 15%);
+}
+.dial svg path:last-child {
+  stroke: var(--brand-blue);
+  stroke-dasharray: 1 4;
+}
+.dial strong {
+  position: relative;
+  display: block;
+  color: var(--brand-deep);
+  font-size: 38px;
+  letter-spacing: -0.04em;
+  font-weight: 750;
+}
+.dial span {
+  position: relative;
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 4px;
+}
+.signalRows {
+  position: relative;
+  border-top: 1px solid var(--rule);
+}
+.signalRows > div {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 18px 0;
+  color: var(--brand-deep);
+  font-size: 13px;
+  border-bottom: 1px solid var(--rule);
+}
+.editorial {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  align-items: start;
+  gap: 80px;
+}
+.citationPath {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 18px;
+  margin-top: 32px;
+  border: 1px solid rgb(48 143 239 / 20%);
+  border-radius: 8px;
+  background: #f8faff;
+  padding: 28px 24px;
+  color: var(--brand-blue);
+}
+.citationPath > span {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--brand-deep);
+  font-size: 13px;
+  font-weight: 600;
+}
+.fileRail {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 18px;
+  padding: 24px 0;
+  margin-top: 32px;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+.fileRail > span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--brand-deep);
+  font:
+    12px ui-monospace,
+    monospace;
+}
+.fileRail > span:first-child {
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+.coverage {
+  list-style: none;
+  margin: 32px 0 0;
+  padding: 0;
+  border-top: 2px solid var(--brand-deep);
+}
+.coverage li {
+  display: grid;
+  grid-template-columns: 30px 26px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 20px;
+  padding: 27px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.coverage li > svg {
+  color: var(--brand-blue);
+  align-self: start;
+  margin-top: 3px;
+}
+.number {
+  font:
+    11px ui-monospace,
+    monospace;
+  color: var(--brand-blue);
+}
+.coverage strong {
+  color: var(--brand-deep);
+  font-weight: 650;
+}
+.story a:focus-visible {
+  outline: 2px solid var(--brand-blue);
+  outline-offset: 5px;
+}
+
+/* # The two manuscript tables share stable proportions and wrapped cells.
+   On mobile the columns remain comparable without introducing a scroll rail. */
+.reportTable {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  text-align: left;
+  border-top: 2px solid var(--brand-deep);
+  margin-top: 30px;
+}
+.reportTable caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.reportTable th,
+.reportTable td {
+  padding: 22px clamp(9px, 1.7vw, 22px);
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  line-height: 1.75;
+}
+.reportTable th:first-child {
+  width: 31%;
+}
+.reportTable thead th {
+  background: #f8faff;
+  color: var(--brand-deep);
+  font-weight: 700;
+}
+.reportTable tbody th {
+  color: var(--brand-deep);
+  font-weight: 650;
+}
+.reportTable td {
+  color: var(--muted);
+}
+.reportTable tbody tr:nth-child(even) {
+  background: rgb(48 143 239 / 3%);
+}
+.examplesSection {
+  padding: 50px 40px;
+  margin: 20px -40px;
+  border: 1px solid rgb(48 143 239 / 20%);
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f8faff, rgb(78 200 239 / 6%));
+  scroll-margin-top: 200px;
+}
+.story .exampleIntro {
+  max-width: 800px;
+}
+.exampleIntro em {
+  display: block;
+  margin-top: 8px;
+}
+.comparisonTable thead th:nth-child(2) {
+  color: white;
+  background: var(--brand-deep);
+}
+.comparisonTable thead th:nth-child(3) {
+  color: white;
+  background: var(--brand-indigo);
+}
+.comparisonTable tbody tr:first-child td {
+  color: var(--brand-deep);
+  font-size: clamp(16px, 2.1vw, 25px);
+  font-weight: 700;
+}
+.story .exampleConclusion {
+  border-left: 2px solid var(--brand-blue);
+  padding-left: 20px;
+  margin-top: 28px;
+}
+
+/* # Each interpretation bullet remains one complete paragraph. Numbering and
+   fine rules establish rhythm while all six definitions stay visible. */
+.readingGuide {
+  list-style: none;
+  margin: 30px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+}
+.readingGuide li {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 20px;
+  padding: 25px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.guideNumber {
+  color: var(--brand-blue);
+  font:
+    11px ui-monospace,
+    monospace;
+}
+.readingGuide strong {
+  color: var(--brand-deep);
+  font-weight: 700;
+}
+.audiences {
+  border-top: 1px solid var(--rule);
+  margin-top: 30px;
+}
+.audiences article {
+  display: grid;
+  grid-template-columns: 32px 0.8fr 1.2fr;
+  gap: 26px;
+  align-items: baseline;
+  padding: 27px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.audiences h3 {
+  color: var(--brand-deep);
+  font-size: 17px;
+  line-height: 1.5;
+  font-weight: 700;
+  margin: 0;
+}
+.fullReportLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 25px;
+  color: var(--brand-deep);
+  font-size: 13px;
+  font-weight: 700;
+}
+.fullReportLink:hover {
+  text-decoration: underline;
+}
+@media (max-width: 640px) {
+  .reportTable th,
+  .reportTable td {
+    padding: 16px 8px;
+    font-size: 12px;
+    line-height: 1.7;
+  }
+  .examplesSection {
+    padding: 30px 15px;
+    margin: 15px 0;
+  }
+  .readingGuide li {
+    grid-template-columns: 22px minmax(0, 1fr);
+    gap: 13px;
+  }
+  .audiences article {
+    grid-template-columns: 22px minmax(0, 1fr);
+    gap: 13px;
+  }
+  .audiences article > p {
+    grid-column: 2;
+  }
+}
+
+/* # A static schematic occupies the screenshot slot until a real capture exists.
+   Keep score ranges and labels distinct from actual generated account results. */
+.preview {
+  max-width: 1000px;
+  margin: auto;
+  text-align: left;
+  border: 1px solid rgb(48 143 239 / 25%);
+  border-radius: 12px;
+  overflow: hidden;
+  background: white;
+}
+.previewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 22px 28px;
+  background: linear-gradient(120deg, var(--brand-deep), var(--brand-indigo));
+  color: white;
+  font:
+    10px ui-monospace,
+    monospace;
+  letter-spacing: 0.06em;
+}
+.previewHeader > span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.previewBody {
+  display: grid;
+  grid-template-columns: 1fr 26px 1fr;
+  align-items: center;
+  gap: 32px;
+  padding: 32px;
+}
+.label {
+  display: block;
+  font:
+    10px ui-monospace,
+    monospace;
+  letter-spacing: 0.09em;
+  color: var(--brand-deep);
+  margin-bottom: 18px;
+}
+.domainField {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 17px;
+  border: 1px solid rgb(48 143 239 / 25%);
+  border-radius: 6px;
+  background: #f8faff;
+  color: var(--brand-deep);
+  font-size: 14px;
+}
+.flowArrow {
+  color: var(--brand-blue);
+}
+.previewResults {
+  padding: 24px;
+  border-left: 2px solid var(--brand-blue);
+  background: #f8faff;
+}
+.previewResults > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 15px 0;
+  border-top: 1px solid rgb(48 143 239 / 15%);
+  color: var(--brand-deep);
+  font-size: 12px;
+}
+.previewResults strong {
+  font-weight: 650;
+}
+.previewResults div > span {
+  font-size: 10px;
+  white-space: nowrap;
+}
+.preview figcaption {
+  padding: 18px 28px;
+  border-top: 1px solid rgb(48 143 239 / 15%);
+  color: rgb(9 17 36 / 65%);
+  font-size: 11px;
+  line-height: 1.8;
+}
+
+/* # Content always wraps onto one reading column on mobile; no copy is hidden. */
+@media (max-width: 850px) {
+  .index > span {
+    width: 100%;
+  }
+  .index {
+    gap: 18px;
+  }
+  .scoreSection,
+  .editorial {
+    gap: 35px;
+  }
+  .previewBody {
+    gap: 18px;
+    padding: 24px;
+  }
+}
+@media (max-width: 640px) {
+  .shell {
+    padding: 0 22px;
+  }
+  .scoreSection,
+  .section {
+    padding: 44px 0;
+  }
+  .scoreSection,
+  .editorial,
+  .previewBody {
+    grid-template-columns: 1fr;
+  }
+  .editorial {
+    gap: 8px;
+  }
+  .citationPath {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  .citationPath > svg {
+    transform: rotate(90deg);
+    margin-left: 2px;
+  }
+  .fileRail {
+    justify-content: flex-start;
+    gap: 22px;
+  }
+  .fileRail > span:first-child {
+    width: 100%;
+  }
+  .coverage li {
+    grid-template-columns: 22px 1fr;
+    gap: 13px;
+  }
+  .coverage li > svg {
+    display: none;
+  }
+  .flowArrow {
+    justify-self: center;
+    transform: rotate(90deg);
+  }
+}

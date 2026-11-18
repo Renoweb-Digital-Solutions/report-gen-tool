@@ -34,6 +34,14 @@ export function Navbar() {
   };
 
   const featureItems = [
+    // # Shared feature entry: desktop and mobile both render this collection.
+    {
+      name: 'Full Report',
+      desc: 'Every channel, one graded PDF',
+      href: '/full-report',
+      icon: Layers,
+      color: '#308fef',
+    },
     { name: 'Website Anatomy', desc: 'Technical SEO & Core Web Vitals', href: '/website-anatomy', icon: Globe, color: '#4460ef' },
     { name: 'GMB Audit', desc: 'Local search & GBP completeness', href: '/gmb-audit', icon: MapPin, color: '#4ec8ef' },
     { name: 'Instagram Audit', desc: 'Engagement & content funnel', href: '/instagram-audit', icon: Camera, color: '#ffc857' },
@@ -63,7 +71,6 @@ export function Navbar() {
     { name: 'Blogs', desc: 'Latest articles and insights', href: '/blogs', icon: Globe, color: '#308fef' },
     { name: 'Press and media', desc: 'News and press releases', href: '/press', icon: Camera, color: '#9d4edd' },
     { name: 'FAQs', desc: 'Frequently asked questions', href: '/faq', icon: HelpCircle, color: '#ffc857' },
-    { name: 'Technical Documentation', desc: 'Guides and API docs', href: '/docs', icon: Layers, color: '#4460ef' },
     { name: 'Contact Us', desc: 'Get in touch with support', href: '/contact', icon: MapPin, color: '#10b981' },
   ];
 
