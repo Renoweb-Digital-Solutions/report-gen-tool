@@ -1,0 +1,351 @@
+/* ========================================================================== */
+/* FLAIR: LIQUID IDENTITY AND REQUEST PRESENCE                                  */
+/* Used only by FlairPresence inside the dashboard AgentWorkspace. Decorative   */
+/* layers never receive pointer events. Existing workspace tokens keep light    */
+/* and dark themes readable; animation signals waiting, never tool completion.  */
+/* ========================================================================== */
+
+.mark {
+  display: inline-grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+}
+.mark svg {
+  width: 80%;
+  height: 80%;
+  display: block;
+}
+.atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.mesh {
+  position: absolute;
+  inset: 0;
+  opacity: 0.48;
+  background:
+    radial-gradient(ellipse at 28% 10%, #b6a0ff35, transparent 48%),
+    radial-gradient(ellipse at 85% 85%, #70dbe428, transparent 47%);
+}
+.droplet {
+  position: absolute;
+  width: 330px;
+  aspect-ratio: 1;
+  border-radius: 48% 52% 65% 35% / 42% 42% 58% 58%;
+  background:
+    radial-gradient(circle at 28% 25%, #ffffffb0, transparent 22%),
+    linear-gradient(130deg, #a395ff50, #91dce52b 56%, #efb3e140);
+  box-shadow:
+    inset 1px 1px 1px #ffffff70,
+    inset -16px -10px 50px #b792ee18,
+    0 20px 80px #9570ed14;
+  opacity: 0.55;
+  animation: liquidDrift 22s ease-in-out infinite alternate;
+}
+.dropletOne {
+  top: -170px;
+  right: 10%;
+  transform: rotate(-20deg);
+}
+.dropletTwo {
+  width: 230px;
+  left: -120px;
+  top: 45%;
+  animation-delay: -10s;
+}
+.dropletThree {
+  width: 190px;
+  right: -75px;
+  bottom: 5%;
+  animation-delay: -5s;
+  opacity: 0.35;
+}
+.atmosphere[data-busy="true"] .mesh {
+  animation: meshBreath 6s ease-in-out infinite;
+}
+.sendWave {
+  position: absolute;
+  left: 50%;
+  top: 72%;
+  width: 110px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid #b19aff75;
+  background: radial-gradient(
+    circle,
+    #aa8eff12 35%,
+    #7fd9eb32 55%,
+    transparent 72%
+  );
+  box-shadow:
+    0 0 70px #ba99ff35,
+    inset 0 0 30px #85d7fa22;
+  animation: hologramWave 1900ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes liquidDrift {
+  to {
+    translate: 28px 34px;
+    rotate: 18deg;
+    border-radius: 60% 40% 40% 60% / 55% 60% 40% 45%;
+  }
+}
+@keyframes meshBreath {
+  50% {
+    opacity: 0.85;
+  }
+}
+@keyframes hologramWave {
+  0% {
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 0;
+  }
+  18% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(12);
+    opacity: 0;
+  }
+}
+
+/* ========================================================================== */
+/* PENDING REQUEST CARD                                                       */
+/* The two rows are observed client states. Decorative signal bars and elapsed */
+/* waiting do not imply a report phase, remaining duration or verified outcome. */
+/* ========================================================================== */
+.presence {
+  max-width: 540px;
+  padding: 22px 24px 16px;
+  margin: 10px 0 28px;
+  position: relative;
+  border: 1px solid
+    color-mix(in srgb, var(--agent-accent) 25%, var(--agent-line));
+  border-radius: 22px;
+  background: linear-gradient(
+    130deg,
+    color-mix(in srgb, var(--agent-surface) 90%, #a899ff),
+    var(--agent-surface) 65%
+  );
+  box-shadow: 0 12px 42px #7961b80b;
+}
+.presence::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 24px;
+  right: 24px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #b49cff,
+    #8ddbea,
+    transparent
+  );
+}
+.presenceHeader {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.pulseMark {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 17px 20px 17px 13px;
+  color: #fff;
+  background: linear-gradient(135deg, #8571ec, #b18bee 60%, #79bfcf);
+  box-shadow:
+    inset 0 1px 1px #ffffff90,
+    0 5px 24px #a58be545;
+  animation: markPulse 2400ms ease-in-out infinite;
+}
+.presenceHeading {
+  min-width: 0;
+  flex: 1;
+}
+.presenceHeading > span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 1.6px;
+  color: var(--agent-accent);
+}
+.presenceHeading > span i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #8dc9b4;
+}
+.presenceHeading strong {
+  display: block;
+  margin-top: 7px;
+  color: var(--agent-text);
+  font-weight: 550;
+  font-size: 14px;
+  line-height: 1.5;
+  animation: copyArrive 400ms ease-out;
+}
+.elapsed {
+  font: inherit;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--agent-muted);
+  align-self: flex-start;
+  margin-top: 3px;
+}
+.requestTrail {
+  padding: 15px 0 0 24px;
+  margin: 12px 0 0 23px;
+  border-left: 1px solid var(--agent-line);
+}
+.requestTrail > div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 30px;
+  font-size: 12px;
+  color: var(--agent-muted);
+}
+.requestTrail > div:last-child {
+  color: var(--agent-text);
+}
+.requestTrail small {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--agent-muted);
+}
+.sentDot,
+.waitingDot {
+  width: 5px;
+  height: 5px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #8bbba9;
+}
+.waitingDot {
+  background: var(--agent-accent);
+  box-shadow: 0 0 0 4px #ab91ef16;
+  animation: markPulse 2400ms ease-in-out infinite;
+}
+.signal {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 15px;
+  margin-left: auto;
+  color: var(--agent-accent);
+}
+.signal i {
+  width: 2px;
+  height: 5px;
+  background: currentColor;
+  border-radius: 4px;
+  animation: signalWave 1200ms ease-in-out infinite;
+}
+.signal i:nth-child(2) {
+  animation-delay: 130ms;
+}
+.signal i:nth-child(3) {
+  animation-delay: 260ms;
+}
+.signal i:nth-child(4) {
+  animation-delay: 390ms;
+}
+.signal i:nth-child(5) {
+  animation-delay: 520ms;
+}
+.presence > p {
+  margin: 15px 0 0;
+  border-top: 1px solid var(--agent-line);
+  padding-top: 12px;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--agent-muted);
+}
+.screenReaderStatus {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@keyframes markPulse {
+  50% {
+    opacity: 0.75;
+    transform: scale(0.95);
+  }
+}
+@keyframes signalWave {
+  50% {
+    height: 14px;
+    opacity: 0.55;
+  }
+}
+@keyframes copyArrive {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================================================================== */
+/* THEME, MOBILE AND MOTION BOUNDARIES                                         */
+/* Pause decorative work when Dashboard hides the mounted Agentic module.      */
+/* Reduced motion disables every animation, including re-keyed send ripples.    */
+/* ========================================================================== */
+:global([data-theme="dark"]) .droplet {
+  opacity: 0.2;
+  box-shadow:
+    inset 1px 1px 1px #d9d0ff30,
+    0 20px 80px #9570ed12;
+}
+:global([data-theme="dark"]) .mesh {
+  opacity: 0.3;
+}
+.atmosphere[data-active="false"] *,
+.presence[data-active="false"] * {
+  animation-play-state: paused;
+}
+@media (max-width: 600px) {
+  .presence {
+    padding: 18px 16px 14px;
+    border-radius: 18px;
+  }
+  .presenceHeading strong {
+    font-size: 13px;
+  }
+  .pulseMark {
+    width: 39px;
+    height: 39px;
+    border-radius: 14px;
+  }
+  .requestTrail {
+    margin-left: 19px;
+    padding-left: 20px;
+  }
+  .dropletOne {
+    right: -170px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atmosphere *,
+  .presence * {
+    animation: none !important;
+    transition: none !important;
+  }
+  .sendWave {
+    display: none;
+  }
+}
