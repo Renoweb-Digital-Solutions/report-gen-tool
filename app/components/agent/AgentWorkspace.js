@@ -1,14 +1,14 @@
 /**
  * Dashboard's primary, conversational Agentic workspace, mounted by dashboard/page.
- * Owns chat, the single in-flight request, first-message animation and artifacts;
+ * Owns chat, the single in-flight request, per-send atmosphere and artifacts;
  * api.js owns HTTP/auth semantics and AgentReportPanel owns result presentation.
  * State stays in memory while switching dashboard tabs, and clears on page exit.
  * The backend has no chat session, streaming feed or report history endpoint for
  * this feature: never present simulated tool activity or durable chat history.
  */
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowUp,
   ArrowUpRight,
@@ -22,16 +22,17 @@ import {
   Plus,
   Sparkles,
   Square,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   composeTask,
   runAgentTask,
   taskLength,
   TASK_LIMIT,
-} from '@/app/features/agent/api';
-import AgentReportPanel from './AgentReportPanel';
-import AgentText from './AgentText';
-import styles from './agent.module.css';
+} from "@/app/features/agent/api";
+import AgentReportPanel from "./AgentReportPanel";
+import AgentText from "./AgentText";
+import { FlairAtmosphere, FlairMark, FlairWorking } from "./FlairPresence";
+import styles from "./agent.module.css";
 
 // ============================================================================
 // CAPABILITY-ALIGNED STARTERS
@@ -41,43 +42,43 @@ import styles from './agent.module.css';
 const STARTERS = [
   {
     icon: Globe,
-    label: 'Understand my website',
-    description: 'Find what needs attention',
+    label: "Understand my website",
+    description: "Find what needs attention",
     prompt:
-      'Audit my website and summarize the most important issues. My website is ',
-    tone: 'blue',
+      "Audit my website and summarize the most important issues. My website is ",
+    tone: "blue",
   },
   {
     icon: Megaphone,
-    label: 'Explore competitor ads',
-    description: 'See what others are running',
-    prompt: 'Find Meta ads for ',
-    tone: 'purple',
+    label: "Explore competitor ads",
+    description: "See what others are running",
+    prompt: "Find Meta ads for ",
+    tone: "purple",
   },
   {
     icon: BookOpen,
-    label: 'Make sense of a metric',
-    description: 'Turn audit jargon into insight',
-    prompt: 'Explain what website health score means and how to interpret it.',
-    tone: 'peach',
+    label: "Make sense of a metric",
+    description: "Turn audit jargon into insight",
+    prompt: "Explain what website health score means and how to interpret it.",
+    tone: "peach",
   },
 ];
 const STATUS_LABELS = {
-  needs_input: 'A little more detail',
-  needs_verification: 'Not yet verified',
-  rejected: 'Request could not proceed',
-  failed: 'Could not complete',
+  needs_input: "A little more detail",
+  needs_verification: "Not yet verified",
+  rejected: "Request could not proceed",
+  failed: "Could not complete",
 };
 
 /** Derive an artifact label from the actual returned tool, never the intended prompt. */
 function artifactTitle(result) {
-  return result.tool === 'website.report'
-    ? 'Website Anatomy'
-    : result.tool === 'website.audit'
-      ? 'Website intelligence'
-      : result.tool === 'ads_library.search'
-        ? 'Ads library results'
-        : 'Agent result';
+  return result.tool === "website.report"
+    ? "Website Anatomy"
+    : result.tool === "website.audit"
+      ? "Website intelligence"
+      : result.tool === "ads_library.search"
+        ? "Ads library results"
+        : "Agent result";
 }
 
 /**
@@ -98,16 +99,18 @@ export default function AgentWorkspace({
   const [messages, setMessages] = useState([]);
   const [artifacts, setArtifacts] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
-  const [draft, setDraft] = useState('');
+  const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-  const [firstSend, setFirstSend] = useState(false);
+  const [error, setError] = useState("");
+  // Re-key only on explicit sends: each request gets one holographic ripple,
+  // while replies/report selections never restart that decorative animation.
+  const [sendPulse, setSendPulse] = useState(0);
   const composerRef = useRef(null);
   const scrollRef = useRef(null);
   const requestRef = useRef(null);
   const epochRef = useRef(0);
   const openerRef = useRef(null);
-  const lastInputRef = useRef('');
+  const lastInputRef = useRef("");
   const selected = artifacts.find((artifact) => artifact.id === selectedId);
   const hasMessages = messages.length > 0;
 
@@ -139,14 +142,14 @@ export default function AgentWorkspace({
     const textarea = composerRef.current;
     if (!textarea || !active) return;
     // Pixel limits match CSS: grow for multiline input, then scroll internally.
-    textarea.style.height = 'auto';
+    textarea.style.height = "auto";
     textarea.style.height = `${Math.min(textarea.scrollHeight, 160)}px`;
   }, [draft, active]);
 
   /** Focus a starter's editable prompt rather than submitting it automatically. */
   function chooseStarter(prompt) {
     setDraft(prompt);
-    setError('');
+    setError("");
     composerRef.current?.focus();
   }
 
@@ -174,9 +177,9 @@ export default function AgentWorkspace({
     setMessages([]);
     setArtifacts([]);
     setSelectedId(null);
-    setDraft('');
-    setError('');
-    setFirstSend(false);
+    setDraft("");
+    setError("");
+    setSendPulse(0);
     composerRef.current?.focus();
   }
 
@@ -209,12 +212,12 @@ export default function AgentWorkspace({
     lastInputRef.current = input;
     setMessages((previous) => [
       ...previous,
-      { id: userId, role: 'user', text: input },
+      { id: userId, role: "user", text: input },
     ]);
-    setDraft('');
-    setError('');
+    setDraft("");
+    setError("");
     setBusy(true);
-    if (!hasMessages) setFirstSend(true);
+    setSendPulse((previous) => previous + 1);
 
     try {
       const result = await runAgentTask(task, controller.signal);
@@ -225,8 +228,8 @@ export default function AgentWorkspace({
       const documents = Array.isArray(result.artifacts)
         ? result.artifacts.filter(
             (document) =>
-              document.type === 'website_anatomy' &&
-              typeof document.html_report === 'string' &&
+              document.type === "website_anatomy" &&
+              typeof document.html_report === "string" &&
               document.html_report.trim() &&
               document.result,
           )
@@ -242,10 +245,10 @@ export default function AgentWorkspace({
       const envelope = result.data;
       const hasArtifact = Boolean(
         result.tool &&
-          envelope &&
-          ['success', 'partial'].includes(envelope.status) &&
-          envelope.data &&
-          typeof envelope.data === 'object',
+        envelope &&
+        ["success", "partial"].includes(envelope.status) &&
+        envelope.data &&
+        typeof envelope.data === "object",
       );
       const replyArtifactIds = documentArtifacts.length
         ? documentArtifacts.map((artifact) => artifact.id)
@@ -256,7 +259,7 @@ export default function AgentWorkspace({
         ...previous,
         {
           id: replyId,
-          role: 'assistant',
+          role: "assistant",
           text: result.message,
           status: result.status,
           artifactIds: replyArtifactIds,
@@ -281,8 +284,8 @@ export default function AgentWorkspace({
         ),
       );
       setError(
-        requestError.name === 'AbortError'
-          ? 'Stopped waiting. The request may still finish on the server.'
+        requestError.name === "AbortError"
+          ? "Stopped waiting. The request may still finish on the server."
           : requestError.message,
       );
     } finally {
@@ -296,7 +299,7 @@ export default function AgentWorkspace({
   /** Submit Enter, preserve Shift+Enter and IME composition for multilingual input. */
   function handleComposerKey(event) {
     if (
-      event.key === 'Enter' &&
+      event.key === "Enter" &&
       !event.shiftKey &&
       !event.nativeEvent.isComposing
     ) {
@@ -307,23 +310,22 @@ export default function AgentWorkspace({
 
   return (
     <section
-      className={`${styles.workspace} ${selected ? styles.withReport : ''} ${firstSend ? styles.firstSend : ''}`}
-      aria-label="Agentic workspace"
+      className={`${styles.workspace} ${selected ? styles.withReport : ""} ${busy ? styles.isBusy : ""}`}
+      aria-label="Flair by Flawdits workspace"
+      data-active={active}
     >
-      {/* Decorative layers never intercept input. CSS disables motion on request. */}
-      <div
-        className={styles.ambient}
-        aria-hidden="true"
-        onAnimationEnd={() => setFirstSend(false)}
-      />
+      {/* Client-only atmosphere responds to send/wait state, never tool phases.
+          All decorative layers are inert and respect reduced-motion settings. */}
+      <FlairAtmosphere pulse={sendPulse} busy={busy} active={active} />
       <div className={styles.chatColumn}>
         <header className={styles.workspaceHeader}>
           <div className={styles.workspaceIdentity}>
             <span className={styles.smallMark}>
-              <Sparkles size={16} />
+              <FlairMark />
             </span>
-            <span>
-              Flawdits <strong>Agentic</strong>
+            <span className={styles.identityText}>
+              <strong>Flair</strong>
+              <small>by Flawdits</small>
             </span>
             <span className={styles.beta}>BETA</span>
           </div>
@@ -367,24 +369,35 @@ export default function AgentWorkspace({
           </div>
         </header>
 
+        {/* Product scope stays visible in both empty and ongoing conversations.
+            This is release guidance, not a substitute for backend permissions. */}
+        <div className={styles.betaNotice}>
+          <span className={styles.betaNoticeLabel}>BETA</span>
+          <p>
+            Flair currently supports <strong>Website Anatomy</strong> and{" "}
+            <strong>Ads Library</strong> only.
+            <span> Other modules are coming soon.</span>
+          </p>
+        </div>
+
         <div
-          className={`${styles.chatStage} ${hasMessages ? styles.conversationStage : ''}`}
+          className={`${styles.chatStage} ${hasMessages ? styles.conversationStage : ""}`}
         >
           {!hasMessages ? (
             <div className={styles.welcome}>
               <div className={styles.heroMark} aria-hidden="true">
-                <Sparkles size={32} strokeWidth={1.35} />
+                <FlairMark />
               </div>
               <p className={styles.eyebrow}>
-                LESS FILLING FORMS. MORE MOVING FORWARD.
+                MEET FLAIR. YOUR FLAWDITS COMPANION.
               </p>
               <h1>
-                A little conversation.
+                Less friction.
                 <br />
-                <span>A clearer direction.</span>
+                <span>A little more Flair.</span>
               </h1>
               <p className={styles.welcomeCopy}>
-                Hi {username || 'there'}. Tell me what you want to explore.
+                Hi {username || "there"}. Tell me what you want to explore.
                 <br className={styles.desktopBreak} /> I’ll find the right tools
                 and bring the insights to you.
               </p>
@@ -423,15 +436,15 @@ export default function AgentWorkspace({
                 {messages.map((message) => (
                   <article
                     key={message.id}
-                    className={`${styles.message} ${message.role === 'user' ? styles.userMessage : styles.assistantMessage}`}
-                    aria-label={
-                      message.role === 'user' ? 'You' : 'Flawdits Agentic'
-                    }
+                    className={`${styles.message} ${message.role === "user" ? styles.userMessage : styles.assistantMessage}`}
+                    aria-label={message.role === "user" ? "You" : "Flair"}
                   >
-                    {message.role === 'assistant' && (
+                    {message.role === "assistant" && (
                       <div className={styles.assistantLabel}>
-                        <Sparkles size={15} />
-                        <span>Flawdits</span>
+                        <span className={styles.replyMark}>
+                          <FlairMark />
+                        </span>
+                        <span>Flair</span>
                         {STATUS_LABELS[message.status] && (
                           <span className={styles.statusLabel}>
                             {STATUS_LABELS[message.status]}
@@ -468,9 +481,9 @@ export default function AgentWorkspace({
                             }
                           </strong>
                           <small>
-                            {message.status === 'completed'
-                              ? 'Open report'
-                              : 'Inspect partial / unverified result'}
+                            {message.status === "completed"
+                              ? "Open report"
+                              : "Inspect partial / unverified result"}
                           </small>
                         </span>
                         <ChevronRight size={17} />
@@ -478,24 +491,9 @@ export default function AgentWorkspace({
                     ))}
                   </article>
                 ))}
-                {busy && (
-                  <div className={styles.working} role="status">
-                    <span className={styles.workingMark}>
-                      <Sparkles size={18} />
-                    </span>
-                    <div>
-                      <strong>Working on your request</strong>
-                      <span>
-                        I’ll bring the results here when they’re ready.
-                      </span>
-                    </div>
-                    <span className={styles.dots} aria-hidden="true">
-                      <i />
-                      <i />
-                      <i />
-                    </span>
-                  </div>
-                )}
+                {/* The pending card reports only submitted/waiting client state.
+                    Its ambient copy never invents backend tool progress. */}
+                {busy && <FlairWorking active={active} />}
               </div>
             </div>
           )}
@@ -503,7 +501,7 @@ export default function AgentWorkspace({
           <div className={styles.composerArea}>
             {disabled && (
               <p className={styles.error} role="alert">
-                Your account is suspended. Contact support to use Agentic.
+                Your account is suspended. Contact support to use Flair.
               </p>
             )}
             {error && (
@@ -521,7 +519,7 @@ export default function AgentWorkspace({
             )}
             <form className={styles.composer} onSubmit={sendMessage}>
               <label className={styles.srOnly} htmlFor="agent-message">
-                Message Flawdits Agentic
+                Message Flair
               </label>
               <textarea
                 id="agent-message"
@@ -531,8 +529,8 @@ export default function AgentWorkspace({
                 onKeyDown={handleComposerKey}
                 placeholder={
                   hasMessages
-                    ? 'Ask a follow-up or add a little more detail…'
-                    : 'What would you like to explore today?'
+                    ? "Ask a follow-up or add a little more detail…"
+                    : "Ask Flair to look into something…"
                 }
                 rows={2}
                 maxLength={TASK_LIMIT}
@@ -541,8 +539,7 @@ export default function AgentWorkspace({
               />
               <div className={styles.composerFooter}>
                 <span className={styles.composerHint}>
-                  <Sparkles size={14} />
-                  Your goal. The right tools.
+                  <Sparkles size={14} />A little clarity, on command.
                 </span>
                 <div className={styles.sendControls}>
                   {taskLength(draft) > 1600 && (
@@ -575,8 +572,8 @@ export default function AgentWorkspace({
             </form>
             <p className={styles.composerDisclaimer} id="agent-composer-hint">
               {hasMessages
-                ? 'AI can make mistakes. Review the sources behind your results.'
-                : 'Website insights, ad research, and answers. Just ask.'}
+                ? "AI can make mistakes. Review the sources behind your results."
+                : "Website insights, ad research, and answers. Just ask."}
               <span>Enter to send · Shift + Enter for a new line</span>
             </p>
           </div>

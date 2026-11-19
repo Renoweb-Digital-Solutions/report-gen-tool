@@ -1,29 +1,99 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { BarChart, Globe, MapPin, Camera, Briefcase, UserCircle, Palette, LogOut, Megaphone, MonitorSmartphone, Info, Sparkles } from 'lucide-react';
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import {
+  BarChart,
+  Globe,
+  MapPin,
+  Camera,
+  Briefcase,
+  UserCircle,
+  Palette,
+  LogOut,
+  Megaphone,
+  MonitorSmartphone,
+  Info,
+  Sparkles,
+} from "lucide-react";
 
 const TABS = [
   // The conversational entry sits first; every existing form remains selectable.
   // This ID matches Dashboard's initial tab and its accessible tabpanel label.
-  { id: 'agent', label: 'Agentic', icon: Sparkles, desc: 'Your goal. A conversation.' },
-  { id: 'full', label: 'Full Report', icon: BarChart, desc: 'SEO, social & brand' },
-  { id: 'website', label: 'Website Anatomy', icon: Globe, desc: 'Performance & health' },
-  { id: 'gmb', label: 'GMB Audit', icon: MapPin, desc: 'Google Business Profile' },
-  { id: 'instagram', label: 'Instagram Audit', icon: Camera, desc: 'Post & engagement analysis' },
-  { id: 'linkedin', label: 'LinkedIn Audit', icon: Briefcase, desc: 'Company page review' },
-  { id: 'linkedin_personal', label: 'LinkedIn Personal', icon: UserCircle, desc: 'Profile & personal posts' },
-  { id: 'visual', label: 'Visual Brand Match', icon: Palette, desc: 'Color & identity check' },
-  { id: 'ads', label: 'Ads Audit', icon: Megaphone, desc: 'Google & Meta Ads check' },
-  { id: 'ui-ux', label: 'UI/UX Audit', icon: MonitorSmartphone, desc: 'Design, UX & Core Metrics' },
+  // Flair is the dashboard agent's display identity; retain the stable agent
+  // tab ID so existing navigation, suspension and analytics rules stay intact.
+  {
+    id: "agent",
+    label: "Flair",
+    icon: Sparkles,
+    desc: "Your Flawdits companion",
+  },
+  {
+    id: "full",
+    label: "Full Report",
+    icon: BarChart,
+    desc: "SEO, social & brand",
+  },
+  {
+    id: "website",
+    label: "Website Anatomy",
+    icon: Globe,
+    desc: "Performance & health",
+  },
+  {
+    id: "gmb",
+    label: "GMB Audit",
+    icon: MapPin,
+    desc: "Google Business Profile",
+  },
+  {
+    id: "instagram",
+    label: "Instagram Audit",
+    icon: Camera,
+    desc: "Post & engagement analysis",
+  },
+  {
+    id: "linkedin",
+    label: "LinkedIn Audit",
+    icon: Briefcase,
+    desc: "Company page review",
+  },
+  {
+    id: "linkedin_personal",
+    label: "LinkedIn Personal",
+    icon: UserCircle,
+    desc: "Profile & personal posts",
+  },
+  {
+    id: "visual",
+    label: "Visual Brand Match",
+    icon: Palette,
+    desc: "Color & identity check",
+  },
+  {
+    id: "ads",
+    label: "Ads Audit",
+    icon: Megaphone,
+    desc: "Google & Meta Ads check",
+  },
+  {
+    id: "ui-ux",
+    label: "UI/UX Audit",
+    icon: MonitorSmartphone,
+    desc: "Design, UX & Core Metrics",
+  },
 ];
 
 export { TABS };
 
 export default function TabNav({ activeTab, onTabChange, onLogout }) {
   return (
-    <nav className="sidebar-nav" role="tablist" aria-label="Report sections" aria-orientation="vertical">
+    <nav
+      className="sidebar-nav"
+      role="tablist"
+      aria-label="Report sections"
+      aria-orientation="vertical"
+    >
       <div className="sidebar-nav-header">
         <span className="sidebar-nav-label">Audit Modules</span>
       </div>
@@ -37,7 +107,7 @@ export default function TabNav({ activeTab, onTabChange, onLogout }) {
               role="tab"
               aria-selected={activeTab === tab.id}
               aria-controls={`tabpanel-${tab.id}`}
-              className={`sidebar-tab-btn${activeTab === tab.id ? ' active' : ''}`}
+              className={`sidebar-tab-btn${activeTab === tab.id ? " active" : ""}`}
               onClick={() => onTabChange(tab.id)}
             >
               <span className="sidebar-tab-icon" aria-hidden="true">
@@ -46,15 +116,30 @@ export default function TabNav({ activeTab, onTabChange, onLogout }) {
               <span className="sidebar-tab-text">
                 <span className="sidebar-tab-label">
                   {tab.label}
-                  {tab.id === 'ads' || tab.id === 'ui-ux' ? (
+                  {/* Flair shares the existing beta badge treatment. Its tooltip
+                      explains the current product scope without changing tab IDs. */}
+                  {tab.id === "agent" ||
+                  tab.id === "ads" ||
+                  tab.id === "ui-ux" ? (
                     <span
                       className="sidebar-tab-beta-badge"
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', cursor: 'help' }}
-                      title="This pipeline is in development and might be unstable"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "2px",
+                        cursor: "help",
+                      }}
+                      title={
+                        tab.id === "agent"
+                          ? "Flair is in beta. Currently supports Website Anatomy and Ads Library."
+                          : "This pipeline is in development and might be unstable"
+                      }
                     >
                       BETA <Info size={8} strokeWidth={3} />
                     </span>
-                  ) : ""}
+                  ) : (
+                    ""
+                  )}
                 </span>
                 <span className="sidebar-tab-desc">{tab.desc}</span>
               </span>
@@ -66,7 +151,7 @@ export default function TabNav({ activeTab, onTabChange, onLogout }) {
         <Link
           href="/dashboard/profile"
           className="sidebar-profile-full-btn"
-          style={{ marginBottom: '8px', textDecoration: 'none' }}
+          style={{ marginBottom: "8px", textDecoration: "none" }}
           title="Profile"
         >
           <UserCircle size={18} />
