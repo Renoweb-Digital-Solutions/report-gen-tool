@@ -1,0 +1,1146 @@
+/* ========================================================================== */
+/* AGENTIC WORKSPACE                                                           */
+/* Consumed by Dashboard, AgentWorkspace, AgentText and AgentReportPanel.        */
+/* Scoped colors preserve the existing audit modules. The dashboard modifier   */
+/* replaces its legacy three-column grid only while the Agentic tab is active. */
+/* ========================================================================== */
+
+.dashboard:global(.dashboard-layout) {
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+}
+
+.main {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.main[hidden] {
+  display: none;
+}
+
+.workspace {
+  --agent-bg: #fafbff;
+  --agent-surface: #ffffff;
+  --agent-text: #252b40;
+  --agent-muted: #737b91;
+  --agent-line: #e8e7ed;
+  --agent-soft: #f2f1f5;
+  --agent-accent: #7860d8;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--agent-bg);
+  color: var(--agent-text);
+  font-size: 14px;
+}
+
+.withReport {
+  grid-template-columns: minmax(300px, 1fr) minmax(360px, 0.95fr);
+}
+
+.chatColumn {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.workspaceHeader {
+  min-height: 80px;
+  padding: 20px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--agent-line) 55%, transparent);
+}
+.workspaceIdentity {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.workspaceIdentity strong {
+  font-weight: 650;
+}
+.smallMark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 34px;
+  border-radius: 12px 14px 12px 9px;
+  color: white;
+  background: linear-gradient(140deg, #8471e9, #bd91e3 65%, #85cbd9);
+  box-shadow:
+    inset 0 1px 1px #ffffff80,
+    0 4px 15px #9473cf25;
+}
+.beta {
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: var(--agent-muted);
+  border: 1px solid var(--agent-line);
+  border-radius: 5px;
+  padding: 3px 5px;
+}
+
+/* ========================================================================== */
+/* BETA RELEASE SCOPE                                                         */
+/* Always present above chat, including while a request is pending. Wrapping   */
+/* keeps the two supported workflows readable beside an open report on mobile. */
+/* ========================================================================== */
+.betaNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex-shrink: 0;
+  margin: 10px 24px 0;
+  padding: 10px 13px;
+  border: 1px solid var(--agent-line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--agent-surface) 85%, transparent);
+}
+.betaNoticeLabel {
+  flex-shrink: 0;
+  padding: 3px 5px;
+  border-radius: 5px;
+  background: #d9a74418;
+  color: var(--agent-accent);
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.7px;
+  line-height: 1.5;
+}
+.betaNotice p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--agent-muted);
+}
+.betaNotice strong {
+  color: var(--agent-text);
+  font-weight: 550;
+}
+@media (max-width: 600px) {
+  .betaNotice {
+    margin: 8px 16px 0;
+  }
+}
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.quietButton,
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: var(--agent-muted);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.quietButton:hover,
+.iconButton:hover {
+  background: var(--agent-soft);
+  color: var(--agent-text);
+}
+.count {
+  border: 1px solid var(--agent-line);
+  border-radius: 4px;
+  padding: 0 4px;
+  font-size: 10px;
+}
+.workspace button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.workspace button:focus-visible,
+.workspace a:focus-visible,
+.workspace summary:focus-visible,
+.transcript:focus-visible {
+  outline: 2px solid var(--agent-accent);
+  outline-offset: 4px;
+}
+
+/* ========================================================================== */
+/* WELCOME AND COMPOSER                                                        */
+/* The empty state centers the task, with starter cards that only prefill text. */
+/* Once a message exists the same composer rests below a separately scrolling   */
+/* transcript, so long conversations cannot push the input out of view.         */
+/* ========================================================================== */
+
+.chatStage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 16px 48px 38px;
+  overflow-y: auto;
+}
+.welcome {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  text-align: center;
+}
+.heroMark {
+  display: grid;
+  place-items: center;
+  width: 82px;
+  height: 88px;
+  margin: 0 auto 26px;
+  border-radius: 32px 40px 33px 24px;
+  border: 1px solid #ffffffaa;
+  background: linear-gradient(
+    145deg,
+    #aca2f8,
+    #a88ae3 42%,
+    #bd9ce0 65%,
+    #88cedb
+  );
+  box-shadow:
+    inset 1px 2px 3px #ffffffa0,
+    inset -5px -6px 16px #6353c52b,
+    0 16px 48px #9d83df35;
+  color: white;
+  transform: rotate(-8deg);
+}
+.heroMark svg {
+  transform: rotate(8deg);
+}
+.eyebrow {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2.1px;
+  color: var(--agent-muted);
+  margin-bottom: 16px;
+}
+.welcome h1 {
+  font-size: clamp(34px, 3.5vw, 54px);
+  font-weight: 550;
+  line-height: 1.13;
+  letter-spacing: -2px;
+  margin: 0;
+}
+.welcome h1 span {
+  background: linear-gradient(100deg, #8471d9 10%, #ae80c7 48%, #66aebe 90%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+.welcomeCopy {
+  font-size: 14px;
+  line-height: 1.85;
+  color: var(--agent-muted);
+  margin: 20px 0 32px;
+}
+.starters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  text-align: left;
+  margin-bottom: 24px;
+}
+.starter {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 17px;
+  border: 1px solid var(--agent-line);
+  border-radius: 14px;
+  background: var(--agent-surface);
+  text-align: left;
+  color: var(--agent-text);
+  cursor: pointer;
+  transition:
+    transform 180ms,
+    border-color 180ms,
+    box-shadow 180ms;
+}
+.starter:hover {
+  transform: translateY(-3px);
+  border-color: #bcb0e0;
+  box-shadow: 0 6px 20px #6b5da610;
+}
+.starter strong {
+  font-weight: 550;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.starter > span:not(.starterIcon) {
+  color: var(--agent-muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+.starterIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 9px;
+}
+.blue {
+  background: #edf3ff;
+  color: #6c8fc4;
+}
+.purple {
+  background: #f2edfc;
+  color: #a080c7;
+}
+.peach {
+  background: #fff1e8;
+  color: #c69774;
+}
+.starterArrow {
+  position: absolute;
+  top: 19px;
+  right: 14px;
+  color: var(--agent-muted);
+}
+.composerArea {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  flex-shrink: 0;
+}
+.composer {
+  position: relative;
+  padding: 20px 20px 14px;
+  border: 1px solid transparent;
+  border-radius: 24px;
+  background:
+    linear-gradient(var(--agent-surface), var(--agent-surface)) padding-box,
+    linear-gradient(120deg, #b9acf080, #b7bfe370 45%, #9fd7df80) border-box;
+  box-shadow:
+    0 5px 10px #29253703,
+    0 16px 54px #776a9f12;
+  transition:
+    box-shadow 250ms,
+    transform 250ms;
+}
+.composer:focus-within {
+  box-shadow:
+    0 0 0 4px #a995db0c,
+    0 16px 48px #776a9f18;
+  transform: translateY(-1px);
+}
+.composer textarea {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  max-height: 160px;
+  padding: 0;
+  resize: none;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  background: transparent;
+  color: var(--agent-text);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.composer textarea::placeholder {
+  color: #a19da9;
+}
+.composerFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+}
+.composerHint {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  color: var(--agent-muted);
+}
+.composerHint svg {
+  color: #9c8bbf;
+}
+.sendControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.characterCount {
+  font-size: 10px;
+  color: var(--agent-muted);
+}
+.sendButton {
+  width: 39px;
+  height: 39px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  border: 1px solid #ffffff50;
+  background: linear-gradient(145deg, #a18bea, #7a6dd1 65%, #83b6d0);
+  color: white;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 1px #ffffff50,
+    0 4px 14px #8370b32b;
+}
+.sendButton:hover {
+  filter: brightness(1.08);
+}
+.composerDisclaimer {
+  margin: 13px 0 0;
+  color: var(--agent-muted);
+  font-size: 10px;
+  line-height: 1.7;
+  text-align: center;
+}
+.composerDisclaimer span {
+  display: block;
+  margin-top: 3px;
+  opacity: 0.75;
+  font-size: 9px;
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ========================================================================== */
+/* CHAT MESSAGES AND REAL REQUEST STATE                                        */
+/* Pending UI is intentionally indeterminate: the endpoint exposes no live      */
+/* tool events. Status labels preserve failures and verification boundaries.    */
+/* ========================================================================== */
+
+.conversationStage {
+  justify-content: flex-start;
+  padding-top: 0;
+  padding-bottom: 24px;
+  overflow: hidden;
+}
+.transcript {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--agent-line) transparent;
+  margin: 0 -20px 24px;
+  padding: 16px 20px 24px;
+}
+.messageList {
+  width: min(100%, 760px);
+  margin: 0 auto;
+}
+.message {
+  margin-bottom: 28px;
+  overflow-wrap: anywhere;
+}
+.userMessage {
+  width: fit-content;
+  max-width: 88%;
+  margin-left: auto;
+  background: linear-gradient(
+    125deg,
+    color-mix(in srgb, var(--agent-surface) 80%, #a99ce9),
+    var(--agent-surface)
+  );
+  border: 1px solid color-mix(in srgb, var(--agent-line) 70%, #bca8eb);
+  border-radius: 22px 22px 6px 22px;
+  padding: 15px 20px;
+  box-shadow: 0 4px 20px #7661a307;
+}
+.assistantMessage {
+  padding: 4px 0;
+}
+.assistantLabel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--agent-accent);
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.statusLabel {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--agent-muted);
+  border-left: 1px solid var(--agent-line);
+  margin-left: 4px;
+  padding-left: 10px;
+}
+.prose {
+  font-size: 14px;
+  line-height: 1.9;
+}
+.prose p {
+  margin: 0 0 12px;
+  white-space: pre-wrap;
+}
+.prose p:last-child {
+  margin-bottom: 0;
+}
+.prose ul {
+  list-style: disc;
+  padding-left: 20px;
+  margin: 10px 0;
+}
+.prose li {
+  margin: 5px 0;
+}
+.textHeading {
+  font-weight: 650;
+}
+.artifactCard {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 17px;
+  margin-top: 18px;
+  border: 1px solid color-mix(in srgb, var(--agent-line) 75%, #b9a1ed);
+  border-radius: 18px;
+  background: linear-gradient(
+    130deg,
+    color-mix(in srgb, var(--agent-surface) 92%, #af9ce9),
+    var(--agent-surface)
+  );
+  color: var(--agent-text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 200ms,
+    transform 200ms;
+  box-shadow: 0 8px 24px #7b60b408;
+}
+.artifactCard:hover {
+  border-color: var(--agent-accent);
+}
+.artifactIcon {
+  display: grid;
+  place-items: center;
+  width: 41px;
+  height: 44px;
+  background: var(--agent-soft);
+  border-radius: 9px;
+  color: var(--agent-accent);
+}
+.artifactCard > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+.artifactCard strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+}
+.artifactCard small {
+  display: block;
+  font-size: 10px;
+  color: var(--agent-muted);
+  margin-top: 5px;
+}
+.artifactCard > svg {
+  color: var(--agent-muted);
+}
+.error {
+  background: var(--agent-surface);
+  border: 1px solid #d5a7a74d;
+  border-radius: 10px;
+  padding: 12px 15px;
+  color: #af6262;
+  font-size: 12px;
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+.error p {
+  margin: 0;
+}
+.error button {
+  color: inherit;
+  text-decoration: underline;
+  padding-top: 4px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+}
+.failedLabel {
+  display: block;
+  font-size: 10px;
+  color: #af6262;
+  margin-top: 8px;
+}
+
+/* ========================================================================== */
+/* ARTIFACT PANEL                                                             */
+/* A bordered document surface appears alongside chat on roomy screens. The     */
+/* panel owns its scroll and exposes raw data when a future schema is unknown. */
+/* ========================================================================== */
+
+.reportPanel {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin: 12px 12px 12px 0;
+  border: 1px solid var(--agent-line);
+  border-radius: 16px;
+  background: var(--agent-surface);
+  box-shadow: -6px 0 32px #40305205;
+  animation: reportEnter 300ms ease-out;
+  overflow: hidden;
+}
+@keyframes reportEnter {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.reportToolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--agent-line);
+}
+.reportToolbar > span {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12px;
+  font-weight: 550;
+}
+.reportToolbar > div {
+  display: flex;
+  gap: 4px;
+}
+.reportBody {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  min-height: 0;
+  padding: 28px;
+  overflow-wrap: anywhere;
+  scrollbar-width: thin;
+}
+.reportBody h2 {
+  font-size: 27px;
+  line-height: 1.3;
+  letter-spacing: -0.8px;
+  font-weight: 600;
+  margin: 14px 0 10px;
+}
+.reportBody h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 26px 0 14px;
+}
+.reportBody h4 {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 8px 0;
+}
+.reportBody p {
+  font-size: 12px;
+  line-height: 1.85;
+}
+.reportBody a {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  font-size: 11px;
+  color: var(--agent-accent);
+  text-decoration: none;
+}
+.reportBody a:hover {
+  text-decoration: underline;
+}
+.reportEyebrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--agent-muted);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  margin-top: 27px;
+}
+.resultStatus {
+  display: inline-block;
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 10px;
+}
+.verified {
+  background: #46a18212;
+  color: #409277;
+}
+.unverified {
+  background: #c99b2e14;
+  color: #a48034;
+}
+.metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 26px 0 30px;
+}
+.metrics > div {
+  background: var(--agent-soft);
+  border: 1px solid var(--agent-line);
+  border-radius: 10px;
+  padding: 15px;
+}
+.metrics strong {
+  display: block;
+  font-size: 23px;
+  font-weight: 550;
+  letter-spacing: -0.6px;
+}
+.metrics span {
+  display: block;
+  color: var(--agent-muted);
+  font-size: 10px;
+  margin-top: 5px;
+}
+.finding,
+.pageCard {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--agent-line);
+}
+.severity {
+  color: var(--agent-accent);
+  text-transform: uppercase;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+.pageCard p {
+  color: var(--agent-muted);
+  margin: 8px 0;
+}
+.pageCard h3 {
+  margin-top: 0;
+}
+.muted {
+  color: var(--agent-muted);
+  font-size: 11px;
+}
+.reportNote {
+  color: var(--agent-muted);
+  padding-top: 16px;
+  font-size: 10px !important;
+}
+.reportSummary {
+  border-top: 1px solid var(--agent-line);
+  margin-top: 24px;
+}
+.warnings {
+  background: #c99b2e0a;
+  padding: 0 14px 14px;
+  border: 1px solid #c99b2e22;
+  border-radius: 10px;
+  margin-top: 24px;
+}
+.warnings h3 {
+  margin-top: 15px;
+}
+.warnings p {
+  color: var(--agent-muted);
+}
+.evidence > div {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--agent-line);
+}
+.rawData {
+  margin-top: 14px;
+  font-size: 11px;
+  color: var(--agent-muted);
+}
+.rawData summary {
+  cursor: pointer;
+}
+.rawData pre,
+.json {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 10px;
+  line-height: 1.8;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--agent-soft);
+}
+.emptyReport {
+  margin-top: 25px;
+  padding: 22px;
+  background: var(--agent-soft);
+  border: 1px dashed var(--agent-line);
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--agent-muted);
+}
+
+/* ========================================================================== */
+/* REAL WEBSITE ANATOMY DOCUMENT                                               */
+/* The report keeps its own branded colors in an isolated iframe. Flex sizing   */
+/* gives the complete document a scrollable viewport below its PDF controls.    */
+/* ========================================================================== */
+
+.documentArtifact {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+.documentActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 15px 18px;
+  border-bottom: 1px solid var(--agent-line);
+}
+.documentActions > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.documentActions strong {
+  font-size: 12px;
+  font-weight: 600;
+}
+.pdfButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 12px;
+  border-radius: 9px;
+  border: 1px solid var(--agent-accent);
+  color: var(--agent-accent);
+  background: transparent;
+  cursor: pointer;
+  font-size: 11px;
+}
+.documentFrame {
+  display: block;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  border: 0;
+  background: white;
+}
+
+/* ========================================================================== */
+/* DARK THEME, SMALL SCREENS AND ACCESSIBILITY                                  */
+/* The theme attribute comes from the existing ThemeToggle. On narrow screens   */
+/* the selected artifact replaces the chat surface so hidden chat controls do   */
+/* not receive focus. Closing restores the opener after React reveals chat.     */
+/* ========================================================================== */
+
+:global([data-theme="dark"]) .workspace {
+  --agent-bg: #13151e;
+  --agent-surface: #1c1f2b;
+  --agent-text: #ececf6;
+  --agent-muted: #a3a7bb;
+  --agent-line: #34374b;
+  --agent-soft: #262a3b;
+  --agent-accent: #b3a0e5;
+}
+:global([data-theme="dark"]) .heroMark {
+  border-color: #c4b6ff70;
+  background: linear-gradient(140deg, #9180de, #a37bd2 52%, #639eb7);
+  color: #ffffff;
+  box-shadow:
+    inset 1px 1px 2px #e6dfff70,
+    0 12px 48px #9b6fe82b;
+}
+:global([data-theme="dark"]) .composer {
+  border-color: #45404f;
+}
+:global([data-theme="dark"]) .blue {
+  background: #2d3549;
+  color: #a1b9e0;
+}
+:global([data-theme="dark"]) .purple {
+  background: #3e304d;
+  color: #c5a2e2;
+}
+:global([data-theme="dark"]) .peach {
+  background: #49382e;
+  color: #dcbaa0;
+}
+
+@media (max-width: 1400px) {
+  .withReport .chatStage {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  .withReport .workspaceHeader {
+    padding-left: 22px;
+    padding-right: 16px;
+  }
+  .withReport .workspaceIdentity {
+    gap: 6px;
+  }
+  .withReport .headerActions {
+    gap: 2px;
+  }
+  .withReport .quietButton {
+    gap: 4px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 1150px) {
+  .withReport {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .withReport .chatColumn {
+    display: none;
+  }
+  .reportPanel {
+    margin: 12px;
+  }
+}
+
+@media (max-width: 900px) {
+  .dashboard:global(.dashboard-layout) {
+    grid-template-columns: minmax(0, 1fr);
+    height: 100dvh;
+  }
+  .workspaceHeader {
+    padding: 16px 22px;
+    min-height: 64px;
+  }
+  .chatStage {
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+  .welcome h1 {
+    font-size: 42px;
+  }
+}
+
+@media (max-height: 780px) and (min-width: 701px) {
+  .heroMark {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 15px;
+    border-radius: 16px;
+  }
+  .welcome h1 {
+    font-size: 36px;
+  }
+  .welcomeCopy {
+    margin: 14px 0 20px;
+  }
+  .starter {
+    padding: 12px;
+  }
+  .starterIcon {
+    margin-bottom: 3px;
+  }
+  .chatStage {
+    padding-bottom: 22px;
+  }
+}
+
+@media (max-width: 600px) {
+  .workspaceHeader {
+    padding: 14px 16px;
+  }
+  .workspaceIdentity {
+    font-size: 12px;
+    gap: 6px;
+  }
+  .headerActions {
+    gap: 0;
+  }
+  .headerActions .quietButton span:not(.count) {
+    display: none;
+  }
+  .chatStage {
+    padding: 18px 18px 22px;
+    justify-content: flex-start;
+  }
+  .welcome {
+    margin-top: auto;
+    padding-top: 14px;
+  }
+  .heroMark {
+    width: 53px;
+    height: 53px;
+    border-radius: 18px;
+    margin-bottom: 22px;
+  }
+  .eyebrow {
+    font-size: 7px;
+    letter-spacing: 1.5px;
+  }
+  .welcome h1 {
+    font-size: 35px;
+    letter-spacing: -1.4px;
+  }
+  .welcomeCopy {
+    font-size: 12px;
+    margin: 16px 0 24px;
+  }
+  .starters {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .starter {
+    display: grid;
+    grid-template-columns: 29px 1fr;
+    column-gap: 10px;
+    row-gap: 0;
+    padding: 11px 14px;
+  }
+  .starterIcon {
+    grid-row: span 2;
+    width: 29px;
+    height: 29px;
+    margin: 0;
+  }
+  .starter strong {
+    font-size: 11px;
+    padding-right: 14px;
+  }
+  .starter > span:not(.starterIcon) {
+    font-size: 9px;
+  }
+  .starterArrow {
+    top: 16px;
+  }
+  .composer {
+    border-radius: 16px;
+    padding: 16px 15px 12px;
+  }
+  .composerArea {
+    margin-bottom: auto;
+  }
+  .conversationStage {
+    padding-top: 0;
+  }
+  .conversationStage .composerArea {
+    margin-bottom: 0;
+  }
+  .composerDisclaimer span {
+    display: none;
+  }
+  .reportBody {
+    padding: 22px;
+  }
+  .reportPanel {
+    margin: 8px;
+  }
+  .transcript {
+    padding-top: 12px;
+    margin-bottom: 14px;
+  }
+  .working {
+    gap: 8px;
+  }
+  .working div > span {
+    font-size: 10px;
+  }
+}
+
+/* ========================================================================== */
+/* FLAIR IDENTITY AND FOCUSED COMPOSITION                                      */
+/* Keep the brand signature readable at small sizes and the pending composer    */
+/* softly illuminated. Motion is decoration; request truth lives in API state. */
+/* ========================================================================== */
+.identityText {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.identityText strong {
+  font-size: 18px;
+  letter-spacing: -0.6px;
+}
+.identityText small {
+  color: var(--agent-muted);
+  font-size: 10px;
+  font-weight: 400;
+}
+.replyMark {
+  width: 23px;
+  height: 25px;
+  display: inline-grid;
+  place-items: center;
+  color: var(--agent-accent);
+}
+.isBusy .composer {
+  box-shadow:
+    0 0 30px #ae8fe711,
+    0 12px 46px #70c6db0c;
+}
+.starter {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--agent-surface) 96%, #a291e5),
+    var(--agent-surface)
+  );
+  border-radius: 18px;
+}
+.artifactCard:hover {
+  transform: translateY(-2px);
+}
+.workspace[data-active="false"] * {
+  animation-play-state: paused;
+}
+@media (max-width: 600px) {
+  .identityText small {
+    display: none;
+  }
+  .identityText strong {
+    font-size: 16px;
+  }
+  .composer textarea {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace *,
+  .workspace *::before,
+  .workspace *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
