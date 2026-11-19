@@ -3,12 +3,14 @@
  * Owns chat, the single in-flight request, per-send atmosphere and artifacts;
  * api.js owns HTTP/auth semantics and AgentReportPanel owns result presentation.
  * State stays in memory while switching dashboard tabs, and clears on page exit.
- * The backend has no chat session, streaming feed or report history endpoint for
- * this feature: never present simulated tool activity or durable chat history.
+ * The backend streams observed task phases and permitted reply text. State stays
+ * ephemeral; never present durable chat history or invented provider progress.
  */
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "framer-motion";
+import { createWordReveal } from "./wordReveal";
 import {
   ArrowUp,
   ArrowUpRight,
@@ -28,9 +30,12 @@ import {
   runAgentTask,
   taskLength,
   TASK_LIMIT,
+  validateAgentAttachments,
 } from "@/app/features/agent/api";
 import AgentReportPanel from "./AgentReportPanel";
 import AgentText from "./AgentText";
+import AgentImages from "./AgentImages";
+import VoiceInput from "./VoiceInput";
 import { FlairAtmosphere, FlairMark, FlairWorking } from "./FlairPresence";
 import styles from "./agent.module.css";
 
@@ -63,12 +68,73 @@ const STARTERS = [
     tone: "peach",
   },
 ];
+// ============================================================================
+// INDIVIDUAL AUDIT DISCOVERY AND DOCUMENT ALLOWLIST
+// Prompts only prefill inputs; backend tools still validate/authorize execution.
+// Full Report deliberately has no starter or document type in this release.
+// ============================================================================
+const REPORT_TYPES = new Set([
+  "website_anatomy",
+  "gmb_audit",
+  "instagram_audit",
+  "linkedin_company",
+  "linkedin_personal",
+  "visual_brand_match",
+  "ads_audit",
+  "ui_ux",
+]);
+const AUDIT_PROMPTS = [
+  ["Website Anatomy", "Generate a Website Anatomy report for "],
+  [
+    "GMB Audit",
+    "Run a GMB Audit. My business name, profile link and location are ",
+  ],
+  ["Instagram Audit", "Run an Instagram Audit for @"],
+  ["LinkedIn Audit", "Audit this LinkedIn company page: "],
+  ["LinkedIn Personal", "Audit my LinkedIn personal profile: "],
+  [
+    "Visual Brand Match",
+    "Compare my attached website screenshot and Instagram moodboard with Visual Brand Match.",
+  ],
+  ["Ads Audit", "Generate an Ads Audit with AI analysis for "],
+  ["UI/UX Audit", "Run a UI/UX Audit for "],
+  ["Ads Library", "Find Meta ads for "],
+];
+
 const STATUS_LABELS = {
   needs_input: "A little more detail",
   needs_verification: "Not yet verified",
   rejected: "Request could not proceed",
   failed: "Could not complete",
 };
+
+// ============================================================================
+// CONTEXTUAL VISUAL INPUT DISCOVERY
+// Upload controls belong to a visual comparison, not every audit. This is only
+// a display hint: backend tools still choose/validate the actual operation.
+// Selected files stay visible so users can remove them instead of sending hidden
+// attachments. Completed requests/new chats clear that request-local intent.
+// ============================================================================
+function requestsVisualMatch(text) {
+  /** Recognize explicit visual matching and website/Instagram image comparisons. */
+  return (
+    /\bvisual(?:\s+brand)?\s+(?:match|alignment|comparison)\b|\bmoodboard\b/i.test(
+      text,
+    ) ||
+    (/\b(?:compare|match|align)\b/i.test(text) &&
+      ((/\bwebsite\b/i.test(text) && /\binstagram\b/i.test(text)) ||
+        /\bbrand\s+(?:images|visuals|identity|colou?rs)\b/i.test(text)))
+  );
+}
+
+/** Detect an actual clarification asking for this comparison's two image roles. */
+function asksForVisualUploads(text) {
+  return (
+    /\b(?:attach|upload|provide|add|send)\b/i.test(text) &&
+    (requestsVisualMatch(text) ||
+      (/\bwebsite\b/i.test(text) && /\binstagram\b/i.test(text)))
+  );
+}
 
 /** Derive an artifact label from the actual returned tool, never the intended prompt. */
 function artifactTitle(result) {
@@ -96,10 +162,23 @@ export default function AgentWorkspace({
   onBusyChange,
   onOpenSupport,
 }) {
+  const reducedMotion = useReducedMotion();
+  const [progress, setProgress] = useState("");
   const [messages, setMessages] = useState([]);
   const [artifacts, setArtifacts] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [draft, setDraft] = useState("");
+  // Images stay only in this workspace until the explicit send. Backend checks
+  // remain authoritative; a complete pair is required before paid work starts.
+  const [images, setImages] = useState({ website: null, moodboard: null });
+  const [visualRequested, setVisualRequested] = useState(false);
+  const showVisualInputs =
+    visualRequested ||
+    requestsVisualMatch(draft) ||
+    Boolean(images.website || images.moodboard);
+  const [voiceBusy, setVoiceBusy] = useState(false);
+  const voiceBusyRef = useRef(false);
+  const draftRef = useRef(draft);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   // Re-key only on explicit sends: each request gets one holographic ripple,
@@ -129,8 +208,29 @@ export default function AgentWorkspace({
   );
 
   useEffect(() => {
-    onBusyChange(busy);
-  }, [busy, onBusyChange]);
+    onBusyChange(busy || voiceBusy);
+  }, [busy, voiceBusy, onBusyChange]);
+
+  // Microphone state also closes the same-tick send race. Audio is an editable
+  // input aid, not a task: never submit on transcript completion or cut off text.
+  const setVoicePending = useCallback((pending) => {
+    voiceBusyRef.current = pending;
+    setVoiceBusy(pending);
+  }, []);
+  useEffect(() => {
+    draftRef.current = draft;
+  }, [draft]);
+  /** Append reviewed dictation without dispatch; false retains overflow in its tray. */
+  function appendDictation(text) {
+    const prefix = draftRef.current.trimEnd();
+    const next = prefix ? `${prefix}\n${text}` : text;
+    if (taskLength(next) > TASK_LIMIT) return false;
+    draftRef.current = next;
+    setDraft(next);
+    setError("");
+    requestAnimationFrame(() => composerRef.current?.focus());
+    return true;
+  }
 
   useEffect(() => {
     if (active && scrollRef.current) {
@@ -148,7 +248,9 @@ export default function AgentWorkspace({
 
   /** Focus a starter's editable prompt rather than submitting it automatically. */
   function chooseStarter(prompt) {
+    if (voiceBusyRef.current) return;
     setDraft(prompt);
+    setVisualRequested(requestsVisualMatch(prompt));
     setError("");
     composerRef.current?.focus();
   }
@@ -173,13 +275,15 @@ export default function AgentWorkspace({
 
   /** Clear in-memory conversation only when no request is running; no remote delete. */
   function newChat() {
-    if (requestRef.current) return;
+    if (requestRef.current || voiceBusyRef.current) return;
     setMessages([]);
     setArtifacts([]);
     setSelectedId(null);
     setDraft("");
     setError("");
     setSendPulse(0);
+    setImages({ website: null, moodboard: null });
+    setVisualRequested(false);
     composerRef.current?.focus();
   }
 
@@ -192,12 +296,13 @@ export default function AgentWorkspace({
    */
   async function sendMessage(event) {
     event.preventDefault();
-    if (requestRef.current || disabled) return;
+    if (requestRef.current || disabled || voiceBusyRef.current) return;
     const input = draft.trim();
     let task;
     try {
+      validateAgentAttachments(images);
       task = composeTask(
-        messages.filter((message) => !message.failed),
+        messages.filter((message) => !message.failed && !message.streaming),
         input,
       );
     } catch (validationError) {
@@ -206,9 +311,33 @@ export default function AgentWorkspace({
       return;
     }
     const controller = new AbortController();
+    // Keep the visual controls available while their explicit request is being
+    // answered, including a follow-up clarification after the draft is cleared.
+    setVisualRequested(
+      requestsVisualMatch(input) || Boolean(images.website || images.moodboard),
+    );
     requestRef.current = controller;
     const epoch = ++epochRef.current;
     const userId = crypto.randomUUID();
+    const replyId = crypto.randomUUID();
+    let partial = "";
+    // The network reader never sleeps. A separate abortable queue reveals whole
+    // words gently, capped at 1.8 seconds of artificial pacing from first text.
+    const reveal = createWordReveal(
+      (text) => {
+        if (epoch !== epochRef.current || !text) return;
+        setMessages((previous) => {
+          const row = { id: replyId, role: "assistant", text, streaming: true };
+          return previous.some((message) => message.id === replyId)
+            ? previous.map((message) =>
+                message.id === replyId ? row : message,
+              )
+            : [...previous, row];
+        });
+      },
+      { signal: controller.signal, reducedMotion },
+    );
+    setProgress("Sending your request");
     lastInputRef.current = input;
     setMessages((previous) => [
       ...previous,
@@ -220,15 +349,35 @@ export default function AgentWorkspace({
     setSendPulse((previous) => previous + 1);
 
     try {
-      const result = await runAgentTask(task, controller.signal);
+      const result = await runAgentTask(task, controller.signal, images, {
+        onProgress: (label) => {
+          if (epoch === epochRef.current) setProgress(label);
+        },
+        onDelta: (text) => {
+          if (epoch !== epochRef.current) return;
+          partial += text;
+          if (partial.length > 12000)
+            throw new Error("The reply was too long. Please try again.");
+          reveal.push(partial);
+        },
+      });
+      await reveal.finish(result.message);
       if (epoch !== epochRef.current) return;
-      const replyId = crypto.randomUUID();
+      // Keep uploads if the agent asks a clarification, so the next explicit
+      // send carries the same references. Settled/error states never auto-replay.
+      if (result.status !== "needs_input")
+        setImages({ website: null, moodboard: null });
+      setVisualRequested(
+        result.status === "needs_input" &&
+          (requestsVisualMatch(input) || asksForVisualUploads(result.message)),
+      );
+
       // Full HTML bypasses model history. Retain every server-generated document
       // rather than fabricating a report from the model summary or crawl scores.
       const documents = Array.isArray(result.artifacts)
         ? result.artifacts.filter(
             (document) =>
-              document.type === "website_anatomy" &&
+              REPORT_TYPES.has(document.type) &&
               typeof document.html_report === "string" &&
               document.html_report.trim() &&
               document.result,
@@ -255,16 +404,21 @@ export default function AgentWorkspace({
         : hasArtifact
           ? [replyId]
           : [];
-      setMessages((previous) => [
-        ...previous,
-        {
+      // Only done confirms the final outcome. Replace provisional text with the
+      // authoritative reply and bind its existing report preview/PDF artifacts.
+      setMessages((previous) => {
+        const row = {
           id: replyId,
           role: "assistant",
           text: result.message,
           status: result.status,
           artifactIds: replyArtifactIds,
-        },
-      ]);
+          streaming: false,
+        };
+        return previous.some((message) => message.id === replyId)
+          ? previous.map((message) => (message.id === replyId ? row : message))
+          : [...previous, row];
+      });
       if (documentArtifacts.length || hasArtifact) {
         setArtifacts((previous) => [
           ...previous,
@@ -280,7 +434,9 @@ export default function AgentWorkspace({
       if (epoch !== epochRef.current) return;
       setMessages((previous) =>
         previous.map((message) =>
-          message.id === userId ? { ...message, failed: true } : message,
+          message.id === userId || message.id === replyId
+            ? { ...message, failed: true, streaming: false }
+            : message,
         ),
       );
       setError(
@@ -289,9 +445,11 @@ export default function AgentWorkspace({
           : requestError.message,
       );
     } finally {
+      reveal.dispose();
       if (epoch === epochRef.current) {
         requestRef.current = null;
         setBusy(false);
+        setProgress("");
       }
     }
   }
@@ -360,7 +518,7 @@ export default function AgentWorkspace({
               type="button"
               className={styles.quietButton}
               onClick={newChat}
-              disabled={busy}
+              disabled={busy || voiceBusy}
               title="Start a new chat"
             >
               <Plus size={17} />
@@ -374,9 +532,8 @@ export default function AgentWorkspace({
         <div className={styles.betaNotice}>
           <span className={styles.betaNoticeLabel}>BETA</span>
           <p>
-            Flair currently supports <strong>Website Anatomy</strong> and{" "}
-            <strong>Ads Library</strong> only.
-            <span> Other modules are coming soon.</span>
+            Flair is in beta. AI can make mistakes; review your results.
+            <span> Full Report is not available in Flair yet.</span>
           </p>
         </div>
 
@@ -438,6 +595,7 @@ export default function AgentWorkspace({
                     key={message.id}
                     className={`${styles.message} ${message.role === "user" ? styles.userMessage : styles.assistantMessage}`}
                     aria-label={message.role === "user" ? "You" : "Flair"}
+                    aria-busy={Boolean(message.streaming)}
                   >
                     {message.role === "assistant" && (
                       <div className={styles.assistantLabel}>
@@ -455,7 +613,9 @@ export default function AgentWorkspace({
                     <AgentText text={message.text} />
                     {message.failed && (
                       <span className={styles.failedLabel}>
-                        No response received
+                        {message.role === "assistant"
+                          ? "Reply interrupted"
+                          : "No complete response received"}
                       </span>
                     )}
                     {message.artifactIds?.map((artifactId) => (
@@ -491,9 +651,12 @@ export default function AgentWorkspace({
                     ))}
                   </article>
                 ))}
-                {/* The pending card reports only submitted/waiting client state.
-                    Its ambient copy never invents backend tool progress. */}
-                {busy && <FlairWorking active={active} />}
+                {/* Display real backend phases until reply text begins. No timers
+                    are used to invent completed tools or provider progress. */}
+                {busy &&
+                  !messages.some(
+                    (message) => message.streaming && message.text,
+                  ) && <FlairWorking active={active} progress={progress} />}
               </div>
             </div>
           )}
@@ -517,7 +680,34 @@ export default function AgentWorkspace({
                 )}
               </div>
             )}
+            {/* Discoverable individual tools remain available during follow-ups;
+                selecting one never runs a provider or submits an empty request. */}
+            <details className={styles.auditDiscovery}>
+              <summary>Explore supported audits</summary>
+              <div>
+                {AUDIT_PROMPTS.map(([label, prompt]) => (
+                  <button
+                    type="button"
+                    key={label}
+                    disabled={busy || disabled || voiceBusy}
+                    onClick={() => chooseStarter(prompt)}
+                  >
+                    {label}
+                    <ArrowUpRight size={12} />
+                  </button>
+                ))}
+              </div>
+            </details>
             <form className={styles.composer} onSubmit={sendMessage}>
+              {/* Mount/open uploads only for a requested visual comparison or
+                  an actual image clarification, never on ordinary chat entry. */}
+              {showVisualInputs && (
+                <AgentImages
+                  images={images}
+                  onChange={setImages}
+                  disabled={busy || disabled || voiceBusy}
+                />
+              )}
               <label className={styles.srOnly} htmlFor="agent-message">
                 Message Flair
               </label>
@@ -534,7 +724,7 @@ export default function AgentWorkspace({
                 }
                 rows={2}
                 maxLength={TASK_LIMIT}
-                disabled={disabled}
+                disabled={disabled || voiceBusy}
                 aria-describedby="agent-composer-hint"
               />
               <div className={styles.composerFooter}>
@@ -547,6 +737,12 @@ export default function AgentWorkspace({
                       {taskLength(draft)}/{TASK_LIMIT}
                     </span>
                   )}
+                  <VoiceInput
+                    disabled={busy || disabled}
+                    active={active}
+                    onBusyChange={setVoicePending}
+                    onTranscript={appendDictation}
+                  />
                   {busy ? (
                     <button
                       type="button"
@@ -561,7 +757,7 @@ export default function AgentWorkspace({
                     <button
                       type="submit"
                       className={styles.sendButton}
-                      disabled={!draft.trim() || disabled}
+                      disabled={!draft.trim() || disabled || voiceBusy}
                       aria-label="Send message"
                     >
                       <ArrowUp size={20} />
@@ -573,7 +769,7 @@ export default function AgentWorkspace({
             <p className={styles.composerDisclaimer} id="agent-composer-hint">
               {hasMessages
                 ? "AI can make mistakes. Review the sources behind your results."
-                : "Website insights, ad research, and answers. Just ask."}
+                : "Individual audits, ad research, and answers. Just ask."}
               <span>Enter to send · Shift + Enter for a new line</span>
             </p>
           </div>

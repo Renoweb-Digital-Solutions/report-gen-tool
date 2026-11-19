@@ -317,6 +317,96 @@
   margin: 0 auto;
   flex-shrink: 0;
 }
+
+/* ========================================================================== */
+/* INDIVIDUAL AUDIT DISCOVERY AND REQUEST-LOCAL VISUAL INPUTS                   */
+/* Collapsed controls keep the chat compact. Files have explicit roles, remain  */
+/* in component memory and are disabled during sends to preserve request input. */
+/* ========================================================================== */
+.auditDiscovery {
+  margin: 0 0 10px;
+  font-size: 11px;
+  color: var(--agent-muted);
+}
+.auditDiscovery summary,
+.agentImages summary {
+  cursor: pointer;
+  width: fit-content;
+  padding: 6px 0;
+}
+.auditDiscovery > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 0;
+}
+.auditDiscovery button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--agent-line);
+  border-radius: 20px;
+  padding: 7px 10px;
+  background: var(--agent-surface);
+  color: var(--agent-text);
+  cursor: pointer;
+  font: inherit;
+}
+.agentImages {
+  margin-bottom: 12px;
+  color: var(--agent-muted);
+  font-size: 11px;
+}
+.agentImages summary {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--agent-accent);
+}
+.agentImages > p {
+  margin: 5px 0 10px;
+  line-height: 1.6;
+}
+.imageRoles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.imageRoles label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 10px;
+  border: 1px dashed var(--agent-line);
+  border-radius: 10px;
+  color: var(--agent-text);
+}
+.imageRoles input {
+  max-width: 100%;
+  min-width: 0;
+  font: inherit;
+}
+.imageFilename {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 0;
+  overflow-wrap: anywhere;
+}
+.imageFilename button {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  border: 0;
+  background: transparent;
+  color: var(--agent-muted);
+  cursor: pointer;
+}
+@media (max-width: 600px) {
+  .imageRoles {
+    grid-template-columns: 1fr;
+  }
+}
 .composer {
   position: relative;
   padding: 20px 20px 14px;

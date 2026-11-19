@@ -131,7 +131,7 @@ export default function TabNav({ activeTab, onTabChange, onLogout }) {
                       }}
                       title={
                         tab.id === "agent"
-                          ? "Flair is in beta. Currently supports Website Anatomy and Ads Library."
+                          ? "Flair is in beta. AI can make mistakes. Full Report is not available in Flair yet."
                           : "This pipeline is in development and might be unstable"
                       }
                     >

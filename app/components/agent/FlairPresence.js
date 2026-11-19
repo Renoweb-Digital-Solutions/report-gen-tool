@@ -4,9 +4,9 @@
  * Flair's visual identity, holographic backdrop and pending-request presence.
  * AgentWorkspace mounts these presentational components; report execution,
  * authentication and artifact delivery remain in its existing API flow.
- * The backend returns a final response rather than progress events, so the log
- * describes only the submitted/pending request. Rotating copy is atmosphere,
- * never a claim that a crawler, model or report stage has actually completed.
+ * AgentWorkspace now passes observed backend phase labels from its SSE stream.
+ * Those labels override ambient copy; elapsed waiting never invents completion.
+ * Raw tool arguments, credentials and provider diagnostics never enter this UI.
  * CSS owns decorative motion; the one-second clock pauses while the tab/module
  * is hidden, resumes from wall elapsed time, and always cleans up on unmount.
  */
@@ -71,7 +71,7 @@ const WAITING_COPY = [
 ];
 
 /** Show a pulsing identity and request activity until AgentWorkspace settles. */
-export function FlairWorking({ active }) {
+export function FlairWorking({ active, progress = "" }) {
   const started = useRef(Date.now());
   const [elapsed, setElapsed] = useState(0);
   const reducedMotion = useReducedMotion();
@@ -100,6 +100,7 @@ export function FlairWorking({ active }) {
   // Reduced-motion visitors keep a stable headline, not rotating copy. The clock
   // is aria-hidden; a single status sentence avoids repeated reader announcements.
   const copy =
+    progress ||
     WAITING_COPY[
       reducedMotion ? 0 : Math.floor(elapsed / 7) % WAITING_COPY.length
     ];
@@ -107,7 +108,8 @@ export function FlairWorking({ active }) {
   return (
     <div className={styles.presence} data-active={active}>
       <span className={styles.screenReaderStatus} role="status">
-        Flair is waiting for your result. Your request is in progress.
+        {progress ||
+          "Flair is waiting for your result. Your request is in progress."}
       </span>
       <div className={styles.presenceHeader} aria-hidden="true">
         <span className={styles.pulseMark}>
@@ -131,7 +133,7 @@ export function FlairWorking({ active }) {
         </div>
         <div>
           <span className={styles.waitingDot} />
-          <span>Waiting for your result</span>
+          <span>{progress || "Waiting for your result"}</span>
           <span className={styles.signal}>
             <i />
             <i />
