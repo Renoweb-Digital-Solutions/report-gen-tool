@@ -1,0 +1,601 @@
+/* ========================================================================== */
+/* PUBLIC GUIDE: FLOATING APERTURE AND EDITORIAL CONVERSATION                   */
+/* Mounted only for public guests. Keep below the consent banner (z-index 9999) */
+/* and above normal site content; reserve the bottom edge for privacy choices. */
+/* Component-scoped colors avoid inheriting dashboard or marketing-page themes. */
+/* Balanced type scale: 14px conversation/input text, 13px controls and 11px      */
+/* supporting labels. Mobile input remains 16px to prevent browser auto-zoom.    */
+/* ========================================================================== */
+.widget {
+  --ink: #172336;
+  --muted: #708096;
+  --blue: #205de6;
+  position: fixed;
+  bottom: max(48px, calc(env(safe-area-inset-bottom) + 36px));
+  right: 24px;
+  z-index: 90;
+  color: var(--ink);
+  font-family: var(--font-dm-sans), sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.widget button {
+  font: inherit;
+  cursor: pointer;
+}
+.widget button:disabled {
+  cursor: default;
+}
+.widget button:focus-visible,
+.widget textarea:focus-visible {
+  outline: 3px solid #7caaff;
+  outline-offset: 4px;
+}
+.launcher {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 5px;
+  border: 1px solid #ffffff4d;
+  border-radius: 23px;
+  color: white;
+  background: linear-gradient(135deg, #3078ff, #1549b9 85%);
+  box-shadow:
+    0 10px 34px #1549b933,
+    0 2px 4px #0e2d6826,
+    inset 0 1px #ffffff38;
+  transition:
+    transform 200ms,
+    box-shadow 200ms;
+}
+.launcher:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 40px #1549b947;
+}
+.launcherIcon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+}
+.launcherIcon svg {
+  width: 32px;
+  height: 32px;
+}
+.launcherLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 0;
+  opacity: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 600;
+  transition:
+    max-width 240ms,
+    opacity 200ms,
+    padding 240ms;
+}
+.launcher:hover .launcherLabel,
+.launcher:focus-visible .launcherLabel {
+  max-width: 150px;
+  opacity: 1;
+  padding: 0 14px 0 5px;
+}
+.launcherOpen .launcherLabel {
+  display: none;
+}
+
+/* ========================================================================== */
+/* NONMODAL PANEL AND HEADER                                                   */
+/* Fixed dimensions yield to viewport height/width, including mobile keyboards. */
+/* Scrolling is confined to the conversation; the composer stays accessible.   */
+/* ========================================================================== */
+.panel {
+  position: absolute;
+  right: 0;
+  bottom: 74px;
+  width: min(414px, calc(100vw - 32px));
+  height: min(660px, calc(100dvh - 156px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fcfdff;
+  border: 1px solid #dce5f1;
+  border-radius: 25px;
+  box-shadow:
+    0 24px 90px #182e5026,
+    0 3px 12px #182e5012;
+  transform-origin: bottom right;
+}
+.header {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 19px 15px 18px 20px;
+  color: #f5f8ff;
+  background: #12213a;
+  position: relative;
+  flex-shrink: 0;
+}
+.header::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 20px;
+  right: 20px;
+  height: 1px;
+  background: linear-gradient(90deg, #7aa5ff99, #83dbd022, transparent);
+}
+.headerMark {
+  display: grid;
+  place-items: center;
+  color: #b9d2ff;
+  width: 35px;
+  height: 39px;
+  flex-shrink: 0;
+}
+.headerMark svg {
+  width: 31px;
+  height: 31px;
+}
+.headerText {
+  flex: 1;
+  min-width: 0;
+}
+.headerText h2 {
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  font-size: 16px;
+  margin: 0;
+  letter-spacing: -0.2px;
+}
+.headerText p {
+  color: #9aaecb;
+  font-size: 11px;
+  margin: 3px 0 0;
+  letter-spacing: 0.1px;
+}
+.iconButton {
+  display: grid;
+  place-items: center;
+  width: 29px;
+  height: 32px;
+  padding: 0;
+  color: #a2b4d0;
+  border: 0;
+  background: transparent;
+  border-radius: 8px;
+  transition:
+    color 160ms,
+    background 160ms;
+}
+.iconButton:hover {
+  color: white;
+  background: #ffffff12;
+}
+.transcript {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 22px 20px 8px;
+  scrollbar-width: thin;
+  scrollbar-color: #d5deeb transparent;
+}
+.welcome {
+  padding: 0 1px 15px;
+}
+.orbit {
+  width: 77px;
+  height: 77px;
+  display: grid;
+  place-items: center;
+  position: relative;
+  margin-bottom: 22px;
+  color: #2864e4;
+}
+.orbit > svg {
+  width: 34px;
+  height: 34px;
+  z-index: 1;
+}
+.orbit span {
+  position: absolute;
+  inset: 0;
+  border: 1px solid #dce7ff;
+  border-radius: 25px;
+  transform: rotate(14deg);
+  background: #f0f5ff88;
+}
+.orbit span:nth-child(2) {
+  inset: 9px;
+  transform: rotate(-14deg);
+  border-color: #b4cdfa;
+  background: #ffffffb3;
+}
+.eyebrow {
+  display: block;
+  color: #74849d;
+  text-transform: uppercase;
+  letter-spacing: 1.8px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.welcome h3 {
+  color: #1a2941;
+  font-family: inherit;
+  font-size: 33px;
+  font-weight: 500;
+  line-height: 1.12;
+  letter-spacing: -1.25px;
+  margin: 0;
+}
+.welcome h3 span {
+  color: #6c83a5;
+}
+.welcome > p {
+  color: #738197;
+  font-size: 14px;
+  line-height: 1.85;
+  margin: 15px 0 20px;
+  max-width: 315px;
+}
+.starters {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #dfe6f1;
+  border-radius: 15px;
+  overflow: hidden;
+  background: white;
+}
+.starters button {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 13px 12px;
+  text-align: left;
+  border: 0;
+  color: #384d6d;
+  background: white;
+  font-size: 13px;
+  transition: background 160ms;
+}
+.starters button + button {
+  border-top: 1px solid #edf1f6;
+}
+.starters button:hover {
+  background: #f1f6ff;
+}
+.starters button > svg {
+  margin-left: auto;
+  color: #6d8ab5;
+}
+.number {
+  color: #a0aec3;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ========================================================================== */
+/* MESSAGES, NEXT QUESTIONS AND HONEST REQUEST STATES                           */
+/* Plain text preserves line breaks and stays selectable; no raw HTML rendering. */
+/* The busy treatment represents one whole-response request, never fake tokens. */
+/* ========================================================================== */
+.userTurn {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 24px 25px;
+}
+.userTurn .messageText {
+  border-radius: 17px 17px 5px 17px;
+  background: #205de6;
+  color: white;
+  padding: 11px 15px;
+  font-size: 14px;
+  line-height: 1.7;
+  box-shadow: 0 3px 8px #205de617;
+}
+.assistantTurn {
+  margin: 0 0 24px;
+}
+.answerLabel {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #6b7f9d;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  margin-bottom: 11px;
+}
+.answerLabel svg {
+  width: 18px;
+  height: 18px;
+  color: #326be0;
+}
+.messageText {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  line-height: 1.75;
+  color: #36465d;
+}
+.copyButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #8a97aa;
+  background: transparent;
+  border: 0;
+  padding: 9px 0 2px;
+  font-size: 11px !important;
+}
+.copyButton:hover {
+  color: var(--blue);
+}
+.followUps {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px dashed #dce4ee;
+}
+.followUpLabel {
+  font-size: 11px;
+  color: #8797ae;
+  margin-bottom: 3px;
+}
+.followUps button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 11px;
+  width: 100%;
+  text-align: left;
+  border: 1px solid #dce5f3;
+  background: #f3f7fe;
+  color: #47658e;
+  border-radius: 11px;
+  padding: 9px 11px;
+  font-size: 13px;
+  line-height: 1.6;
+  transition:
+    background 160ms,
+    border-color 160ms;
+}
+.followUps button svg {
+  flex-shrink: 0;
+}
+.followUps button:hover {
+  background: #e9f1ff;
+  border-color: #aec6ef;
+}
+.thinking {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 8px 0 25px;
+  color: #7e90a9;
+  font-size: 13px;
+}
+.thinkingMark {
+  width: 20px;
+  height: 20px;
+  color: #5b86dd;
+}
+.thinkingMark svg {
+  width: 100%;
+  height: 100%;
+  animation: guideTurn 5s linear infinite;
+}
+.dots {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 5px;
+}
+.dots i {
+  width: 3px;
+  height: 3px;
+  background: #8aa4cf;
+  border-radius: 50%;
+  animation: guidePulse 1.2s ease-in-out infinite;
+}
+.dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.error {
+  padding: 12px 14px;
+  border: 1px solid #f0d9d2;
+  background: #fff9f6;
+  border-radius: 13px;
+  margin-bottom: 20px;
+  color: #866350;
+  font-size: 13px;
+}
+.error p {
+  margin: 0;
+}
+.error button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 9px;
+  border: 0;
+  color: #71503d;
+  background: transparent;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ========================================================================== */
+/* COMPOSER AND ADAPTIVE MOTION                                                */
+/* Keep touch targets usable, account for safe-area insets, and disable all      */
+/* decorative motion for visitors requesting reduced motion.                   */
+/* ========================================================================== */
+.composerArea {
+  flex-shrink: 0;
+  padding: 13px 16px 12px;
+  background: linear-gradient(#fcfdffeb, white);
+  border-top: 1px solid #edf1f7;
+}
+.composerBox {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 9px 9px 9px 13px;
+  border-radius: 16px;
+  border: 1px solid #dce5f2;
+  background: white;
+  transition:
+    border-color 160ms,
+    box-shadow 160ms;
+}
+.composerBox:focus-within {
+  border-color: #adc9fa;
+  box-shadow: 0 0 0 3px #2d76ff09;
+}
+.composerBox textarea {
+  flex: 1;
+  width: 0;
+  border: 0;
+  outline: 0;
+  resize: none;
+  min-height: 32px;
+  max-height: 112px;
+  padding: 7px 0;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.65;
+  background: transparent;
+  color: var(--ink);
+  scrollbar-width: thin;
+}
+.composerBox textarea::placeholder {
+  color: #93a1b7;
+}
+.composerBox textarea:focus-visible {
+  outline: 0;
+}
+.sendButton {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 11px;
+  color: white;
+  background: #205de6;
+  transition: background 160ms;
+}
+.sendButton:hover {
+  background: #1546bd;
+}
+.sendButton:disabled {
+  background: #edf2f9;
+  color: #afbed2;
+}
+.composerHint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 11px;
+  color: #9aa8bb;
+  margin-top: 9px;
+  padding: 0 2px;
+}
+.composerHint > span:last-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+@keyframes guidePulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes guideTurn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 520px) {
+  .widget {
+    right: 16px;
+  }
+  .panel {
+    width: calc(100vw - 32px);
+    border-radius: 22px;
+    height: min(660px, calc(100dvh - 156px));
+  }
+  .launcherLabel {
+    display: none;
+  }
+  .header {
+    padding: 16px;
+    gap: 8px;
+  }
+  .transcript {
+    padding: 20px 18px 8px;
+  }
+  .composerBox textarea {
+    font-size: 16px;
+  }
+  .iconButton {
+    width: 34px;
+    height: 36px;
+  }
+}
+/* Short viewports, including an open mobile keyboard, prioritize the composer
+   and transcript over decorative welcome space. No viewport listeners needed. */
+@media (max-height: 520px) {
+  .widget {
+    bottom: max(24px, env(safe-area-inset-bottom));
+  }
+  .panel {
+    bottom: 66px;
+    height: calc(100dvh - 108px);
+  }
+  .header {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  .orbit {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .widget *,
+  .widget *::before,
+  .widget *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

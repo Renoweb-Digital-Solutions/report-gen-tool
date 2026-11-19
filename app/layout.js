@@ -3,6 +3,7 @@ import "./globals.css";
 import { AnalyticsProvider } from "./components/AnalyticsProvider";
 import CookieBanner from "./components/CookieBanner";
 import { ThemeProvider } from "./context/ThemeContext";
+import PublicChat from "./components/public-chat/PublicChat";
 
 // Self-hosted via next/font — no @import needed in CSS, zero layout shift
 const dmSans = DM_Sans({
@@ -41,7 +42,11 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${oswald.variable}`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${dmSans.variable} ${oswald.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -73,6 +78,9 @@ export default function RootLayout({ children }) {
           <AnalyticsProvider>
             {children}
             <CookieBanner />
+            {/* PublicChat checks route and server session before mounting. It
+                never coexists with the dashboard's existing support bubble. */}
+            <PublicChat />
           </AnalyticsProvider>
         </ThemeProvider>
       </body>
